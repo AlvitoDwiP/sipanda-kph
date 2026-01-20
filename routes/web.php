@@ -56,7 +56,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::post('/penugasan', [PenugasanController::class, 'store'])->name('penugasan.store');
     Route::get('/penugasan/{penugasan}/edit', [PenugasanController::class, 'edit'])->name('penugasan.edit');
     Route::put('/penugasan/{penugasan}', [PenugasanController::class, 'update'])->name('penugasan.update');
-    Route::delete('/penugasan/{penugasan}', [PenugasanController::class, 'delete'])->name('penugasan.delete');
+    Route::delete('/penugasan/{tugas}', [PenugasanController::class, 'delete'])->name('penugasan.delete');
 
     Route::get('/catatan-kegiatan', [CatatanController::class, 'index'])->name('catatan_kegiatan.index'); 
     Route::patch('/catatan-kegiatan/{catatan}/status', [CatatanController::class, 'updateStatus'])->name('catatan_kegiatan.status');    

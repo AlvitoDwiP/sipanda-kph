@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Pegawai;
 use App\Models\Penugasan;
 use App\Models\Tugas;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -59,32 +60,42 @@ class PenugasanController extends Controller
             'deadline'     => 'required|date',
             'prioritas'    => 'required|string',
             'pegawai_id'   => 'required|array|min:1',
-            'pegawai_id.*' => 'exists:pegawai,id',
+            'pegawai_id.*' => 'distinct|exists:pegawai,id',
             'template'     => 'required|file|mimes:pdf,doc,docx|max:2048',
         ]);
 
-        DB::transaction(function () use ($request) {
+        try {
+            DB::transaction(function () use ($request) {
 
-            $templatePath = $request->file('template')
-                ->store('template_tugas', 'public');
+                $templatePath = $request->file('template')
+                    ->store('template_tugas', 'public');
 
-            $tugas = Tugas::create([
-                'judul'     => $request->judul,
-                'deskripsi' => $request->deskripsi,
-                'deadline'  => $request->deadline,
-                'prioritas' => $request->prioritas,
-                'template'  => $templatePath,
-                'user_id'   => auth()->id(),
-            ]);
-
-            foreach ($request->pegawai_id as $pegawaiId) {
-                Penugasan::create([
-                    'pegawai_id' => $pegawaiId,
-                    'tugas_id'   => $tugas->id,
-                    'status'     => 'baru',
+                $tugas = Tugas::create([
+                    'judul'     => $request->judul,
+                    'deskripsi' => $request->deskripsi,
+                    'deadline'  => $request->deadline,
+                    'prioritas' => $request->prioritas,
+                    'template'  => $templatePath,
+                    'user_id'   => auth()->id(),
                 ]);
+
+                foreach ($request->pegawai_id as $pegawaiId) {
+                    Penugasan::create([
+                        'pegawai_id' => $pegawaiId,
+                        'tugas_id'   => $tugas->id,
+                        'status'     => 'baru',
+                    ]);
+                }
+            });
+        } catch (QueryException $e) {
+            if ($e->getCode() === '23000' && str_contains($e->getMessage(), 'uniq_tugas_pegawai')) {
+                return back()
+                    ->withErrors(['pegawai_id' => 'Pegawai ini sudah ditugaskan pada tugas tersebut.'])
+                    ->withInput();
             }
-        });
+
+            throw $e;
+        }
 
         return redirect()
             ->route('admin.penugasan.index')
@@ -112,65 +123,75 @@ class PenugasanController extends Controller
             'deadline'     => 'required|date',
             'prioritas'    => 'required|string',
             'pegawai_id'   => 'required|array|min:1',
-            'pegawai_id.*' => 'exists:pegawai,id',
+            'pegawai_id.*' => 'distinct|exists:pegawai,id',
             'template'     => 'nullable|file|mimes:pdf,doc,docx|max:2048',
         ]);
 
-        DB::transaction(function () use ($request, $penugasan) {
+        try {
+            DB::transaction(function () use ($request, $penugasan) {
 
-            if ($request->hasFile('template')) {
+                if ($request->hasFile('template')) {
 
-                // hapus template lama
-                if ($penugasan->template && Storage::disk('public')->exists($penugasan->template)) {
-                    Storage::disk('public')->delete($penugasan->template);
+                    // hapus template lama
+                    if ($penugasan->template && Storage::disk('public')->exists($penugasan->template)) {
+                        Storage::disk('public')->delete($penugasan->template);
+                    }
+
+                    // simpan template baru
+                    $templatePath = $request->file('template')
+                        ->store('template_tugas', 'public');
+
+                    $penugasan->template = $templatePath;
                 }
 
-                // simpan template baru
-                $templatePath = $request->file('template')
-                    ->store('template_tugas', 'public');
+                $penugasan->update([
+                    'judul'     => $request->judul,
+                    'deskripsi' => $request->deskripsi,
+                    'deadline'  => $request->deadline,
+                    'prioritas' => $request->prioritas,
+                ]);
 
-                $penugasan->template = $templatePath;
+                $pegawaiIds = $request->pegawai_id;
+
+                Penugasan::where('tugas_id', $penugasan->id)
+                    ->whereNotIn('pegawai_id', $pegawaiIds)
+                    ->delete();
+
+                foreach ($pegawaiIds as $pegawaiId) {
+                    Penugasan::firstOrCreate(
+                        [
+                            'tugas_id'   => $penugasan->id,
+                            'pegawai_id' => $pegawaiId,
+                        ],
+                        ['status' => 'baru']
+                    );
+                }
+            });
+        } catch (QueryException $e) {
+            if ($e->getCode() === '23000' && str_contains($e->getMessage(), 'uniq_tugas_pegawai')) {
+                return back()
+                    ->withErrors(['pegawai_id' => 'Pegawai ini sudah ditugaskan pada tugas tersebut.'])
+                    ->withInput();
             }
 
-            $penugasan->update([
-                'judul'     => $request->judul,
-                'deskripsi' => $request->deskripsi,
-                'deadline'  => $request->deadline,
-                'prioritas' => $request->prioritas,
-            ]);
-
-            $pegawaiIds = $request->pegawai_id;
-
-            Penugasan::where('tugas_id', $penugasan->id)
-                ->whereNotIn('pegawai_id', $pegawaiIds)
-                ->delete();
-
-            foreach ($pegawaiIds as $pegawaiId) {
-                Penugasan::firstOrCreate(
-                    [
-                        'tugas_id'   => $penugasan->id,
-                        'pegawai_id' => $pegawaiId,
-                    ],
-                    ['status' => 'baru']
-                );
-            }
-        });
+            throw $e;
+        }
 
         return redirect()
             ->route('admin.penugasan.index')
             ->with('success', 'Penugasan berhasil diperbarui.');
     }
 
-    public function delete(Tugas $penugasan)
+    public function delete(Tugas $tugas)
     {
-        DB::transaction(function () use ($penugasan) {
-            Penugasan::where('tugas_id', $penugasan->id)->delete();
+        DB::transaction(function () use ($tugas) {
+            Penugasan::where('tugas_id', $tugas->id)->delete();
 
-            $penugasan->delete();
+            $tugas->delete();
         });
 
         return redirect()
             ->route('admin.penugasan.index')
-            ->with('success', 'Penugasan berhasil dihapus.');
+            ->with('success', 'Tugas dan penugasan berhasil dihapus.');
     }
 }

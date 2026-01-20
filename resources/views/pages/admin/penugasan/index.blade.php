@@ -104,7 +104,9 @@
                             <span class="mx-2 text-slate-300">|</span>
 
                             <button type="button"
-                                onclick="openDeleteModal({{ $item->id }}, '{{ $item->judul }}')"
+                                onclick="openDeleteModal(this)"
+                                data-action="{{ route('admin.penugasan.delete', $item->id) }}"
+                                data-nama="{{ $item->nama_tugas ?? $item->judul ?? 'Tugas' }}"
                                 class="text-slate-600 hover:text-red-600 font-medium transition">
                                 Hapus
                             </button>
@@ -303,6 +305,17 @@
 
     function closeDetailModal() {
         modalToggle('modalDetail', false);
+    }
+
+    function openDeleteModal(btn) {
+        const form = document.getElementById('formDelete');
+        form.action = btn.dataset.action;
+        document.getElementById('deleteNama').textContent = btn.dataset.nama;
+        modalToggle('modalDelete', true);
+    }
+
+    function closeDeleteModal() {
+        modalToggle('modalDelete', false);
     }
 
     function modalToggle(id, show) {
