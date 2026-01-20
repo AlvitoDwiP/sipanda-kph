@@ -188,6 +188,7 @@
 
 @push('scripts')
 <script>
+
     const ctx = document.getElementById('grafikStatusTugas');
 
     new Chart(ctx, {

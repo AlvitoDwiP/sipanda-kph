@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>html{visibility:hidden}</style>
     @php
         // Determine search route and placeholder based on current page
         $currentRoute = Route::currentRouteName();
@@ -212,6 +213,9 @@
     </script>
 
 
+    <script>
+        document.documentElement.style.visibility = 'visible';
+    </script>
 
 </body>
 
