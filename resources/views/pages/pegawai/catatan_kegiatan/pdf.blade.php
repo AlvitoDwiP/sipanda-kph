@@ -114,7 +114,7 @@
                 @foreach ($fotos as $index => $foto)
                     <td>
                         <img
-                            src="{{ public_path('storage/' . $foto) }}"
+                            src="{{ storage_path('app/public/' . $foto) }}"
                             class="foto">
                     </td>
 
