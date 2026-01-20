@@ -95,7 +95,7 @@ class RegisterController extends Controller
 
             return redirect()
                 ->route('admin.register.index')
-                ->with('success', 'User, Pegawai & Riwayat Kepegawaian berhasil ditambahkan');
+                ->with('success', 'User dan pegawai berhasil ditambahkan');
         } catch (\Throwable $e) {
             DB::rollBack();
 
