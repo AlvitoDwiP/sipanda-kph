@@ -17,36 +17,22 @@ This project includes Docker configuration to run the Laravel application in con
 
 2. **Build and start the containers**:
    ```bash
-   docker-compose up -d --build
+   docker compose up -d --build
    ```
 
-3. **Install Laravel dependencies**:
+3. **Run database migrations**:
    ```bash
-   docker-compose exec app composer install
+   docker compose exec app php artisan migrate
    ```
 
-4. **Install frontend dependencies**:
+4. **Seed initial data** (optional):
    ```bash
-   docker-compose exec app npm install
+   docker compose exec app php artisan db:seed
    ```
 
-5. **Generate application key**:
-   ```bash
-   docker-compose exec app php artisan key:generate
-   ```
-
-6. **Run database migrations**:
-   ```bash
-   docker-compose exec app php artisan migrate
-   ```
-
-7. **Build frontend assets** (if needed):
-   ```bash
-   docker-compose exec app npm run build
-   ```
-
-8. **Access the application**:
+5. **Access the application**:
    - Application: [http://localhost:8000](http://localhost:8000)
+   - phpMyAdmin: [http://localhost:8080](http://localhost:8080)
    - MySQL: localhost:3306 (credentials in docker-compose.yml)
    - Redis: localhost:6379
 
@@ -54,33 +40,33 @@ This project includes Docker configuration to run the Laravel application in con
 
 - **Run artisan commands**:
   ```bash
-  docker-compose exec app php artisan <command>
+  docker compose exec app php artisan <command>
   ```
 
 - **Run npm commands**:
   ```bash
-  docker-compose exec app npm run dev  # for development
-  docker-compose exec app npm run build  # for production build
+  docker compose exec app npm run dev
+  docker compose exec app npm run build
   ```
 
 - **Access the container**:
   ```bash
-  docker-compose exec app bash
+  docker compose exec app bash
   ```
 
 - **View logs**:
   ```bash
-  docker-compose logs -f app
+  docker compose logs -f app
   ```
 
 - **Stop the containers**:
   ```bash
-  docker-compose down
+  docker compose down
   ```
 
 - **Stop and remove volumes** (removes database):
   ```bash
-  docker-compose down -v
+  docker compose down -v
   ```
 
 ## Services
@@ -92,23 +78,23 @@ This project includes Docker configuration to run the Laravel application in con
 
 ## Environment Configuration
 
-The application uses the `.env.docker` file for configuration. You can customize it by copying it to `.env` and adjusting the values as needed.
+The app container mounts `.env.docker` as `/var/www/.env`, so Docker always uses the container-specific database and Redis hosts without changing your local `.env`.
 
 ## Troubleshooting
 
 1. **Permission issues**: If you encounter permission issues with storage or bootstrap/cache directories:
    ```bash
-   docker-compose exec app chown -R www-data:www-data storage bootstrap/cache
+   docker compose exec app chown -R www-data:www-data storage bootstrap/cache
    ```
 
 2. **Database connection errors**: Make sure the MySQL container is running and the credentials in your .env file match those in docker-compose.yml.
 
 3. **Frontend assets not loading**: Run the build command:
    ```bash
-   docker-compose exec app npm run build
+   docker compose exec app npm run build
    ```
 
 4. **If you get build errors**: Try building with the --no-cache flag:
    ```bash
-   docker-compose build --no-cache
+   docker compose build --no-cache
    ```

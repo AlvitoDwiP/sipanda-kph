@@ -1,66 +1,119 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# SIPANDA-KPH
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+SIPANDA-KPH merupakan aplikasi web berbasis Laravel yang dirancang untuk mendukung pengelolaan data kepegawaian, penugasan, dan pelaporan aktivitas kerja dalam lingkungan KPH. Sistem ini mengintegrasikan kebutuhan administrasi pengguna, pengelolaan data pegawai, monitoring penugasan, pencatatan kegiatan, serta pengawasan akses berbasis peran dalam satu platform terpusat.
 
-## About Laravel
+## Overview
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Proyek ini dibangun untuk menyediakan sistem informasi internal yang terstruktur bagi tiga kelompok pengguna utama, yaitu `admin`, `pegawai`, dan `kph`. Setiap peran memiliki akses terhadap dashboard dan modul yang berbeda sesuai tanggung jawabnya. Dengan pendekatan ini, proses administrasi kepegawaian dapat dilakukan secara lebih tertib, terdokumentasi, dan mudah dipantau.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+Secara umum, aplikasi ini mencakup pengelolaan akun pengguna, data pegawai, riwayat kepegawaian, penugasan, catatan kegiatan, notifikasi, log aktivitas, serta fitur ekspor dokumen PDF untuk kebutuhan pelaporan.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Problem
 
-## Learning Laravel
+Pengelolaan data kepegawaian dan aktivitas kerja sering kali menghadapi beberapa kendala utama, antara lain:
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- Data pegawai dan akun pengguna tersimpan secara terpisah atau belum terdokumentasi dengan baik.
+- Proses verifikasi akun dan pengaturan hak akses belum terkontrol secara konsisten.
+- Penugasan kerja dan pelaporan kegiatan pegawai sulit dipantau dalam satu alur yang terintegrasi.
+- Pimpinan atau pihak pengawas memerlukan sarana monitoring yang lebih cepat dan akurat terhadap aktivitas pegawai.
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+SIPANDA-KPH dikembangkan untuk menjawab kebutuhan tersebut melalui satu sistem terpusat yang mampu mengelola data, proses, dan kontrol akses secara lebih sistematis.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Approach
 
-## Laravel Sponsors
+Pendekatan pengembangan aplikasi ini menggunakan arsitektur monolitik berbasis Laravel dengan pemisahan akses berdasarkan peran pengguna. Implementasi sistem difokuskan pada:
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+- pemisahan modul kerja untuk `admin`, `pegawai`, dan `kph`
+- kontrol akses berbasis middleware agar setiap pengguna hanya dapat mengakses fitur sesuai perannya
+- validasi status akun untuk memastikan hanya akun aktif yang dapat masuk ke dalam sistem
+- penggunaan relasi data untuk menghubungkan pengguna, pegawai, data diri, riwayat kepegawaian, penugasan, dan catatan kegiatan
+- dukungan lingkungan pengembangan berbasis Docker untuk mempermudah proses instalasi dan menjalankan layanan aplikasi
 
-### Premium Partners
+Pendekatan ini dipilih agar aplikasi tetap terstruktur, mudah dikembangkan, dan sesuai untuk kebutuhan sistem informasi internal organisasi.
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+## Tools
 
-## Contributing
+Teknologi dan tools utama yang digunakan dalam proyek ini meliputi:
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+- PHP 8.2
+- Laravel 11
+- Blade Template Engine
+- Tailwind CSS
+- Alpine.js
+- Vite
+- MySQL
+- Redis
+- Nginx
+- Docker dan Docker Compose
+- phpMyAdmin
+- `barryvdh/laravel-dompdf` untuk ekspor PDF
 
-## Code of Conduct
+## Output
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Output utama dari pengembangan aplikasi ini adalah tersedianya sistem informasi kepegawaian yang memiliki kemampuan sebagai berikut:
 
-## Security Vulnerabilities
+- dashboard terpisah untuk `admin`, `pegawai`, dan `kph`
+- manajemen akun pengguna dan verifikasi status akun
+- pengelolaan data pegawai dan data kepegawaian
+- pengelolaan referensi master seperti golongan, jabatan, dan unit kerja
+- pencatatan dan monitoring penugasan kerja
+- input, revisi, dan evaluasi catatan kegiatan pegawai
+- direktori dan informasi data pegawai aktif
+- notifikasi administratif
+- pencatatan log aktivitas sistem
+- ekspor dokumen PDF untuk kebutuhan laporan kegiatan
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## Insights
 
-## License
+Berdasarkan struktur kode dan konfigurasi yang ada, terdapat beberapa hal penting yang menjadi catatan dari proyek ini:
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+- Sistem sudah memiliki pemisahan peran yang jelas dan cukup representatif untuk kebutuhan operasional internal.
+- Mekanisme login tidak hanya memeriksa kredensial pengguna, tetapi juga memastikan `status_akun` berada dalam kondisi aktif.
+- Lingkungan pengembangan telah disiapkan untuk menggunakan Docker dengan layanan `app`, `nginx`, `mysql`, `redis`, dan `phpmyadmin`.
+- Seeder awal telah menyediakan data akun dasar untuk kebutuhan pengujian awal peran sistem.
+- Dokumentasi sebelumnya masih berupa README bawaan Laravel, sehingga perlu diperbarui agar mencerminkan identitas dan tujuan proyek secara formal.
+
+## Struktur Peran Pengguna
+
+### Admin
+
+Admin bertanggung jawab terhadap pengelolaan pengguna, data pegawai, master data, penugasan, verifikasi akun, notifikasi, dan log aktivitas sistem.
+
+### Pegawai
+
+Pegawai memiliki akses untuk mengelola data diri, melihat data kepegawaian, memantau tugas yang diberikan, serta membuat dan memperbarui catatan kegiatan.
+
+### KPH
+
+KPH berperan dalam memantau data pegawai dan penugasan sebagai bagian dari fungsi pengawasan dan koordinasi.
+
+## Menjalankan Dengan Docker
+
+Project ini sudah disiapkan untuk dijalankan dengan Docker menggunakan layanan `app`, `nginx`, `mysql`, `redis`, dan `phpmyadmin`.
+
+1. Jalankan container:
+   ```bash
+   docker compose up -d --build
+   ```
+2. Jalankan migrasi database:
+   ```bash
+   docker compose exec app php artisan migrate
+   ```
+3. Jika ingin mengisi data awal:
+   ```bash
+   docker compose exec app php artisan db:seed
+   ```
+
+Endpoint default:
+
+- aplikasi: [http://localhost:8000](http://localhost:8000)
+- phpMyAdmin: [http://localhost:8080](http://localhost:8080)
+- MySQL: `localhost:3306`
+- Redis: `localhost:6379`
+
+Container Docker akan memakai konfigurasi dari `.env.docker`, sehingga koneksi ke MySQL dan Redis otomatis mengarah ke service Docker tanpa mengubah `.env` lokal Anda.
+
+
+## Penutup
+
+SIPANDA-KPH diharapkan menjadi fondasi sistem informasi kepegawaian yang lebih tertata, transparan, dan mudah dikembangkan. Dengan dokumentasi yang lebih jelas, proyek ini juga menjadi lebih siap untuk proses pengembangan lanjutan, evaluasi akademik, maupun presentasi formal.

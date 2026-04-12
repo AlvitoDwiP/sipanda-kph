@@ -5,6 +5,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
+    $PHPIZE_DEPS \
     git \
     curl \
     libpng-dev \
@@ -19,6 +20,7 @@ RUN apt-get update && apt-get install -y \
 
 # Install PHP extensions
 RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
+RUN pecl install redis && docker-php-ext-enable redis
 
 # Get latest Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -38,8 +40,8 @@ RUN chown -R www-data:www-data /var/www
 # Switch to non-root user
 USER www-data
 
-# Install Laravel dependencies first
-RUN composer install --no-dev --optimize-autoloader
+# Install Laravel dependencies
+RUN composer install --optimize-autoloader
 
 # Install frontend dependencies
 RUN npm ci
@@ -49,9 +51,6 @@ RUN npm run build
 
 # Ensure storage and bootstrap/cache directories are writable
 RUN chmod -R 775 /var/www/storage /var/www/bootstrap/cache
-
-# Remove node_modules to save space (optional, since they're not needed at runtime)
-RUN npm prune --production
 
 # Switch back to root user to run PHP-FPM
 USER root
