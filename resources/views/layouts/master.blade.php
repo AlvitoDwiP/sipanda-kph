@@ -48,13 +48,13 @@
             $searchRoute = route('admin.riwayat_kepegawaian.index');
             $searchPlaceholder = 'Cari riwayat kepegawaian...';
         } elseif (str_contains($currentRoute, 'admin.golongan')) {
-            $searchRoute = route('admin.index.golongan');
+            $searchRoute = route('admin.golongan.index');
             $searchPlaceholder = 'Cari golongan...';
         } elseif (str_contains($currentRoute, 'admin.jabatan')) {
-            $searchRoute = route('admin.index.jabatan');
+            $searchRoute = route('admin.jabatan.index');
             $searchPlaceholder = 'Cari jabatan...';
         } elseif (str_contains($currentRoute, 'admin.unitkerja')) {
-            $searchRoute = route('admin.index.unitkerja');
+            $searchRoute = route('admin.unitkerja.index');
             $searchPlaceholder = 'Cari unit kerja...';
         } elseif (str_contains($currentRoute, 'kph.penugasan')) {
             $searchRoute = route('kph.penugasan.index');
@@ -92,7 +92,7 @@
 
 
         {{-- SIDEBAR --}}
-        @include('layouts.components.sidebar')
+        @include('layouts.partials.sidebar')
         <!-- Overlay for mobile sidebar -->
         <div id="overlay" onclick="toggleSidebar()" class="fixed inset-0 z-40 hidden bg-black/50 lg:hidden"></div>
 
@@ -100,7 +100,7 @@
         <div class="flex flex-col flex-1 w-full overflow-hidden">
 
             {{-- HEADER --}}
-            @include('layouts.components.header')
+            @include('layouts.partials.header')
             <!-- ==========================================
                  MAIN CONTENT AREA
                  ========================================== -->
@@ -111,7 +111,7 @@
             </main>
 
             {{-- FOOTER --}}
-            @include('layouts.components.footer')
+            @include('layouts.partials.footer')
         </div>
     </div>
 

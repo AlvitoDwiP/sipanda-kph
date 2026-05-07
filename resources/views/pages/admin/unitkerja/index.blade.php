@@ -75,7 +75,7 @@
 {{-- ================= MODAL TAMBAH ================= --}}
 <div id="modalTambah" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50">
     <div class="bg-white w-full max-w-md rounded-xl shadow-lg">
-        <form method="POST" action="{{ route('admin.store.unitkerja') }}">
+        <form method="POST" action="{{ route('admin.unitkerja.store') }}">
             @csrf
 
             <div class="flex justify-between items-center px-6 py-4 border-b">
@@ -176,7 +176,7 @@
 
     function openEditModal(id, nama, aktif) {
         edit_nama.value = nama;
-        formEdit.action = "{{ route('admin.update.unitkerja', ':id') }}".replace(':id', id);
+        formEdit.action = "{{ route('admin.unitkerja.update', ':id') }}".replace(':id', id);
         modalEdit.classList.remove('hidden');
         modalEdit.classList.add('flex');
     }
@@ -187,7 +187,7 @@
 
     function openDeleteModal(id, nama) {
         deleteNama.innerText = nama;
-        formDelete.action = "{{ route('admin.delete.unitkerja', ':id') }}".replace(':id', id);
+        formDelete.action = "{{ route('admin.unitkerja.destroy', ':id') }}".replace(':id', id);
         modalDelete.classList.remove('hidden');
         modalDelete.classList.add('flex');
     }

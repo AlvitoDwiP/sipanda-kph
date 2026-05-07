@@ -75,7 +75,7 @@
 {{-- ================= MODAL TAMBAH ================= --}}
 <div id="modalTambah" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50">
     <div class="bg-white w-full max-w-md rounded-xl shadow-lg">
-        <form method="POST" action="{{ route('admin.store.jabatan') }}">
+        <form method="POST" action="{{ route('admin.jabatan.store') }}">
             @csrf
 
             <div class="px-6 py-4 border-b flex justify-between">
@@ -165,7 +165,8 @@
 
     function openEditModal(id, nama) {
         document.getElementById('edit_nama').value = nama;
-        document.getElementById('formEdit').action = `/admin/jabatan/${id}`;
+        document.getElementById('formEdit').action =
+            "{{ route('admin.jabatan.update', ':id') }}".replace(':id', id);
         modalToggle('modalEdit', true);
     }
     function closeEditModal() {
@@ -174,7 +175,8 @@
 
     function openDeleteModal(id, nama) {
         document.getElementById('deleteNama').innerText = nama;
-        document.getElementById('formDelete').action = `/admin/jabatan/${id}`;
+        document.getElementById('formDelete').action =
+            "{{ route('admin.jabatan.destroy', ':id') }}".replace(':id', id);
         modalToggle('modalDelete', true);
     }
     function closeDeleteModal() {

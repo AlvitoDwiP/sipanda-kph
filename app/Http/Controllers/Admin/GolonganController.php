@@ -49,7 +49,7 @@ class GolonganController extends Controller
         return redirect()->back()->with('success', 'Golongan berhasil diperbarui.');
     }
 
-    public function delete($id)
+    public function destroy($id)
     {
         $golongan = Golongan::findOrFail($id);
         $golongan->delete();

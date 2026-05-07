@@ -89,7 +89,7 @@ class CatatanController extends Controller
         }
 
         $pdf = Pdf::loadView(
-            'pages.admin.catatan_kegiatan.pdf',
+            'pdf.admin.catatan_kegiatan',
             compact('catatan')
         )->setPaper('A4', 'portrait');
 

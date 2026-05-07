@@ -49,7 +49,7 @@ class UnitKerjaController extends Controller
         return redirect()->back()->with('success', 'Unit Kerja berhasil diperbarui.');
     }
 
-    public function delete($id)
+    public function destroy($id)
     {
         $unitkerja = UnitKerja::findOrFail($id);
         $unitkerja->delete();

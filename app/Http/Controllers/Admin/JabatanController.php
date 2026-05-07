@@ -49,7 +49,7 @@ class JabatanController extends Controller
         return redirect()->back()->with('success', 'Jabatan berhasil diperbarui.');
     }
 
-    public function delete($id)
+    public function destroy($id)
     {
         $jabatan = Jabatan::findOrFail($id);
         $jabatan->delete();

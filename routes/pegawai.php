@@ -1,0 +1,37 @@
+<?php
+
+use App\Http\Controllers\Pegawai\CatatanKegiatanController;
+use App\Http\Controllers\Pegawai\DashboardController as PegawaiDashboard;
+use App\Http\Controllers\Pegawai\DataDiriController;
+use App\Http\Controllers\Pegawai\DataKepegawaianController;
+use App\Http\Controllers\Pegawai\DirektoriController;
+use App\Http\Controllers\Pegawai\NotifikasiController;
+use App\Http\Controllers\Pegawai\TugasController as TugasSayaController;
+use Illuminate\Support\Facades\Route;
+
+Route::middleware(['auth', 'role:pegawai'])->prefix('pegawai')->name('pegawai.')->group(function () {
+    Route::get('/dashboard', [PegawaiDashboard::class, 'index'])->name('dashboard');
+
+    Route::get('/data-diri', [DataDiriController::class, 'index'])->name('data_diri.index');
+    Route::post('/data-diri', [DataDiriController::class, 'store'])->name('data_diri.store');
+    Route::put('/data-diri', [DataDiriController::class, 'update'])->name('data_diri.update');
+
+    Route::get('/data-kepegawaian', [DataKepegawaianController::class, 'index'])->name('data_kepegawaian.index');
+    Route::put('/data-kepegawaian/{pegawai}', [DataKepegawaianController::class, 'updateKepegawaian'])->name('data_kepegawaian.update');
+
+    Route::get('/tugas-saya', [TugasSayaController::class, 'index'])->name('tugas.index');
+    Route::patch('/tugas-saya/penugasan/{penugasan}/status', [TugasSayaController::class, 'updateStatus'])->name('tugas.update-status');
+
+    Route::get('/catatan-kegiatan', [CatatanKegiatanController::class, 'index'])->name('catatan_kegiatan.index');
+    Route::get('/catatan-kegiatan/create', [CatatanKegiatanController::class, 'create'])->name('catatan_kegiatan.create');
+    Route::post('/catatan-kegiatan', [CatatanKegiatanController::class, 'store'])->name('catatan_kegiatan.store');
+    Route::get('/catatan-kegiatan/{id}/edit', [CatatanKegiatanController::class, 'edit'])->name('catatan_kegiatan.edit');
+    Route::put('/catatan-kegiatan/{id}', [CatatanKegiatanController::class, 'update'])->name('catatan_kegiatan.update');
+    Route::delete('/catatan-kegiatan/{id}', [CatatanKegiatanController::class, 'delete'])->name('catatan_kegiatan.delete');
+    Route::get('/catatan-kegiatan/{id}/download-pdf', [CatatanKegiatanController::class, 'downloadPdf'])->name('catatan_kegiatan.pdf');
+
+    Route::get('/direktori', [DirektoriController::class, 'index'])->name('direktori.index');
+    Route::get('/direktori/{id}', [DirektoriController::class, 'show'])->name('direktori.show');
+
+    Route::get('/notifikasi', [NotifikasiController::class, 'index'])->name('notifikasi.index');
+});

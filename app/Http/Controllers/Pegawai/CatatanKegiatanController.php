@@ -195,7 +195,7 @@ class CatatanKegiatanController extends Controller
             ->where('status', 'setuju')
             ->firstOrFail();
 
-        $pdf = Pdf::loadView('pages.pegawai.catatan_kegiatan.pdf', [
+        $pdf = Pdf::loadView('pdf.pegawai.catatan_kegiatan', [
             'pegawai' => $pegawai,
             'user'    => $pegawai->user,
             'catatan' => $catatan,

@@ -67,7 +67,7 @@
 <div id="modalTambah" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50">
 
     <div class="bg-white w-full max-w-md rounded-xl shadow-lg">
-        <form method="POST" action="{{ route('admin.store.golongan') }}">
+        <form method="POST" action="{{ route('admin.golongan.store') }}">
             @csrf
 
             {{-- HEADER --}}
@@ -250,7 +250,7 @@
         document.getElementById('deleteNama').innerText = nama;
 
         document.getElementById('formDelete').action =
-            "{{ route('admin.delete.golongan', ':id') }}".replace(':id', id);
+            "{{ route('admin.golongan.destroy', ':id') }}".replace(':id', id);
 
         modal.classList.remove('hidden');
         modal.classList.add('flex');
