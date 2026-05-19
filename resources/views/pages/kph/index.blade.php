@@ -1,185 +1,151 @@
 @extends('layouts.master')
 
-@section('title', 'Dashboard Kepala')
-@section('page-title', 'Dashboard')
+@section('title', 'Dashboard Monitoring')
+@section('page-title', 'Dashboard Monitoring Pekerjaan')
 
 @section('content')
+<div class="mb-6 flex flex-col md:flex-row md:items-end md:justify-between gap-3">
+    <div>
+        <h2 class="text-2xl font-bold text-slate-800">{{ $dashboardTitle }}</h2>
+        <p class="text-sm text-slate-500">Fokus tindak lanjut pekerjaan harian pada {{ \Carbon\Carbon::parse($tanggalFilter)->format('d-m-Y') }}.</p>
+    </div>
+    <form method="GET" class="flex flex-wrap items-center gap-2">
+        <input type="date" name="tanggal" value="{{ $tanggalFilter }}" class="border rounded px-3 py-2 text-sm">
+        <select name="unit_kerja_id" class="border rounded px-3 py-2 text-sm">
+            <option value="">Semua Unit Kerja</option>
+            @foreach($unitKerjaList as $unit)
+            <option value="{{ $unit->id }}" @selected((string)$unitKerjaId === (string)$unit->id)>{{ $unit->nama_unitkerja }}</option>
+            @endforeach
+        </select>
+        <button class="px-4 py-2 bg-green-800 text-white rounded text-sm">Terapkan</button>
+    </form>
+</div>
 
-{{-- ================= RINGKASAN ================= --}}
-<div class="grid gap-6 mb-8 md:grid-cols-2 xl:grid-cols-4">
+<div class="grid gap-3 mb-6 md:grid-cols-4 xl:grid-cols-7">
+    <div class="p-4 bg-white border rounded-lg"><p class="text-xs text-slate-500">Total</p><p class="text-xl font-bold">{{ $summaryTugas['total_tugas'] }}</p></div>
+    <div class="p-4 bg-white border rounded-lg"><p class="text-xs text-slate-500">Belum</p><p class="text-xl font-bold">{{ $summaryTugas['tugas_belum_dikerjakan'] }}</p></div>
+    <div class="p-4 bg-white border rounded-lg"><p class="text-xs text-slate-500">Dikerjakan</p><p class="text-xl font-bold">{{ $summaryTugas['tugas_sedang_dikerjakan'] }}</p></div>
+    <div class="p-4 bg-white border rounded-lg"><p class="text-xs text-slate-500">Menunggu Verifikasi</p><p class="text-xl font-bold text-blue-700">{{ $summaryTugas['tugas_menunggu_verifikasi'] }}</p></div>
+    <div class="p-4 bg-white border rounded-lg"><p class="text-xs text-slate-500">Revisi</p><p class="text-xl font-bold text-amber-700">{{ $summaryTugas['tugas_revisi'] }}</p></div>
+    <div class="p-4 bg-white border rounded-lg"><p class="text-xs text-slate-500">Selesai</p><p class="text-xl font-bold text-green-700">{{ $summaryTugas['tugas_selesai'] }}</p></div>
+    <div class="p-4 bg-red-50 border border-red-100 rounded-lg"><p class="text-xs text-red-600">Terlambat</p><p class="text-xl font-bold text-red-700">{{ $summaryTugas['tugas_terlambat'] }}</p></div>
+</div>
 
-    {{-- Pegawai Aktif --}}
-    <div class="flex items-center p-5 bg-white rounded-xl shadow-sm border">
-        <div class="p-3 mr-4 text-emerald-600 bg-emerald-100 rounded-full">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-            </svg>
-        </div>
-        <div>
-            <p class="text-sm text-gray-500">Total Pegawai Aktif</p>
-            <p class="text-xl font-bold text-gray-800">{{ $totalPegawaiAktif }}</p>
+<div class="grid gap-3 mb-6 md:grid-cols-4">
+    <div class="p-4 bg-white border rounded-lg"><p class="text-xs text-slate-500">Catatan Menunggu Verifikasi</p><p class="text-xl font-bold text-blue-700">{{ $summaryCatatan['catatan_menunggu_verifikasi'] }}</p></div>
+    <div class="p-4 bg-white border rounded-lg"><p class="text-xs text-slate-500">Catatan Disetujui Hari Ini</p><p class="text-xl font-bold text-green-700">{{ $summaryCatatan['catatan_disetujui_hari_ini'] }}</p></div>
+    <div class="p-4 bg-white border rounded-lg"><p class="text-xs text-slate-500">Catatan Revisi</p><p class="text-xl font-bold text-amber-700">{{ $summaryCatatan['catatan_revisi'] }}</p></div>
+    <div class="p-4 bg-white border rounded-lg"><p class="text-xs text-slate-500">Catatan Ditolak</p><p class="text-xl font-bold text-red-700">{{ $summaryCatatan['catatan_ditolak'] }}</p></div>
+</div>
+
+<div class="grid gap-6 lg:grid-cols-2 mb-6">
+    <div class="bg-white border rounded-xl">
+        <div class="p-4 border-b font-semibold">Tugas Mendesak (Prioritas Tinggi)</div>
+        <div class="p-4 overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead><tr class="text-xs text-slate-500"><th class="text-left pb-2">Tugas</th><th class="text-left pb-2">Pegawai</th><th class="text-left pb-2">Deadline</th><th class="text-left pb-2">Aksi</th></tr></thead>
+                <tbody class="divide-y">
+                    @forelse($tugasMendesak as $item)
+                    <tr>
+                        <td class="py-2">{{ $item->tugas->judul ?? '-' }}<div class="text-xs text-slate-500">{{ $item->status }} | {{ $item->progres_persen ?? 0 }}%</div></td>
+                        <td class="py-2">{{ $item->pegawai->user->name ?? '-' }}</td>
+                        <td class="py-2">{{ optional($item->tugas->deadline)->format('d-m-Y') ?? '-' }}</td>
+                        <td class="py-2"><a class="text-blue-700" href="{{ route($routePrefix . '.penugasan.show', $item->tugas_id) }}">Detail</a></td>
+                    </tr>
+                    @empty
+                    <tr><td colspan="4" class="py-4 text-slate-400">Tidak ada tugas prioritas tinggi hari ini.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
     </div>
 
-    {{-- Tugas Aktif --}}
-    <div class="flex items-center p-5 bg-white rounded-xl shadow-sm border">
-        <div class="p-3 mr-4 text-blue-600 bg-blue-100 rounded-full">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
-            </svg>
-        </div>
-        <div>
-            <p class="text-sm text-gray-500">Total Tugas Aktif</p>
-            <p class="text-xl font-bold text-gray-800">{{ $totalTugasAktif }}</p>
-        </div>
-    </div>
-
-    {{-- Tugas Terlambat --}}
-    <div class="flex items-center p-5 bg-white rounded-xl shadow-sm border">
-        <div class="p-3 mr-4 text-red-600 bg-red-100 rounded-full">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M12 8v4l3 3m6-3
-                       a9 9 0 11-18 0
-                       a9 9 0 0118 0z"/>
-            </svg>
-        </div>
-        <div>
-            <p class="text-sm text-gray-500">Tugas Terlambat</p>
-            <p class="text-xl font-bold text-gray-800">{{ $totalTugasTerlambat }}</p>
-        </div>
-    </div>
-
-    {{-- Unit Terbanyak --}}
-    <div class="flex items-center p-5 bg-white rounded-xl shadow-sm border">
-        <div class="p-3 mr-4 text-yellow-600 bg-yellow-100 rounded-full">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M3 3v18h18"/>
-            </svg>
-        </div>
-        <div>
-            <p class="text-sm text-gray-500">Unit dengan Tugas Terbanyak</p>
-            <p class="text-xl font-bold text-gray-800">{{ $unitTerbanyak }}</p>
+    <div class="bg-white border rounded-xl">
+        <div class="p-4 border-b font-semibold text-red-700">Tugas Terlambat</div>
+        <div class="p-4 overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead><tr class="text-xs text-slate-500"><th class="text-left pb-2">Tugas</th><th class="text-left pb-2">Pegawai</th><th class="text-left pb-2">Unit</th><th class="text-left pb-2">Aksi</th></tr></thead>
+                <tbody class="divide-y">
+                    @forelse($tugasTerlambat as $item)
+                    <tr>
+                        <td class="py-2">{{ $item->tugas->judul ?? '-' }}<div class="text-xs text-slate-500">Deadline: {{ optional($item->tugas->deadline)->format('d-m-Y') ?? '-' }} | {{ $item->status }}</div></td>
+                        <td class="py-2">{{ $item->pegawai->user->name ?? '-' }}</td>
+                        <td class="py-2">{{ $item->pegawai->unitkerja->nama_unitkerja ?? '-' }}</td>
+                        <td class="py-2"><a class="text-blue-700" href="{{ route($routePrefix . '.penugasan.show', $item->tugas_id) }}">Detail</a></td>
+                    </tr>
+                    @empty
+                    <tr><td colspan="4" class="py-4 text-slate-400">Tidak ada tugas terlambat.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
 
-{{-- ================= GRAFIK ================= --}}
-<div class="bg-white rounded-xl shadow-sm border p-6 mb-8">
-    <div class="flex justify-between items-center mb-4">
-        <h3 class="font-bold text-gray-800">Status Tugas Keseluruhan</h3>
+<div class="grid gap-6 lg:grid-cols-2 mb-6">
+    <div class="bg-white border rounded-xl">
+        <div class="p-4 border-b font-semibold">Catatan Menunggu Verifikasi</div>
+        <div class="p-4 overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead><tr class="text-xs text-slate-500"><th class="text-left pb-2">Pegawai</th><th class="text-left pb-2">Tugas</th><th class="text-left pb-2">Tanggal</th><th class="text-left pb-2">Aksi</th></tr></thead>
+                <tbody class="divide-y">
+                    @forelse($catatanMenungguVerifikasi as $item)
+                    <tr>
+                        <td class="py-2">{{ $item->pegawai->user->name ?? '-' }}</td>
+                        <td class="py-2">{{ $item->penugasan->tugas->judul ?? '-' }}</td>
+                        <td class="py-2">{{ optional($item->tanggal_kegiatan)->format('d-m-Y') ?? $item->created_at?->format('d-m-Y H:i') }}</td>
+                        <td class="py-2"><a class="text-blue-700" href="{{ route($routePrefix . '.catatan_kegiatan.show', $item->id) }}">Verifikasi</a></td>
+                    </tr>
+                    @empty
+                    <tr><td colspan="4" class="py-4 text-slate-400">Tidak ada catatan menunggu verifikasi.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
     </div>
 
-    <div class="flex justify-center items-center h-64">
-        <canvas id="statusDonut" class="max-w-xs"></canvas>
-    </div>
-
-    <div class="flex justify-center gap-8 text-sm mt-6">
-        <span class="flex items-center gap-2">
-            <span class="w-3 h-3 bg-gray-400 rounded-full"></span>
-            Baru {{ $statusBaru }}
-        </span>
-        <span class="flex items-center gap-2">
-            <span class="w-3 h-3 bg-yellow-400 rounded-full"></span>
-            Proses {{ $statusProses }}
-        </span>
-        <span class="flex items-center gap-2">
-            <span class="w-3 h-3 bg-green-500 rounded-full"></span>
-            Selesai {{ $statusSelesai }}
-        </span>
+    <div class="bg-white border rounded-xl">
+        <div class="p-4 border-b font-semibold">Pegawai Belum Update Progres</div>
+        <div class="p-4 overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead><tr class="text-xs text-slate-500"><th class="text-left pb-2">Pegawai</th><th class="text-left pb-2">Unit</th><th class="text-left pb-2">Tugas Hari Ini</th><th class="text-left pb-2">Belum Update</th></tr></thead>
+                <tbody class="divide-y">
+                    @forelse($pegawaiBelumUpdate as $row)
+                    <tr>
+                        <td class="py-2">{{ $row['pegawai']->user->name ?? '-' }}</td>
+                        <td class="py-2">{{ $row['pegawai']->unitkerja->nama_unitkerja ?? '-' }}</td>
+                        <td class="py-2">{{ $row['jumlah_tugas_hari_ini'] }}</td>
+                        <td class="py-2 text-amber-700 font-semibold">{{ $row['jumlah_belum_update'] }}</td>
+                    </tr>
+                    @empty
+                    <tr><td colspan="4" class="py-4 text-slate-400">Semua pegawai sudah memperbarui progres.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
-{{-- ================= MONITORING UNIT ================= --}}
-<div class="bg-white rounded-xl shadow-sm border">
-    <div class="p-6 border-b">
-        <h3 class="font-bold text-gray-800">Monitoring per Unit Kerja</h3>
-    </div>
-
-    <div class="overflow-x-auto">
+<div class="bg-white border rounded-xl">
+    <div class="p-4 border-b font-semibold">Ringkasan Progres Per Unit Kerja</div>
+    <div class="p-4 overflow-x-auto">
         <table class="w-full text-sm">
-            <thead class="bg-gray-50 text-gray-500">
-                <tr>
-                    <th class="px-6 py-3 text-left">Unit Kerja</th>
-                    <th class="px-6 py-3 text-center">Jumlah Tugas</th>
-                    <th class="px-6 py-3 text-center">Tugas Selesai</th>
-                    <th class="px-6 py-3 text-center">Tugas Terlambat</th>
-                    <th class="px-6 py-3 text-left">Tingkat Penyelesaian</th>
-                    <th class="px-6 py-3 text-center">Aksi</th>
-                </tr>
-            </thead>
+            <thead><tr class="text-xs text-slate-500"><th class="text-left pb-2">Unit Kerja</th><th class="text-left pb-2">Total</th><th class="text-left pb-2">Selesai</th><th class="text-left pb-2">Belum Selesai</th><th class="text-left pb-2">Terlambat</th><th class="text-left pb-2">% Selesai</th></tr></thead>
             <tbody class="divide-y">
-                @foreach($monitoringUnit as $unit)
+                @forelse($summaryUnitKerja as $unit)
                 <tr>
-                    <td class="px-6 py-3">{{ $unit->nama_unitkerja }}</td>
-                    <td class="px-6 py-3 text-center">{{ $unit->total }}</td>
-                    <td class="px-6 py-3 text-center text-green-600">
-                        {{ $unit->selesai }} ({{ $unit->persen }}%)
-                    </td>
-                    <td class="px-6 py-3 text-center text-red-500">
-                        {{ $unit->terlambat }}
-                    </td>
-                    <td class="px-6 py-3">
-                        <div class="w-full bg-gray-200 rounded-full h-2">
-                            <div class="bg-green-500 h-2 rounded-full"
-                                 style="width: {{ $unit->persen }}%"></div>
-                        </div>
-                    </td>
-                    <td class="px-6 py-3 text-center">
-                        <a href="{{ route('kph.penugasan.index') }}" class="text-green-600 hover:underline">Detail</a>
-                    </td>
+                    <td class="py-2">{{ $unit['nama_unitkerja'] }}</td>
+                    <td class="py-2">{{ $unit['total_tugas'] }}</td>
+                    <td class="py-2 text-green-700">{{ $unit['selesai'] }}</td>
+                    <td class="py-2">{{ $unit['belum_selesai'] }}</td>
+                    <td class="py-2 text-red-700">{{ $unit['terlambat'] }}</td>
+                    <td class="py-2">{{ $unit['persentase_selesai'] }}%</td>
                 </tr>
-                @endforeach
+                @empty
+                <tr><td colspan="6" class="py-4 text-slate-400">Belum ada data unit kerja untuk filter tanggal ini.</td></tr>
+                @endforelse
             </tbody>
         </table>
     </div>
 </div>
-
 @endsection
-
-@push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<script>
-const ctx = document.getElementById('statusDonut');
-
-new Chart(ctx, {
-    type: 'doughnut',
-    data: {
-        labels: ['Baru', 'Proses', 'Selesai'],
-        datasets: [{
-            data: [
-                {{ $statusBaru }},
-                {{ $statusProses }},
-                {{ $statusSelesai }}
-            ],
-            backgroundColor: [
-                '#9CA3AF', // gray
-                '#FACC15', // yellow
-                '#22C55E'  // green
-            ],
-            borderWidth: 0
-        }]
-    },
-    options: {
-        responsive: true,
-        cutout: '70%',
-        plugins: {
-            legend: {
-                display: false
-            },
-            tooltip: {
-                callbacks: {
-                    label: function(ctx) {
-                        return ctx.label + ': ' + ctx.raw;
-                    }
-                }
-            }
-        }
-    }
-});
-</script>
-@endpush
