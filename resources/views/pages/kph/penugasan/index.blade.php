@@ -35,7 +35,9 @@
                         <th class="pb-3 text-left">Deadline</th>
                         <th class="pb-3 text-left">Prioritas</th>
                         <th class="pb-3 text-left">Dibuat Oleh</th>
-                        <th class="pb-3 text-left">Status Awal</th>
+                        <th class="pb-3 text-left">Status</th>
+                        <th class="pb-3 text-left">Progres</th>
+                        <th class="pb-3 text-left">Kondisi</th>
                         <th class="pb-3 text-left">Template</th>
                         <th class="pb-3 text-right">Aksi</th>
                     </tr>
@@ -79,10 +81,23 @@
                         <td class="py-4">
                             {{ $item->user->name ?? '-' }}
                         </td>
+                        @php
+                            $statusUnik = $item->penugasan->pluck('status')->unique()->values()->all();
+                            $rataProgres = (int) round($item->penugasan->avg('progres_persen') ?? 0);
+                            $isTerlambat = $item->penugasan->contains(fn($p) => $p->is_terlambat);
+                        @endphp
+                        <td class="py-4 text-xs">
+                            {{ implode(', ', $statusUnik) ?: '-' }}
+                        </td>
+                        <td class="py-4">{{ $rataProgres }}%</td>
                         <td class="py-4">
-                            <span class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-700">
-                                Belum Dikerjakan
-                            </span>
+                            @if($isTerlambat)
+                                <span class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-700">
+                                    Terlambat
+                                </span>
+                            @else
+                                <span class="text-slate-400">-</span>
+                            @endif
                         </td>
 
                         <td class="py-4">
@@ -122,7 +137,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="9" class="py-8 text-center text-slate-400">
+                        <td colspan="11" class="py-8 text-center text-slate-400">
                             Data penugasan belum tersedia
                         </td>
                     </tr>
@@ -275,7 +290,7 @@
                 let fotoHtml = '';
                 if (p.foto_progres) {
                     try {
-                        const fotos = JSON.parse(p.foto_progres);
+                        const fotos = Array.isArray(p.foto_progres) ? p.foto_progres : JSON.parse(p.foto_progres);
                         fotos.forEach(f => {
                             fotoHtml += `
                                 <img src="/storage/${f}"

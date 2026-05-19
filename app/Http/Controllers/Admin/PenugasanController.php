@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Pegawai;
 use App\Models\Penugasan;
+use App\Models\PenugasanStatusHistory;
 use App\Models\Tugas;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -53,7 +54,7 @@ class PenugasanController extends Controller
 
     public function show(Tugas $penugasan)
     {
-        $penugasan->load(['user', 'penugasan.pegawai.user']);
+        $penugasan->load(['user', 'penugasan.pegawai.user', 'penugasan.statusHistories.user']);
 
         return view('pages.admin.penugasan.show', [
             'penugasan' => $penugasan,
@@ -187,5 +188,71 @@ class PenugasanController extends Controller
         return redirect()
             ->route('admin.penugasan.index')
             ->with('success', 'Penugasan berhasil dihapus.');
+    }
+
+    public function setujui(Penugasan $penugasan)
+    {
+        if ($penugasan->status !== 'menunggu_verifikasi') {
+            return back()->with('error', 'Status tugas tidak valid untuk disetujui.');
+        }
+
+        $this->changeStatus($penugasan, 'selesai', 'Tugas disetujui admin.');
+
+        return back()->with('success', 'Tugas berhasil disetujui.');
+    }
+
+    public function revisi(Request $request, Penugasan $penugasan)
+    {
+        if ($penugasan->status !== 'menunggu_verifikasi') {
+            return back()->with('error', 'Status tugas tidak valid untuk revisi.');
+        }
+
+        $request->validate([
+            'catatan_revisi' => 'required|string',
+        ]);
+
+        $penugasan->update([
+            'catatan_revisi' => $request->catatan_revisi,
+        ]);
+
+        $this->changeStatus($penugasan, 'revisi', $request->catatan_revisi);
+
+        return back()->with('success', 'Tugas dikembalikan untuk revisi.');
+    }
+
+    public function batalkan(Request $request, Penugasan $penugasan)
+    {
+        if (in_array($penugasan->status, ['selesai', 'dibatalkan'])) {
+            return back()->with('error', 'Tugas ini tidak bisa dibatalkan.');
+        }
+
+        $penugasan->update([
+            'alasan_pembatalan' => $request->input('alasan_pembatalan'),
+        ]);
+
+        $this->changeStatus($penugasan, 'dibatalkan', $request->input('alasan_pembatalan'));
+
+        return back()->with('success', 'Tugas berhasil dibatalkan.');
+    }
+
+    private function changeStatus(Penugasan $penugasan, string $nextStatus, ?string $catatan = null): void
+    {
+        $statusSebelum = $penugasan->status;
+
+        $payload = ['status' => $nextStatus];
+
+        if ($nextStatus === 'selesai') {
+            $payload['selesai_at'] = now();
+        }
+
+        $penugasan->update($payload);
+
+        PenugasanStatusHistory::create([
+            'penugasan_id' => $penugasan->id,
+            'user_id' => auth()->id(),
+            'status_sebelum' => $statusSebelum,
+            'status_sesudah' => $nextStatus,
+            'catatan' => $catatan,
+        ]);
     }
 }

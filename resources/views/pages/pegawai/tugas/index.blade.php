@@ -36,6 +36,8 @@
                         <th class="pb-3 text-left">Tanggal Tugas</th>
                         <th class="pb-3 text-left">Deadline</th>
                         <th class="pb-3 text-left">Status</th>
+                        <th class="pb-3 text-left">Progres</th>
+                        <th class="pb-3 text-left">Kondisi</th>
                         <th class="pb-3 text-right">Aksi</th>
                     </tr>
                 </thead>
@@ -66,34 +68,23 @@
                         'pegawai.user_id',
                         auth()->id()
                         );
-
-                        $statusClass = match ($penugasanSaya?->status) {
-                        'baru', 'belum_dikerjakan' => 'bg-blue-100 text-blue-700 border-blue-200',
-                        'proses', 'sedang_dikerjakan' => 'bg-yellow-100 text-yellow-700 border-yellow-200',
-                        'selesai' => 'bg-green-100 text-green-700 border-green-200',
-                        default => 'bg-slate-100 text-slate-700 border-slate-200',
-                        };
                         @endphp
 
                         <td class="py-4">
                             @if ($penugasanSaya)
-                            <select
-                                class="status-select px-3 py-1 text-xs font-semibold rounded-full cursor-pointer border {{ $statusClass }}"
-                                data-id="{{ $penugasanSaya->id }}"
-                                data-current="{{ $penugasanSaya->status }}">
-
-                                <option value="belum_dikerjakan" @selected(in_array($penugasanSaya->status, ['baru','belum_dikerjakan']))>
-                                    Belum Dikerjakan
-                                </option>
-                                <option value="sedang_dikerjakan" @selected(in_array($penugasanSaya->status, ['proses','sedang_dikerjakan']))>
-                                    Sedang Dikerjakan
-                                </option>
-                                <option value="selesai" @selected($penugasanSaya->status === 'selesai')>
-                                    Selesai
-                                </option>
-                            </select>
+                            <span class="px-3 py-1 text-xs font-semibold rounded-full bg-slate-100 text-slate-700">
+                                {{ $penugasanSaya->status }}
+                            </span>
                             @else
                             <span class="text-slate-400 text-xs">-</span>
+                            @endif
+                        </td>
+                        <td class="py-4">{{ $penugasanSaya->progres_persen ?? 0 }}%</td>
+                        <td class="py-4">
+                            @if ($penugasanSaya?->is_terlambat)
+                                <span class="px-3 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-700">Terlambat</span>
+                            @else
+                                <span class="text-slate-400 text-xs">-</span>
                             @endif
                         </td>
 
@@ -108,7 +99,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" class="py-8 text-center text-slate-400">
+                        <td colspan="9" class="py-8 text-center text-slate-400">
                             Tugas belum tersedia
                         </td>
                     </tr>
@@ -215,115 +206,11 @@
     </div>
 </div>
 
-<div id="modalCatatan"
-    class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50">
-
-    <div class="w-full max-w-md bg-white rounded-xl shadow-lg overflow-hidden">
-
-        {{-- Header --}}
-        <div class="px-6 py-4 border-b">
-            <h3 class="text-sm font-semibold text-gray-800">
-                Catatan Kepegawaian (Opsional)
-            </h3>
-        </div>
-
-        {{-- Body --}}
-        <div class="px-6 py-5 space-y-4">
-
-            {{-- Upload Laporan --}}
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">
-                    Laporan Akhir
-                </label>
-                <input
-                    type="file"
-                    id="laporanInput"
-                    accept=".pdf,.doc,.docx"
-                    class="w-full text-sm border rounded-lg p-2 focus:ring focus:ring-green-200 focus:border-green-500">
-            </div>
-
-            {{-- Catatan --}}
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">
-                    Catatan
-                </label>
-                <textarea
-                    id="catatanInput"
-                    rows="4"
-                    class="w-full px-3 py-2 border rounded-lg text-sm focus:ring focus:ring-green-200 focus:border-green-500"
-                    placeholder="Isi catatan (boleh dikosongkan)"></textarea>
-            </div>
-
-        </div>
-
-        {{-- Footer --}}
-        <div class="px-6 py-4 border-t flex justify-end gap-3 bg-gray-50">
-            <button
-                type="button"
-                onclick="closeCatatanModal()"
-                class="px-4 py-2 text-sm border rounded-lg hover:bg-gray-100">
-                Batal
-            </button>
-
-            <button
-                type="button"
-                onclick="submitSelesai()"
-                class="px-4 py-2 text-sm bg-green-800 text-white rounded-lg hover:bg-green-900">
-                Simpan
-            </button>
-        </div>
-
-    </div>
-</div>
-
-<div id="modalProses" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50">
-    <div class="bg-white w-full max-w-md rounded-xl shadow-lg">
-
-        <div class="px-6 py-4 border-b font-semibold">
-            Update Progres Tugas
-        </div>
-
-        <div class="p-6 space-y-4 text-sm">
-
-            <div>
-                <label class="font-medium">Template Tugas</label>
-                <div id="templateDownload" class="mt-1">
-                    <!-- diisi via JS -->
-                </div>
-            </div>
-
-            <div>
-                <label class="font-medium">Foto Progres</label>
-                <input type="file"
-                    id="fotoProgres"
-                    multiple
-                    accept="image/*"
-                    class="w-full mt-1 border rounded-lg p-2">
-            </div>
-
-        </div>
-
-        <div class="px-6 py-4 border-t flex justify-end gap-3">
-            <button onclick="closeProsesModal()"
-                class="px-4 py-2 border rounded-lg">
-                Batal
-            </button>
-            <button onclick="submitProses()"
-                class="px-4 py-2 bg-blue-700 text-white rounded-lg">
-                Simpan
-            </button>
-        </div>
-
-    </div>
-</div>
-
 <script>
     const tugasData = @json($tugas);
 </script>
 
 <script>
-    let selectedPenugasanId = null;
-    let selectedStatus = null;
     let selectedTugas = null;
 
     function openDetailModal(id) {
@@ -462,115 +349,6 @@
         document.getElementById('detailModal').classList.add('hidden');
     }
 
-    document.querySelectorAll('.status-select').forEach(select => {
-        select.addEventListener('change', function() {
-            selectedPenugasanId = this.dataset.id;
-            selectedStatus = this.value;
-
-            const tugasId = this.closest('tr')
-                .querySelector('[onclick]')
-                .getAttribute('onclick')
-                .match(/\d+/)[0];
-
-            selectedTugas = tugasData.find(t => t.id == tugasId);
-
-            if (selectedStatus === 'proses') {
-                openProsesModal();
-            } else if (selectedStatus === 'selesai') {
-                openCatatanModal();
-            } else {
-                updateStatus(selectedPenugasanId, selectedStatus);
-            }
-        });
-    });
-
-    function updateStatus(id, status) {
-        fetch(`/pegawai/tugas-saya/penugasan/${id}/status`, {
-            method: 'PATCH',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                status
-            })
-        }).then(() => location.reload());
-    }
-
-    function openProsesModal() {
-        const container = document.getElementById('templateDownload');
-
-        if (selectedTugas?.template) {
-            container.innerHTML = `
-                <a href="/storage/${selectedTugas.template}" target="_blank"
-                    class="inline-flex items-center gap-2 text-blue-600 hover:underline">
-                    Unduh Template
-                </a>
-            `;
-        } else {
-            container.innerHTML =
-                `<span class="text-slate-400">Tidak ada template</span>`;
-        }
-
-        document.getElementById('modalProses').classList.remove('hidden');
-        document.getElementById('modalProses').classList.add('flex');
-    }
-
-    function closeProsesModal() {
-        document.getElementById('modalProses').classList.add('hidden');
-        document.getElementById('modalProses').classList.remove('flex');
-    }
-
-    function submitProses() {
-        const formData = new FormData();
-        formData.append('_method', 'PATCH');
-        formData.append('status', 'proses');
-
-        const fotos = document.getElementById('fotoProgres').files;
-        for (let i = 0; i < fotos.length; i++) {
-            formData.append('foto_progres[]', fotos[i]);
-        }
-
-        submitFormData(formData);
-    }
-
-    function openCatatanModal() {
-        document.getElementById('modalCatatan').classList.remove('hidden');
-        document.getElementById('modalCatatan').classList.add('flex');
-    }
-
-    function closeCatatanModal() {
-        document.getElementById('modalCatatan').classList.add('hidden');
-        document.getElementById('modalCatatan').classList.remove('flex');
-        document.getElementById('catatanInput').value = '';
-    }
-
-    function submitSelesai() {
-        const formData = new FormData();
-        formData.append('_method', 'PATCH');
-        formData.append('status', 'selesai');
-        formData.append(
-            'catatan_kepegawaian',
-            document.getElementById('catatanInput').value
-        );
-
-        const laporan = document.getElementById('laporanInput').files[0];
-        if (laporan) {
-            formData.append('laporan', laporan);
-        }
-
-        submitFormData(formData);
-    }
-
-    function submitFormData(formData) {
-        fetch(`/pegawai/tugas-saya/penugasan/${selectedPenugasanId}/status`, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-            body: formData
-        }).then(() => location.reload());
-    }
 </script>
 
 @endsection

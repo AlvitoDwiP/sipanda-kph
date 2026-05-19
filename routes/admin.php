@@ -21,6 +21,9 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::resource('pegawai', PegawaiController::class)->except(['show']);
 
     Route::resource('penugasan', PenugasanController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
+    Route::post('/penugasan/{penugasan}/setujui', [PenugasanController::class, 'setujui'])->name('penugasan.setujui');
+    Route::post('/penugasan/{penugasan}/revisi', [PenugasanController::class, 'revisi'])->name('penugasan.revisi');
+    Route::post('/penugasan/{penugasan}/batalkan', [PenugasanController::class, 'batalkan'])->name('penugasan.batalkan');
 
     Route::get('/catatan-kegiatan', [CatatanController::class, 'index'])->name('catatan_kegiatan.index');
     Route::patch('/catatan-kegiatan/{catatan}/status', [CatatanController::class, 'updateStatus'])->name('catatan_kegiatan.status');

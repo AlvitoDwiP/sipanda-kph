@@ -13,6 +13,9 @@ Route::middleware(['auth', 'role:kph'])->prefix('kph')->name('kph.')->group(func
     Route::get('/pegawai/{id}', [KphPegawaiController::class, 'show'])->name('pegawai.show');
 
     Route::resource('penugasan', KphPenugasanController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
+    Route::post('/penugasan/{penugasan}/setujui', [KphPenugasanController::class, 'setujui'])->name('penugasan.setujui');
+    Route::post('/penugasan/{penugasan}/revisi', [KphPenugasanController::class, 'revisi'])->name('penugasan.revisi');
+    Route::post('/penugasan/{penugasan}/batalkan', [KphPenugasanController::class, 'batalkan'])->name('penugasan.batalkan');
 
     Route::get('/catatan-kegiatan', [CatatanKegiatanController::class, 'index'])->name('catatan_kegiatan.index');
 });

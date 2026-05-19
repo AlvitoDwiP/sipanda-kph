@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Pegawai;
 use App\Http\Controllers\Controller;
 use App\Models\Pegawai;
 use App\Models\Penugasan;
+use App\Models\PenugasanStatusHistory;
 use App\Models\Tugas;
 use Illuminate\Http\Request;
 
@@ -22,7 +23,7 @@ class TugasController extends Controller
         }
 
         $tugasQuery = Tugas::with([
-            'penugasan.pegawai.user' // ambil semua pegawai
+            'penugasan.pegawai.user'
         ])
             ->whereHas('penugasan', function ($q) use ($pegawai) {
                 $q->where('pegawai_id', $pegawai->id); // filter tugas saya
@@ -70,8 +71,8 @@ class TugasController extends Controller
 
     public function updateStatus(Request $request, Penugasan $penugasan)
     {
-        if ($penugasan->pegawai->user_id !== auth()->id()) {
-            abort(403);
+        if (!$this->isOwnedByLoggedInPegawai($penugasan)) {
+            abort(403, 'Anda tidak memiliki akses ke tugas ini.');
         }
 
         $request->validate([
@@ -117,6 +118,102 @@ class TugasController extends Controller
         return response()->json([
             'success' => true,
             'status'  => $penugasan->status,
+        ]);
+    }
+
+    public function mulai(Penugasan $penugasan)
+    {
+        if (!$this->isOwnedByLoggedInPegawai($penugasan)) {
+            return back()->with('error', 'Anda tidak memiliki akses ke tugas ini.');
+        }
+
+        if (!in_array($penugasan->status, ['belum_dikerjakan', 'baru'])) {
+            return back()->with('error', 'Status tugas tidak valid untuk mulai dikerjakan.');
+        }
+
+        $this->changeStatus($penugasan, 'sedang_dikerjakan', 'Pegawai mulai mengerjakan tugas.');
+
+        return back()->with('success', 'Tugas mulai dikerjakan.');
+    }
+
+    public function updateProgres(Request $request, Penugasan $penugasan)
+    {
+        if (!$this->isOwnedByLoggedInPegawai($penugasan)) {
+            return back()->with('error', 'Anda tidak memiliki akses ke tugas ini.');
+        }
+
+        if (!in_array($penugasan->status, ['sedang_dikerjakan', 'revisi', 'proses'])) {
+            return back()->with('error', 'Tugas belum dapat diperbarui progresnya.');
+        }
+
+        if (in_array($penugasan->status, ['selesai', 'dibatalkan'])) {
+            return back()->with('error', 'Tugas ini tidak bisa diubah lagi.');
+        }
+
+        $request->validate([
+            'progres_persen' => 'required|integer|min:0|max:100',
+            'catatan_progres' => 'required|string',
+        ]);
+
+        $penugasan->update([
+            'progres_persen' => $request->progres_persen,
+            'catatan_progres' => $request->catatan_progres,
+            'progres_updated_at' => now(),
+        ]);
+
+        PenugasanStatusHistory::create([
+            'penugasan_id' => $penugasan->id,
+            'user_id' => auth()->id(),
+            'status_sebelum' => $penugasan->status,
+            'status_sesudah' => $penugasan->status,
+            'catatan' => 'Progres diperbarui oleh pegawai.',
+        ]);
+
+        return back()->with('success', 'Progres tugas berhasil diperbarui.');
+    }
+
+    public function kirimVerifikasi(Penugasan $penugasan)
+    {
+        if (!$this->isOwnedByLoggedInPegawai($penugasan)) {
+            return back()->with('error', 'Anda tidak memiliki akses ke tugas ini.');
+        }
+
+        if (!in_array($penugasan->status, ['sedang_dikerjakan', 'revisi', 'proses'])) {
+            return back()->with('error', 'Status tugas tidak valid untuk dikirim verifikasi.');
+        }
+
+        if ($penugasan->progres_persen < 1 || empty($penugasan->catatan_progres)) {
+            return back()->with('error', 'Isi progres dan catatan progres terlebih dahulu.');
+        }
+
+        $this->changeStatus($penugasan, 'menunggu_verifikasi', 'Pegawai mengirim progres untuk verifikasi.');
+
+        return back()->with('success', 'Tugas berhasil dikirim untuk verifikasi.');
+    }
+
+    private function isOwnedByLoggedInPegawai(Penugasan $penugasan): bool
+    {
+        return $penugasan->pegawai->user_id === auth()->id();
+    }
+
+    private function changeStatus(Penugasan $penugasan, string $nextStatus, ?string $catatan = null): void
+    {
+        $statusSebelum = $penugasan->status;
+
+        $payload = ['status' => $nextStatus];
+
+        if ($nextStatus === 'selesai') {
+            $payload['selesai_at'] = now();
+        }
+
+        $penugasan->update($payload);
+
+        PenugasanStatusHistory::create([
+            'penugasan_id' => $penugasan->id,
+            'user_id' => auth()->id(),
+            'status_sebelum' => $statusSebelum,
+            'status_sesudah' => $nextStatus,
+            'catatan' => $catatan,
         ]);
     }
 }
