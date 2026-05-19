@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Pegawai;
 
 use App\Http\Controllers\Controller;
 use App\Models\Pegawai;
+use App\Models\CatatanKegiatan;
 use App\Models\Penugasan;
 use App\Models\PenugasanStatusHistory;
 use App\Models\Tugas;
@@ -66,6 +67,9 @@ class TugasController extends Controller
         return view('pages.pegawai.tugas.show', [
             'tugas' => $tugas->load('user'),
             'penugasanSaya' => $penugasanSaya,
+            'catatanTerkait' => CatatanKegiatan::where('penugasan_id', $penugasanSaya->id)
+                ->orderByDesc('created_at')
+                ->get(),
         ]);
     }
 

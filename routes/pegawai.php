@@ -27,8 +27,10 @@ Route::middleware(['auth', 'role:pegawai'])->prefix('pegawai')->name('pegawai.')
     Route::patch('/tugas-saya/penugasan/{penugasan}/status', [TugasSayaController::class, 'updateStatus'])->name('tugas.update-status');
 
     Route::resource('catatan-kegiatan', CatatanKegiatanController::class)
-        ->only(['index', 'create', 'store', 'edit', 'update', 'destroy'])
+        ->only(['index', 'edit', 'update', 'destroy', 'show'])
         ->names('catatan_kegiatan');
+    Route::get('/tugas-saya/penugasan/{penugasan}/catatan/create', [CatatanKegiatanController::class, 'createFromTugas'])->name('tugas.catatan.create');
+    Route::post('/tugas-saya/penugasan/{penugasan}/catatan', [CatatanKegiatanController::class, 'storeFromTugas'])->name('tugas.catatan.store');
     Route::get('/catatan-kegiatan/{id}/download-pdf', [CatatanKegiatanController::class, 'downloadPdf'])->name('catatan_kegiatan.pdf');
 
     Route::get('/direktori', [DirektoriController::class, 'index'])->name('direktori.index');

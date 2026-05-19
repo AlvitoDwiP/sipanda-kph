@@ -4,74 +4,117 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\CatatanKegiatan;
-use App\Models\UnitKerja;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 
 class CatatanController extends Controller
 {
-
     public function index(Request $request)
     {
         $catatanQuery = CatatanKegiatan::with([
             'pegawai.user',
             'pegawai.unitkerja',
-            'pegawai.jabatan',
-            'pegawai.golongan',
-        ])
-            ->whereIn('status', ['ajukan', 'setuju', 'tolak']);
+            'penugasan.tugas',
+            'verifier',
+        ]);
 
-        // 🔍 SEARCH
-        if ($request->filled('q')) {
-            $q = $request->q;
-            $catatanQuery->where(function ($query) use ($q) {
-                $query->where('judul', 'like', "%{$q}%")
-                    ->orWhere('deskripsi', 'like', "%{$q}%")
-                    ->orWhere('status', 'like', "%{$q}%")
-                    ->orWhereHas('pegawai.user', function ($userQuery) use ($q) {
-                        $userQuery->where('name', 'like', "%{$q}%")
-                            ->orWhere('email', 'like', "%{$q}%")
-                            ->orWhere('nip', 'like', "%{$q}%");
-                    });
-            });
+        if ($request->filled('status')) {
+            $catatanQuery->where('status_verifikasi', $request->status);
         }
 
-        // 🏢 FILTER UNIT KERJA
-        if ($request->filled('unit')) {
-            $catatanQuery->whereHas('pegawai.unitkerja', function ($q) use ($request) {
-                $q->where('id', $request->unit);
-            });
-        }
+        $catatan = $catatanQuery->orderByDesc('created_at')->get();
 
-        $catatan = $catatanQuery
-            ->orderByRaw("FIELD(status, 'ajukan', 'setuju', 'tolak')")
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-
-        $unitkerja = UnitKerja::orderBy('nama_unitkerja')->get();
-
-        return view(
-            'pages.admin.catatan_kegiatan.index',
-            compact('catatan', 'unitkerja')
-        );
+        return view('pages.admin.catatan_kegiatan.index', compact('catatan'));
     }
 
-    public function updateStatus(Request $request, CatatanKegiatan $catatan)
+    public function show(CatatanKegiatan $catatan)
     {
+        return view('pages.admin.catatan_kegiatan.show', [
+            'catatan' => $catatan->load(['pegawai.user', 'penugasan.tugas', 'verifier']),
+        ]);
+    }
+
+    public function setujui(CatatanKegiatan $catatan)
+    {
+        if ($catatan->status_verifikasi !== 'menunggu_verifikasi') {
+            return back()->with('error', 'Status catatan tidak valid untuk aksi ini.');
+        }
+
+        $catatan->update([
+            'status_verifikasi' => 'disetujui',
+            'status' => 'setuju',
+            'diverifikasi_oleh' => auth()->id(),
+            'diverifikasi_at' => now(),
+            'catatan_verifikasi' => null,
+            'catatan_status' => null,
+        ]);
+
+        if ($catatan->penugasan) {
+            $catatan->penugasan->update([
+                'status' => 'selesai',
+                'selesai_at' => now(),
+            ]);
+        }
+
+        return back()->with('success', 'Catatan kegiatan berhasil disetujui.');
+    }
+
+    public function revisi(Request $request, CatatanKegiatan $catatan)
+    {
+        if ($catatan->status_verifikasi !== 'menunggu_verifikasi') {
+            return back()->with('error', 'Status catatan tidak valid untuk aksi ini.');
+        }
+
         $request->validate([
-            'status' => 'required|in:setuju,tolak',
-            'catatan_status' => 'nullable|string',
+            'catatan_verifikasi' => 'required|string',
         ]);
 
         $catatan->update([
-            'status' => $request->status,
-            'catatan_status' => $request->status === 'tolak'
-                ? $request->catatan_status
-                : null,
+            'status_verifikasi' => 'revisi',
+            'status' => 'tolak',
+            'catatan_verifikasi' => $request->catatan_verifikasi,
+            'catatan_status' => $request->catatan_verifikasi,
+            'diverifikasi_oleh' => auth()->id(),
+            'diverifikasi_at' => now(),
         ]);
 
-        return response()->json(['success' => true]);
+        if ($catatan->penugasan) {
+            $catatan->penugasan->update([
+                'status' => 'revisi',
+                'catatan_revisi' => $request->catatan_verifikasi,
+            ]);
+        }
+
+        return back()->with('success', 'Catatan kegiatan dikembalikan untuk revisi.');
+    }
+
+    public function tolak(Request $request, CatatanKegiatan $catatan)
+    {
+        if ($catatan->status_verifikasi !== 'menunggu_verifikasi') {
+            return back()->with('error', 'Status catatan tidak valid untuk aksi ini.');
+        }
+
+        $request->validate([
+            'catatan_verifikasi' => 'required|string',
+        ]);
+
+        $catatan->update([
+            'status_verifikasi' => 'ditolak',
+            'status' => 'tolak',
+            'catatan_verifikasi' => $request->catatan_verifikasi,
+            'catatan_status' => $request->catatan_verifikasi,
+            'diverifikasi_oleh' => auth()->id(),
+            'diverifikasi_at' => now(),
+        ]);
+
+        if ($catatan->penugasan) {
+            $catatan->penugasan->update([
+                'status' => 'revisi',
+                'catatan_revisi' => $request->catatan_verifikasi,
+            ]);
+        }
+
+        return back()->with('success', 'Catatan kegiatan ditolak.');
     }
 
     public function downloadPdf($id)
@@ -83,19 +126,12 @@ class CatatanController extends Controller
             'pegawai.golongan',
         ])->findOrFail($id);
 
-        // SECURITY: hanya boleh jika sudah disetujui
-        if ($catatan->status !== 'setuju') {
+        if ($catatan->status_verifikasi !== 'disetujui') {
             abort(403, 'Catatan belum disetujui');
         }
 
-        $pdf = Pdf::loadView(
-            'pdf.admin.catatan_kegiatan',
-            compact('catatan')
-        )->setPaper('A4', 'portrait');
+        $pdf = Pdf::loadView('pdf.admin.catatan_kegiatan', compact('catatan'))->setPaper('A4', 'portrait');
 
-        return $pdf->download(
-            'Catatan-Kegiatan-' .
-                $catatan->pegawai->user->name . '.pdf'
-        );
+        return $pdf->download('Catatan-Kegiatan-' . $catatan->pegawai->user->name . '.pdf');
     }
 }

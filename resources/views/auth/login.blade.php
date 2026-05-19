@@ -14,10 +14,11 @@
         <form method="POST" action="{{ route('login') }}" class="space-y-4">
             @csrf
 
-            <!-- Email -->
+            <!-- Email / NIP -->
             <div>
-                <label class="text-sm font-semibold text-slate-700">Email</label>
-                <input type="email" name="email" value="{{ old('email') }}" required autofocus
+                <label class="text-sm font-semibold text-slate-700">Email atau NIP</label>
+                <input type="text" name="email" value="{{ old('email') }}" required autofocus
+                    placeholder="contoh: admin@gmail.com atau 0000000000"
                     class="w-full mt-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl
                            focus:ring-2 focus:ring-green-800 outline-none text-sm">
                 <x-input-error :messages="$errors->get('email')" class="mt-1" />

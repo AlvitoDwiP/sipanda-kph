@@ -26,7 +26,10 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::post('/penugasan/{penugasan}/batalkan', [PenugasanController::class, 'batalkan'])->name('penugasan.batalkan');
 
     Route::get('/catatan-kegiatan', [CatatanController::class, 'index'])->name('catatan_kegiatan.index');
-    Route::patch('/catatan-kegiatan/{catatan}/status', [CatatanController::class, 'updateStatus'])->name('catatan_kegiatan.status');
+    Route::get('/catatan-kegiatan/{catatan}', [CatatanController::class, 'show'])->name('catatan_kegiatan.show');
+    Route::post('/catatan-kegiatan/{catatan}/setujui', [CatatanController::class, 'setujui'])->name('catatan_kegiatan.setujui');
+    Route::post('/catatan-kegiatan/{catatan}/revisi', [CatatanController::class, 'revisi'])->name('catatan_kegiatan.revisi');
+    Route::post('/catatan-kegiatan/{catatan}/tolak', [CatatanController::class, 'tolak'])->name('catatan_kegiatan.tolak');
     Route::get('/catatan-kegiatan/{id}/download-pdf', [CatatanController::class, 'downloadPdf'])->name('catatan_kegiatan.pdf');
 
     Route::resource('golongan', GolonganController::class)->only(['index', 'store', 'update', 'destroy']);

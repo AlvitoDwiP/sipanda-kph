@@ -111,7 +111,8 @@
                                     <strong>Catatan Progres:</strong> {{ $item->catatan_progres ?? '-' }}<br>
                                     <strong>Catatan Revisi:</strong> {{ $item->catatan_revisi ?? '-' }}<br>
                                     <strong>Update Progres:</strong> {{ $item->progres_updated_at?->format('d-m-Y H:i') ?? '-' }}<br>
-                                    <strong>Selesai At:</strong> {{ $item->selesai_at?->format('d-m-Y H:i') ?? '-' }}
+                                    <strong>Selesai At:</strong> {{ $item->selesai_at?->format('d-m-Y H:i') ?? '-' }}<br>
+                                    <strong>Jumlah Catatan Kegiatan:</strong> {{ $item->catatanKegiatan()->count() }}
                                 </td>
                             </tr>
                         @empty

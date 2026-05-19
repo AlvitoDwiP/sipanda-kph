@@ -5,68 +5,68 @@ namespace App\Http\Controllers\Pegawai;
 use App\Http\Controllers\Controller;
 use App\Models\CatatanKegiatan;
 use App\Models\Pegawai;
+use App\Models\Penugasan;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class CatatanKegiatanController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
         $pegawai = Pegawai::where('user_id', auth()->id())->firstOrFail();
 
-        $catatanQuery = CatatanKegiatan::where('pegawai_id', $pegawai->id);
-
-        // Apply search filter if provided
-        if ($request->filled('q')) {
-            $q = $request->q;
-            $catatanQuery->where(function ($query) use ($q) {
-                $query->where('judul', 'like', "%{$q}%")
-                    ->orWhere('deskripsi', 'like', "%{$q}%")
-                    ->orWhere('status', 'like', "%{$q}%")
-                    ->orWhere('periode_bulan', 'like', "%{$q}%")
-                    ->orWhere('periode_tahun', 'like', "%{$q}%");
-            });
-        }
-
-        $catatan = $catatanQuery
-            ->orderByDesc('periode_tahun')
-            ->orderByDesc('periode_bulan')
+        $catatan = CatatanKegiatan::with(['penugasan.tugas', 'verifier'])
+            ->where('pegawai_id', $pegawai->id)
+            ->orderByDesc('created_at')
             ->get();
 
         return view('pages.pegawai.catatan_kegiatan.index', compact('catatan'));
     }
 
-    public function create()
-    {
-        return view('pages.pegawai.catatan_kegiatan.create');
-    }
-
-    public function store(Request $request)
+    public function createFromTugas(Penugasan $penugasan)
     {
         $pegawai = Pegawai::where('user_id', auth()->id())->firstOrFail();
 
-        $aksi = $request->input('aksi');
+        if ($penugasan->pegawai_id !== $pegawai->id) {
+            abort(403, 'Anda tidak memiliki akses ke tugas ini.');
+        }
 
-        if ($aksi === 'batal') {
-            return redirect()->route('pegawai.catatan_kegiatan.index');
+        if (in_array($penugasan->status, ['selesai', 'dibatalkan'])) {
+            return back()->with('error', 'Tugas ini tidak bisa ditambahkan catatan.');
+        }
+
+        if (!in_array($penugasan->status, ['sedang_dikerjakan', 'revisi', 'menunggu_verifikasi', 'proses'])) {
+            return back()->with('error', 'Status tugas belum memungkinkan pembuatan catatan kegiatan.');
+        }
+
+        return view('pages.pegawai.catatan_kegiatan.create', [
+            'penugasan' => $penugasan->load('tugas'),
+        ]);
+    }
+
+    public function storeFromTugas(Request $request, Penugasan $penugasan)
+    {
+        $pegawai = Pegawai::where('user_id', auth()->id())->firstOrFail();
+
+        if ($penugasan->pegawai_id !== $pegawai->id) {
+            abort(403, 'Anda tidak memiliki akses ke tugas ini.');
+        }
+
+        if (in_array($penugasan->status, ['selesai', 'dibatalkan'])) {
+            return back()->with('error', 'Tugas ini tidak bisa ditambahkan catatan.');
         }
 
         $request->validate([
-            'periode_bulan' => 'required|integer|min:1|max:12',
-            'periode_tahun' => 'required|integer',
-            'judul'         => 'required|string|max:255',
-            'deskripsi'     => 'required|string',
-            'aksi'          => 'required|in:draft,ajukan',
-
-            // VALIDASI MULTIPLE FILE
-            'foto_kegiatan'     => 'required|array|min:1',
-            'foto_kegiatan.*'   => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'tanggal_kegiatan' => 'required|date',
+            'deskripsi' => 'required|string',
+            'hasil_kegiatan' => 'required|string',
+            'kendala' => 'nullable|string',
+            'foto_kegiatan' => 'nullable|array',
+            'foto_kegiatan.*' => 'file|mimes:jpg,jpeg,png,pdf|max:2048',
         ]);
 
         $fotoPaths = [];
-
-        // SIMPAN SEMUA FOTO
         if ($request->hasFile('foto_kegiatan')) {
             foreach ($request->file('foto_kegiatan') as $foto) {
                 $fotoPaths[] = $foto->store('catatan_kegiatan', 'public');
@@ -74,70 +74,79 @@ class CatatanKegiatanController extends Controller
         }
 
         CatatanKegiatan::create([
-            'pegawai_id'     => $pegawai->id,
-            'periode_bulan'  => $request->periode_bulan,
-            'periode_tahun'  => $request->periode_tahun,
-            'judul'          => $request->judul,
-            'deskripsi'      => $request->deskripsi,
-            'status'         => $aksi,
-            'foto_kegiatan' => $fotoPaths,
-
-            // SIMPAN DALAM BENTUK JSON
+            'pegawai_id' => $pegawai->id,
+            'penugasan_id' => $penugasan->id,
+            'periode_bulan' => now()->month,
+            'periode_tahun' => now()->year,
+            'tanggal_kegiatan' => $request->tanggal_kegiatan,
+            'judul' => 'Laporan: ' . ($penugasan->tugas->judul ?? 'Tugas'),
+            'deskripsi' => $request->deskripsi,
+            'hasil_kegiatan' => $request->hasil_kegiatan,
+            'kendala' => $request->kendala,
+            'status' => 'ajukan',
+            'status_verifikasi' => 'menunggu_verifikasi',
             'catatan_status' => null,
+            'catatan_verifikasi' => null,
+            'foto_kegiatan' => $fotoPaths,
         ]);
 
-        return redirect()
-            ->route('pegawai.catatan_kegiatan.index')
-            ->with(
-                'success',
-                $aksi === 'draft'
-                    ? 'Catatan kegiatan disimpan sebagai draft'
-                    : 'Catatan kegiatan berhasil diajukan'
-            );
+        $penugasan->update(['status' => 'menunggu_verifikasi']);
+
+        return redirect()->route('pegawai.tugas.show', $penugasan->tugas_id)
+            ->with('success', 'Catatan kegiatan berhasil dikirim untuk verifikasi.');
     }
 
-    public function edit($id)
+    public function show(CatatanKegiatan $catatan_kegiatan)
     {
         $pegawai = Pegawai::where('user_id', auth()->id())->firstOrFail();
 
-        $catatan_kegiatan = CatatanKegiatan::where('id', $id)
-            ->where('pegawai_id', $pegawai->id)
-            ->firstOrFail();
+        if ($catatan_kegiatan->pegawai_id !== $pegawai->id) {
+            abort(403);
+        }
 
-        return view(
-            'pages.pegawai.catatan_kegiatan.edit',
-            compact('catatan_kegiatan')
-        );
+        return view('pages.pegawai.catatan_kegiatan.show', [
+            'catatan' => $catatan_kegiatan->load(['penugasan.tugas', 'verifier']),
+        ]);
     }
 
-    public function update(Request $request, $id)
+    public function edit(CatatanKegiatan $catatan_kegiatan)
     {
         $pegawai = Pegawai::where('user_id', auth()->id())->firstOrFail();
 
-        $catatan_kegiatan = CatatanKegiatan::where('id', $id)
-            ->where('pegawai_id', $pegawai->id)
-            ->firstOrFail();
+        if ($catatan_kegiatan->pegawai_id !== $pegawai->id) {
+            abort(403);
+        }
 
-        if (in_array($catatan_kegiatan->status, ['setuju', 'tolak'])) {
-            abort(403, 'Catatan sudah diproses dan tidak dapat diubah');
+        if (!$catatan_kegiatan->canBeEditedByPegawai()) {
+            return back()->with('error', 'Catatan yang sudah disetujui/ditolak tidak bisa diedit.');
+        }
+
+        return view('pages.pegawai.catatan_kegiatan.edit', compact('catatan_kegiatan'));
+    }
+
+    public function update(Request $request, CatatanKegiatan $catatan_kegiatan)
+    {
+        $pegawai = Pegawai::where('user_id', auth()->id())->firstOrFail();
+
+        if ($catatan_kegiatan->pegawai_id !== $pegawai->id) {
+            abort(403);
+        }
+
+        if (!$catatan_kegiatan->canBeEditedByPegawai()) {
+            return back()->with('error', 'Catatan yang sudah disetujui/ditolak tidak bisa diedit.');
         }
 
         $request->validate([
-            'periode_bulan' => 'required|integer|min:1|max:12',
-            'periode_tahun' => 'required|integer',
-            'judul'         => 'required|string|max:255',
-            'deskripsi'     => 'required|string',
-            'aksi'          => 'required|in:draft,ajukan',
-
-            'foto_kegiatan'     => 'nullable|array',
-            'foto_kegiatan.*'   => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'hapus_foto'        => 'nullable|array',
+            'tanggal_kegiatan' => 'required|date',
+            'deskripsi' => 'required|string',
+            'hasil_kegiatan' => 'required|string',
+            'kendala' => 'nullable|string',
+            'foto_kegiatan' => 'nullable|array',
+            'foto_kegiatan.*' => 'file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'hapus_foto' => 'nullable|array',
         ]);
 
-        // FOTO LAMA
         $fotoLama = $catatan_kegiatan->foto_kegiatan ?? [];
-
-        // HAPUS FOTO YANG DIPILIH
         if ($request->filled('hapus_foto')) {
             foreach ($request->hapus_foto as $foto) {
                 Storage::disk('public')->delete($foto);
@@ -145,7 +154,6 @@ class CatatanKegiatanController extends Controller
             }
         }
 
-        // TAMBAH FOTO BARU
         if ($request->hasFile('foto_kegiatan')) {
             foreach ($request->file('foto_kegiatan') as $foto) {
                 $fotoLama[] = $foto->store('catatan_kegiatan', 'public');
@@ -153,18 +161,25 @@ class CatatanKegiatanController extends Controller
         }
 
         $catatan_kegiatan->update([
-            'periode_bulan'  => $request->periode_bulan,
-            'periode_tahun'  => $request->periode_tahun,
-            'judul'          => $request->judul,
-            'deskripsi'      => $request->deskripsi,
-            'status'         => $request->aksi,
-            'foto_kegiatan'  => $fotoLama,
+            'tanggal_kegiatan' => $request->tanggal_kegiatan,
+            'deskripsi' => $request->deskripsi,
+            'hasil_kegiatan' => $request->hasil_kegiatan,
+            'kendala' => $request->kendala,
+            'status' => 'ajukan',
+            'status_verifikasi' => 'menunggu_verifikasi',
+            'catatan_verifikasi' => null,
             'catatan_status' => null,
+            'diverifikasi_oleh' => null,
+            'diverifikasi_at' => null,
+            'foto_kegiatan' => $fotoLama,
         ]);
 
-        return redirect()
-            ->route('pegawai.catatan_kegiatan.index')
-            ->with('success', 'Catatan kegiatan berhasil diperbarui');
+        if ($catatan_kegiatan->penugasan) {
+            $catatan_kegiatan->penugasan->update(['status' => 'menunggu_verifikasi']);
+        }
+
+        return redirect()->route('pegawai.catatan_kegiatan.show', $catatan_kegiatan)
+            ->with('success', 'Catatan kegiatan berhasil diperbarui dan dikirim ulang.');
     }
 
     public function destroy($id)
@@ -175,7 +190,7 @@ class CatatanKegiatanController extends Controller
             ->where('pegawai_id', $pegawai->id)
             ->firstOrFail();
 
-        if (in_array($catatan_kegiatan->status, ['setuju', 'tolak'])) {
+        if (in_array($catatan_kegiatan->status_verifikasi, ['disetujui', 'ditolak'])) {
             abort(403, 'Catatan sudah diproses dan tidak dapat dihapus');
         }
 
@@ -192,17 +207,15 @@ class CatatanKegiatanController extends Controller
 
         $catatan = CatatanKegiatan::where('id', $id)
             ->where('pegawai_id', $pegawai->id)
-            ->where('status', 'setuju')
+            ->where('status_verifikasi', 'disetujui')
             ->firstOrFail();
 
         $pdf = Pdf::loadView('pdf.pegawai.catatan_kegiatan', [
             'pegawai' => $pegawai,
-            'user'    => $pegawai->user,
+            'user' => $pegawai->user,
             'catatan' => $catatan,
         ])->setPaper('A4', 'portrait');
 
-        return $pdf->download(
-            'Catatan-Kegiatan-' . $pegawai->user->name . '.pdf'
-        );
+        return $pdf->download('Catatan-Kegiatan-' . $pegawai->user->name . '.pdf');
     }
 }

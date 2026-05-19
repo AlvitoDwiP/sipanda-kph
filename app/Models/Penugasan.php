@@ -47,6 +47,11 @@ class Penugasan extends Model
         return $this->hasMany(PenugasanStatusHistory::class, 'penugasan_id');
     }
 
+    public function catatanKegiatan()
+    {
+        return $this->hasMany(CatatanKegiatan::class, 'penugasan_id');
+    }
+
     public function getIsTerlambatAttribute()
     {
         if (!$this->tugas || !$this->tugas->deadline) {
@@ -55,5 +60,10 @@ class Penugasan extends Model
 
         return now()->toDateString() > $this->tugas->deadline->toDateString()
             && !in_array($this->status, ['selesai', 'dibatalkan']);
+    }
+
+    public function hasCatatanKegiatan(): bool
+    {
+        return $this->catatanKegiatan()->exists();
     }
 }

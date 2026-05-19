@@ -63,4 +63,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Tugas::class, 'user_id');
     }
+
+    public function catatanKegiatanDiverifikasi()
+    {
+        return $this->hasMany(CatatanKegiatan::class, 'diverifikasi_oleh');
+    }
 }

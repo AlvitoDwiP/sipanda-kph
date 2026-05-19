@@ -56,4 +56,9 @@ class Pegawai extends Model
             ->withPivot(['status', 'catatan_kepegawaian', 'laporan', 'foto_progres'])
             ->withTimestamps();
     }
+
+    public function catatanKegiatan()
+    {
+        return $this->hasMany(CatatanKegiatan::class, 'pegawai_id');
+    }
 }

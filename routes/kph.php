@@ -18,4 +18,8 @@ Route::middleware(['auth', 'role:kph'])->prefix('kph')->name('kph.')->group(func
     Route::post('/penugasan/{penugasan}/batalkan', [KphPenugasanController::class, 'batalkan'])->name('penugasan.batalkan');
 
     Route::get('/catatan-kegiatan', [CatatanKegiatanController::class, 'index'])->name('catatan_kegiatan.index');
+    Route::get('/catatan-kegiatan/{catatan}', [CatatanKegiatanController::class, 'show'])->name('catatan_kegiatan.show');
+    Route::post('/catatan-kegiatan/{catatan}/setujui', [CatatanKegiatanController::class, 'setujui'])->name('catatan_kegiatan.setujui');
+    Route::post('/catatan-kegiatan/{catatan}/revisi', [CatatanKegiatanController::class, 'revisi'])->name('catatan_kegiatan.revisi');
+    Route::post('/catatan-kegiatan/{catatan}/tolak', [CatatanKegiatanController::class, 'tolak'])->name('catatan_kegiatan.tolak');
 });

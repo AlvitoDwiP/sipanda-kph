@@ -84,6 +84,12 @@
         </div>
 
         <div class="border-t pt-6 space-y-4">
+            @if (in_array($penugasanSaya->status, ['sedang_dikerjakan', 'revisi', 'menunggu_verifikasi', 'proses']))
+                <a href="{{ route('pegawai.tugas.catatan.create', $penugasanSaya->id) }}" class="inline-flex px-4 py-2 rounded bg-indigo-700 text-white text-sm">
+                    Buat Catatan Kegiatan
+                </a>
+            @endif
+
             @if (in_array($penugasanSaya->status, ['selesai']))
                 <div class="px-3 py-2 rounded bg-green-50 text-green-700 text-sm">Tugas sudah selesai dan tidak dapat diubah.</div>
             @elseif (in_array($penugasanSaya->status, ['dibatalkan']))
@@ -116,6 +122,24 @@
                     </form>
                 @endif
             @endif
+        </div>
+
+        <div class="border-t pt-6">
+            <h4 class="font-semibold text-slate-800 mb-3">Catatan Kegiatan Terkait Tugas</h4>
+            <div class="space-y-2">
+                @forelse($catatanTerkait as $catatan)
+                    <div class="border rounded p-3 text-sm">
+                        <div class="font-medium">{{ optional($catatan->tanggal_kegiatan)->format('d-m-Y') ?? '-' }} - {{ $catatan->status_verifikasi_label }}</div>
+                        <div class="text-slate-600">{{ \Illuminate\Support\Str::limit($catatan->hasil_kegiatan ?? $catatan->deskripsi, 140) }}</div>
+                        @if($catatan->catatan_verifikasi)
+                            <div class="text-amber-700 mt-1">Catatan verifikasi: {{ $catatan->catatan_verifikasi }}</div>
+                        @endif
+                        <a href="{{ route('pegawai.catatan_kegiatan.show', $catatan->id) }}" class="text-blue-700">Lihat detail</a>
+                    </div>
+                @empty
+                    <div class="text-sm text-slate-500">Belum ada catatan kegiatan untuk tugas ini.</div>
+                @endforelse
+            </div>
         </div>
     </div>
 </div>
