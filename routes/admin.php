@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\CatatanController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboard;
+use App\Http\Controllers\Admin\DisplayJobdeskController;
 use App\Http\Controllers\Admin\GolonganController;
 use App\Http\Controllers\Admin\JabatanController;
 use App\Http\Controllers\Admin\LogController;
@@ -14,10 +15,16 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminDashboard::class, 'index'])->name('dashboard');
+    Route::get('/display-jobdesk', [DisplayJobdeskController::class, 'index'])->name('display-jobdesk.index');
+    Route::post('/display-jobdesk/scan', [DisplayJobdeskController::class, 'scan'])->name('display-jobdesk.scan');
 
     Route::resource('register', RegisterController::class)->only(['index', 'create', 'store', 'edit', 'update', 'destroy']);
 
     Route::get('/pegawai/{pegawai}/detail', [PegawaiController::class, 'show'])->name('pegawai.show');
+    Route::post('/pegawai/{pegawai}/qr/generate', [PegawaiController::class, 'generateQr'])->name('pegawai.qr.generate');
+    Route::post('/pegawai/{pegawai}/qr/regenerate', [PegawaiController::class, 'regenerateQr'])->name('pegawai.qr.regenerate');
+    Route::get('/pegawai/{pegawai}/qr/cetak', [PegawaiController::class, 'cetakQr'])->name('pegawai.qr.cetak');
+    Route::get('/pegawai/{pegawai}/qr/download', [PegawaiController::class, 'downloadQr'])->name('pegawai.qr.download');
     Route::resource('pegawai', PegawaiController::class)->except(['show']);
 
     Route::resource('penugasan', PenugasanController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);

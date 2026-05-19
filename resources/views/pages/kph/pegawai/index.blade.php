@@ -10,6 +10,11 @@
     {{ session('success') }}
 </div>
 @endif
+@if (session('error'))
+<div class="mb-4 px-4 py-3 rounded-lg bg-red-100 text-red-700 text-sm">
+    {{ session('error') }}
+</div>
+@endif
 
 <div class="bg-white rounded-xl shadow-sm border border-slate-100">
 
@@ -28,6 +33,7 @@
                         <th class="pb-3 text-left">Golongan</th>
                         <th class="pb-3 text-left">Jabatan</th>
                         <th class="pb-3 text-left">Status Pegawai</th>
+                        <th class="pb-3 text-left">Status QR</th>
                         <th class="pb-3 text-right">Aksi</th>
                     </tr>
                 </thead>
@@ -71,16 +77,44 @@
                             @endif
                         </td>
 
+                        <td class="py-4">
+                            @if($item->hasValidQrToken())
+                                <span class="px-3 py-1 text-xs font-semibold bg-emerald-100 text-emerald-700 rounded-full">QR Aktif</span>
+                            @elseif($item->hasQrToken())
+                                <span class="px-3 py-1 text-xs font-semibold bg-slate-100 text-slate-600 rounded-full">Token Ada (Nonaktif)</span>
+                            @else
+                                <span class="px-3 py-1 text-xs font-semibold bg-amber-100 text-amber-700 rounded-full">Belum Ada QR</span>
+                            @endif
+                        </td>
+
                         <td class="py-4 text-right whitespace-nowrap">
                             <button type="button" class="text-slate-600 hover:text-red-600 font-medium transition" data-pegawai-id="{{$item->id}}" onclick="openDetailModal(this.getAttribute('data-pegawai-id'))">
                                 Detail
                             </button>
+                            @if($item->status_pegawai === 'aktif' && !$item->hasQrToken())
+                            <span class="mx-2 text-slate-300">|</span>
+                            <form method="POST" action="{{ route('kph.pegawai.qr.generate', $item->id) }}" class="inline">
+                                @csrf
+                                <button type="submit" class="text-indigo-700 hover:text-indigo-900 font-medium transition">Generate QR</button>
+                            </form>
+                            @endif
+                            @if($item->hasQrToken())
+                            <span class="mx-2 text-slate-300">|</span>
+                            <a href="{{ route('kph.pegawai.qr.cetak', $item->id) }}" class="text-blue-700 hover:text-blue-900 font-medium transition">Cetak QR</a>
+                            <span class="mx-2 text-slate-300">|</span>
+                            <a href="{{ route('kph.pegawai.qr.download', $item->id) }}" class="text-emerald-700 hover:text-emerald-900 font-medium transition">Download QR</a>
+                            <span class="mx-2 text-slate-300">|</span>
+                            <form method="POST" action="{{ route('kph.pegawai.qr.regenerate', $item->id) }}" class="inline" onsubmit="return confirm('Regenerate token QR pegawai ini? Token lama akan tidak berlaku.');">
+                                @csrf
+                                <button type="submit" class="text-amber-700 hover:text-amber-900 font-medium transition">Regenerate QR</button>
+                            </form>
+                            @endif
                         </td>
 
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" class="py-8 text-center text-slate-400">
+                        <td colspan="8" class="py-8 text-center text-slate-400">
                             Data pegawai belum tersedia
                         </td>
                     </tr>

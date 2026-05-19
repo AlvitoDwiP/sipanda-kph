@@ -1,0 +1,136 @@
+<?php
+
+namespace App\Services;
+
+use App\Models\Pegawai;
+use App\Models\Penugasan;
+
+class DisplayJobdeskService
+{
+    public function scanToken(string $token): array
+    {
+        $token = trim($token);
+
+        if ($token === '' || !preg_match('/^PGW-[A-Z2-9]{10,32}$/', $token)) {
+            return [
+                'status' => 'invalid_token',
+                'message' => 'QR tidak terbaca dengan benar. Silakan scan ulang.',
+            ];
+        }
+
+        $pegawai = Pegawai::with(['user', 'jabatan', 'unitkerja', 'dataDiri'])
+            ->where('qr_token', $token)
+            ->first();
+
+        if (!$pegawai) {
+            return [
+                'status' => 'invalid_token',
+                'message' => 'QR tidak valid.',
+            ];
+        }
+
+        if (!$pegawai->isAktif()) {
+            return [
+                'status' => 'inactive_employee',
+                'message' => 'Pegawai tidak aktif.',
+            ];
+        }
+
+        $today = now()->toDateString();
+
+        $rows = Penugasan::with('tugas')
+            ->where('pegawai_id', $pegawai->id)
+            ->whereHas('tugas', function ($q) use ($today) {
+                $q->whereDate('tanggal_tugas', $today);
+            })
+            ->get()
+            ->sort(function ($a, $b) {
+                $prioWeight = fn($p) => match ($p) {
+                    'tinggi' => 1,
+                    'sedang' => 2,
+                    default => 3,
+                };
+
+                $statusWeight = fn($s) => match ($s) {
+                    'menunggu_verifikasi' => 1,
+                    'revisi' => 2,
+                    'sedang_dikerjakan' => 3,
+                    'belum_dikerjakan', 'baru' => 4,
+                    'selesai' => 5,
+                    default => 6,
+                };
+
+                $cmpPrio = $prioWeight($a->tugas->prioritas ?? 'rendah') <=> $prioWeight($b->tugas->prioritas ?? 'rendah');
+                if ($cmpPrio !== 0) {
+                    return $cmpPrio;
+                }
+
+                $aDeadline = optional($a->tugas->deadline)->timestamp ?? PHP_INT_MAX;
+                $bDeadline = optional($b->tugas->deadline)->timestamp ?? PHP_INT_MAX;
+                if ($aDeadline !== $bDeadline) {
+                    return $aDeadline <=> $bDeadline;
+                }
+
+                return $statusWeight($a->status) <=> $statusWeight($b->status);
+            })
+            ->values();
+
+        $tasks = $rows->map(function ($item) {
+            $isLate = (bool) $item->is_terlambat;
+            return [
+                'judul' => $item->tugas->judul ?? '-',
+                'instruksi' => $item->tugas->deskripsi ?? '-',
+                'prioritas' => $item->tugas->prioritas ?? '-',
+                'deadline' => optional($item->tugas->deadline)->format('d-m-Y') ?? '-',
+                'status' => $item->status,
+                'status_label' => $this->statusLabel($item->status),
+                'is_terlambat' => $isLate,
+            ];
+        })->all();
+
+        $summary = [
+            'total_tugas' => $rows->count(),
+            'selesai' => $rows->where('status', 'selesai')->count(),
+            'belum_selesai' => $rows->filter(fn($r) => !in_array($r->status, ['selesai', 'dibatalkan']))->count(),
+            'terlambat' => $rows->filter(fn($r) => $r->is_terlambat)->count(),
+        ];
+
+        $pegawaiPayload = [
+            'nama' => $pegawai->user->name ?? '-',
+            'jabatan' => $pegawai->jabatan->nama_jabatan ?? '-',
+            'unit_kerja' => $pegawai->unitkerja->nama_unitkerja ?? '-',
+            'foto_url' => $pegawai->dataDiri?->foto ? asset('storage/' . $pegawai->dataDiri->foto) : null,
+        ];
+
+        if (empty($tasks)) {
+            return [
+                'status' => 'empty_task',
+                'message' => 'Tidak ada job desk hari ini.',
+                'pegawai' => $pegawaiPayload,
+                'summary' => $summary,
+                'tugas' => [],
+            ];
+        }
+
+        return [
+            'status' => 'success',
+            'message' => 'Data job desk berhasil ditemukan.',
+            'pegawai' => $pegawaiPayload,
+            'summary' => $summary,
+            'tugas' => $tasks,
+        ];
+    }
+
+    private function statusLabel(string $status): string
+    {
+        return match ($status) {
+            'belum_dikerjakan', 'baru' => 'Belum Dikerjakan',
+            'sedang_dikerjakan', 'proses' => 'Sedang Dikerjakan',
+            'menunggu_verifikasi' => 'Menunggu Verifikasi',
+            'revisi' => 'Revisi',
+            'selesai' => 'Selesai',
+            'dibatalkan' => 'Dibatalkan',
+            default => ucfirst(str_replace('_', ' ', $status)),
+        };
+    }
+}

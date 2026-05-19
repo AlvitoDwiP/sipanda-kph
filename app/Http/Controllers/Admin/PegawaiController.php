@@ -9,7 +9,7 @@ use App\Models\Pegawai;
 use App\Models\UnitKerja;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class PegawaiController extends Controller
 {
@@ -72,7 +72,7 @@ class PegawaiController extends Controller
         try {
             $user = User::findOrFail($request->user_id);
 
-            Pegawai::create([
+            $pegawai = Pegawai::create([
                 'user_id'        => $user->id,
                 'unitkerja_id'   => $request->unitkerja_id,
                 'golongan_id'    => $request->golongan_id,
@@ -80,6 +80,10 @@ class PegawaiController extends Controller
                 'status_pegawai' => $request->status_pegawai,
                 'data_diri_id'   => null,
             ]);
+
+            if ($pegawai->isAktif()) {
+                $pegawai->ensureQrToken();
+            }
 
             return redirect()
                 ->route('admin.pegawai.index')
@@ -156,5 +160,64 @@ class PegawaiController extends Controller
         ]);
 
         return response()->json($pegawai);
+    }
+
+    public function generateQr(Pegawai $pegawai)
+    {
+        if (!$pegawai->isAktif()) {
+            return back()->with('error', 'QR tidak bisa dibuat karena pegawai tidak aktif.');
+        }
+
+        if ($pegawai->hasQrToken()) {
+            return back()->with('error', 'Pegawai sudah memiliki token QR.');
+        }
+
+        $pegawai->ensureQrToken();
+
+        return back()->with('success', 'Token QR pegawai berhasil dibuat.');
+    }
+
+    public function regenerateQr(Pegawai $pegawai)
+    {
+        if (!$pegawai->isAktif()) {
+            return back()->with('error', 'QR tidak bisa dibuat karena pegawai tidak aktif.');
+        }
+
+        if (!$pegawai->hasQrToken()) {
+            return back()->with('error', 'QR pegawai belum tersedia.');
+        }
+
+        $pegawai->regenerateQrToken();
+
+        return back()->with('success', 'Token QR pegawai berhasil diperbarui.');
+    }
+
+    public function cetakQr(Pegawai $pegawai)
+    {
+        if (!$pegawai->hasQrToken()) {
+            return back()->with('error', 'QR pegawai belum tersedia.');
+        }
+
+        $pegawai->load(['user', 'unitkerja', 'jabatan']);
+
+        return view('pages.admin.pegawai.qr_cetak', [
+            'pegawai' => $pegawai,
+            'routePrefix' => 'admin',
+        ]);
+    }
+
+    public function downloadQr(Pegawai $pegawai)
+    {
+        if (!$pegawai->hasQrToken()) {
+            return back()->with('error', 'QR pegawai belum tersedia.');
+        }
+
+        $svg = QrCode::format('svg')->size(500)->margin(1)->generate($pegawai->qr_token);
+        $filename = 'qr-pegawai-' . $pegawai->id . '.svg';
+
+        return response($svg, 200, [
+            'Content-Type' => 'image/svg+xml',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
     }
 }

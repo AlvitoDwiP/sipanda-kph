@@ -17,7 +17,15 @@ class Pegawai extends Model
         'golongan_id',
         'jabatan_id',
         'status_pegawai',
+        'qr_token',
+        'qr_generated_at',
+        'qr_regenerated_at',
         'data_diri_id',
+    ];
+
+    protected $casts = [
+        'qr_generated_at' => 'datetime',
+        'qr_regenerated_at' => 'datetime',
     ];
 
     public function user()
@@ -60,5 +68,60 @@ class Pegawai extends Model
     public function catatanKegiatan()
     {
         return $this->hasMany(CatatanKegiatan::class, 'pegawai_id');
+    }
+
+    public function isAktif(): bool
+    {
+        return $this->status_pegawai === 'aktif';
+    }
+
+    public function hasQrToken(): bool
+    {
+        return !empty($this->qr_token);
+    }
+
+    public function hasValidQrToken(): bool
+    {
+        return $this->hasQrToken() && $this->isAktif();
+    }
+
+    public static function generateUniqueQrToken(): string
+    {
+        do {
+            $characters = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            $randomPart = '';
+            for ($i = 0; $i < 16; $i++) {
+                $randomPart .= $characters[random_int(0, strlen($characters) - 1)];
+            }
+            $token = 'PGW-' . $randomPart;
+        } while (self::where('qr_token', $token)->exists());
+
+        return $token;
+    }
+
+    public function ensureQrToken(): void
+    {
+        if ($this->hasQrToken()) {
+            return;
+        }
+
+        $this->update([
+            'qr_token' => self::generateUniqueQrToken(),
+            'qr_generated_at' => now(),
+        ]);
+    }
+
+    public function regenerateQrToken(): void
+    {
+        $current = $this->qr_token;
+        do {
+            $newToken = self::generateUniqueQrToken();
+        } while ($newToken === $current);
+
+        $this->update([
+            'qr_token' => $newToken,
+            'qr_regenerated_at' => now(),
+            'qr_generated_at' => $this->qr_generated_at ?? now(),
+        ]);
     }
 }

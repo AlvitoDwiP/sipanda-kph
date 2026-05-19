@@ -2,15 +2,22 @@
 
 use App\Http\Controllers\KPH\CatatanKegiatanController;
 use App\Http\Controllers\KPH\DashboardController as KphDashboard;
+use App\Http\Controllers\KPH\DisplayJobdeskController as KphDisplayJobdeskController;
 use App\Http\Controllers\KPH\PegawaiController as KphPegawaiController;
 use App\Http\Controllers\KPH\PenugasanController as KphPenugasanController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'role:kph'])->prefix('kph')->name('kph.')->group(function () {
     Route::get('/dashboard', [KphDashboard::class, 'index'])->name('dashboard');
+    Route::get('/display-jobdesk', [KphDisplayJobdeskController::class, 'index'])->name('display-jobdesk.index');
+    Route::post('/display-jobdesk/scan', [KphDisplayJobdeskController::class, 'scan'])->name('display-jobdesk.scan');
 
     Route::get('/pegawai', [KphPegawaiController::class, 'index'])->name('pegawai.index');
     Route::get('/pegawai/{id}', [KphPegawaiController::class, 'show'])->name('pegawai.show');
+    Route::post('/pegawai/{pegawai}/qr/generate', [KphPegawaiController::class, 'generateQr'])->name('pegawai.qr.generate');
+    Route::post('/pegawai/{pegawai}/qr/regenerate', [KphPegawaiController::class, 'regenerateQr'])->name('pegawai.qr.regenerate');
+    Route::get('/pegawai/{pegawai}/qr/cetak', [KphPegawaiController::class, 'cetakQr'])->name('pegawai.qr.cetak');
+    Route::get('/pegawai/{pegawai}/qr/download', [KphPegawaiController::class, 'downloadQr'])->name('pegawai.qr.download');
 
     Route::resource('penugasan', KphPenugasanController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
     Route::post('/penugasan/{penugasan}/setujui', [KphPenugasanController::class, 'setujui'])->name('penugasan.setujui');
