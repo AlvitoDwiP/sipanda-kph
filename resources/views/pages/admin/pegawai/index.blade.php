@@ -294,7 +294,8 @@
 <script>
     function openDeleteModal(id, nama) {
         document.getElementById('deleteNama').innerText = nama;
-        document.getElementById('formDelete').action = `/admin/pegawai/${id}`;
+        document.getElementById('formDelete').action =
+            "{{ route('admin.pegawai.destroy', ':id') }}".replace(':id', id);
         modalToggle('modalDelete', true);
     }
 

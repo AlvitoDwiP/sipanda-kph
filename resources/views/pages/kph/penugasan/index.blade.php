@@ -59,21 +59,6 @@
                                 class="text-slate-600 hover:text-green-600 font-medium transition">
                                 Detail
                             </button>
-
-                            <span class="mx-2 text-slate-300">|</span>
-
-                            <a href="{{ route('admin.penugasan.edit', $item->id) }}"
-                                class="text-slate-600 hover:text-green-600 font-medium transition">
-                                Edit
-                            </a>
-
-                            <span class="mx-2 text-slate-300">|</span>
-
-                            <button type="button"
-                                onclick="openDeleteModal({{ $item->id }}, '{{ $item->judul }}')"
-                                class="text-slate-600 hover:text-red-600 font-medium transition">
-                                Hapus
-                            </button>
                         </td>
                     </tr>
                     @empty
@@ -104,42 +89,6 @@
                 Tutup
             </button>
         </div>
-    </div>
-</div>
-
-<!-- Modal Delete -->
-<div id="modalDelete" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50">
-    <div class="bg-white w-full max-w-md rounded-xl shadow-lg">
-        <form method="POST" id="formDelete">
-            @csrf
-            @method('DELETE')
-
-            <div class="px-6 py-4 border-b flex justify-between items-center">
-                <h3 class="font-semibold">Konfirmasi Hapus</h3>
-                <button type="button" onclick="closeDeleteModal()">✕</button>
-            </div>
-
-            <div class="px-6 py-6 text-sm">
-                Yakin ingin menghapus tugas
-                <strong id="deleteNama"></strong>?
-                <br>
-                <span class="text-slate-500">
-                    Seluruh data penugasan pegawai akan ikut terhapus.
-                </span>
-            </div>
-
-            <div class="px-6 py-4 border-t flex justify-end gap-3">
-                <button type="button"
-                    onclick="closeDeleteModal()"
-                    class="px-4 py-2 border rounded-lg">
-                    Batal
-                </button>
-                <button type="submit"
-                    class="px-4 py-2 bg-red-600 text-white rounded-lg">
-                    Hapus
-                </button>
-            </div>
-        </form>
     </div>
 </div>
 

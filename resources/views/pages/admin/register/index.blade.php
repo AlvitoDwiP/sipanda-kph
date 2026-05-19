@@ -120,7 +120,8 @@
 <script>
     function openDeleteModal(id, nama) {
         document.getElementById('deleteNama').innerText = nama;
-        document.getElementById('formDelete').action = `/admin/register/${id}`;
+        document.getElementById('formDelete').action =
+            "{{ route('admin.register.destroy', ':id') }}".replace(':id', id);
         modalToggle('modalDelete', true);
     }
     function closeDeleteModal() {

@@ -49,7 +49,7 @@ class CatatanKegiatanController extends Controller
         $aksi = $request->input('aksi');
 
         if ($aksi === 'batal') {
-            return redirect()->route('pegawai.catatan-kegiatan.index');
+            return redirect()->route('pegawai.catatan_kegiatan.index');
         }
 
         $request->validate([
@@ -167,7 +167,7 @@ class CatatanKegiatanController extends Controller
             ->with('success', 'Catatan kegiatan berhasil diperbarui');
     }
 
-    public function delete($id)
+    public function destroy($id)
     {
         $pegawai = Pegawai::where('user_id', auth()->id())->firstOrFail();
 
@@ -202,7 +202,7 @@ class CatatanKegiatanController extends Controller
         ])->setPaper('A4', 'portrait');
 
         return $pdf->download(
-            'Catatan-Kegiatan-' . $pegawai->user->nama . '.pdf'
+            'Catatan-Kegiatan-' . $pegawai->user->name . '.pdf'
         );
     }
 }

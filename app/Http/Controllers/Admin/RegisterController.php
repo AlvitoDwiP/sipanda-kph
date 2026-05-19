@@ -200,7 +200,7 @@ class RegisterController extends Controller
         }
     }
 
-    public function delete(User $user)
+    public function destroy(User $user)
     {
         // Simpan informasi user sebelum dihapus untuk keperluan logging
         $userData = [

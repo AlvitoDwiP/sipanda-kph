@@ -184,6 +184,13 @@
 <script>
     const tugasData = @json($tugas);
 
+    function openDeleteModal(id, nama) {
+        document.getElementById('deleteNama').innerText = nama;
+        document.getElementById('formDelete').action =
+            "{{ route('admin.penugasan.destroy', ':id') }}".replace(':id', id);
+        modalToggle('modalDelete', true);
+    }
+
     function openDetailModal(id) {
         const tugas = tugasData.find(t => t.id === id);
         if (!tugas) return;
@@ -303,6 +310,10 @@
 
     function closeDetailModal() {
         modalToggle('modalDetail', false);
+    }
+
+    function closeDeleteModal() {
+        modalToggle('modalDelete', false);
     }
 
     function modalToggle(id, show) {

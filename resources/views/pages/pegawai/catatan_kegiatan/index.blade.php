@@ -253,7 +253,7 @@
     function openDeleteModal(id, judul) {
         document.getElementById('deleteJudul').innerText = judul;
         document.getElementById('formDelete').action =
-            `/pegawai/catatan-kegiatan/${id}`;
+            "{{ route('pegawai.catatan_kegiatan.destroy', ':id') }}".replace(':id', id);
         toggleModal(true);
     }
 

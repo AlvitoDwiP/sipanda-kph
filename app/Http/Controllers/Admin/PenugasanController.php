@@ -161,7 +161,7 @@ class PenugasanController extends Controller
             ->with('success', 'Penugasan berhasil diperbarui.');
     }
 
-    public function delete(Tugas $penugasan)
+    public function destroy(Tugas $penugasan)
     {
         DB::transaction(function () use ($penugasan) {
             Penugasan::where('tugas_id', $penugasan->id)->delete();

@@ -44,9 +44,6 @@
         } elseif (str_contains($currentRoute, 'pegawai.data_kepegawaian')) {
             $searchRoute = route('pegawai.data_kepegawaian.index');
             $searchPlaceholder = 'Cari data kepegawaian...';
-        } elseif (str_contains($currentRoute, 'admin.riwayat_kepegawaian')) {
-            $searchRoute = route('admin.riwayat_kepegawaian.index');
-            $searchPlaceholder = 'Cari riwayat kepegawaian...';
         } elseif (str_contains($currentRoute, 'admin.golongan')) {
             $searchRoute = route('admin.golongan.index');
             $searchPlaceholder = 'Cari golongan...';
@@ -59,9 +56,6 @@
         } elseif (str_contains($currentRoute, 'kph.penugasan')) {
             $searchRoute = route('kph.penugasan.index');
             $searchPlaceholder = 'Cari penugasan...';
-        } elseif (str_contains($currentRoute, 'kph.riwayat_kepegawaian')) {
-            $searchRoute = route('kph.riwayat_kepegawaian.index');
-            $searchPlaceholder = 'Cari riwayat kepegawaian...';
         } elseif (str_contains($currentRoute, 'kph.catatan_kegiatan')) {
             $searchRoute = route('kph.catatan_kegiatan.index');
             $searchPlaceholder = 'Cari catatan kegiatan...';

@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Golongan;
 use App\Models\Jabatan;
 use App\Models\Pegawai;
-use App\Models\RiwayatKepegawaian;
 use App\Models\UnitKerja;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -135,7 +134,7 @@ class PegawaiController extends Controller
         }
     }
 
-    public function delete(Pegawai $pegawai)
+    public function destroy(Pegawai $pegawai)
     {
         $pegawai->delete();
 
