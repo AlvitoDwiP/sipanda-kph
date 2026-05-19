@@ -8,15 +8,20 @@ use App\Models\UnitKerja;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Schema;
 
 class DashboardMonitoringService
 {
+    private ?string $tugasDateColumn = null;
+
     public function getDashboardData(Carbon $tanggal, ?int $unitKerjaId = null): array
     {
+        $tugasDateColumn = $this->getTugasDateColumn();
+
         $penugasanQuery = Penugasan::query()
             ->with(['tugas', 'pegawai.user', 'pegawai.unitkerja'])
-            ->whereHas('tugas', function (Builder $q) use ($tanggal) {
-                $q->whereDate('tanggal_tugas', $tanggal->toDateString());
+            ->whereHas('tugas', function (Builder $q) use ($tanggal, $tugasDateColumn) {
+                $q->whereDate($tugasDateColumn, $tanggal->toDateString());
             });
 
         if ($unitKerjaId) {
@@ -112,7 +117,7 @@ class DashboardMonitoringService
             ->take(8)
             ->values();
 
-        $summaryUnitKerja = $this->getSummaryUnitKerja($tanggal, $unitKerjaId);
+        $summaryUnitKerja = $this->getSummaryUnitKerja($tanggal, $unitKerjaId, $tugasDateColumn);
 
         return compact(
             'summaryTugas',
@@ -125,7 +130,7 @@ class DashboardMonitoringService
         );
     }
 
-    private function getSummaryUnitKerja(Carbon $tanggal, ?int $unitKerjaId = null): Collection
+    private function getSummaryUnitKerja(Carbon $tanggal, ?int $unitKerjaId = null, string $tugasDateColumn = 'deadline'): Collection
     {
         $query = UnitKerja::query()
             ->selectRaw('ref_unitkerja.id, ref_unitkerja.nama_unitkerja, COUNT(penugasan.id) as total_tugas')
@@ -133,7 +138,7 @@ class DashboardMonitoringService
             ->leftJoin('penugasan', 'penugasan.pegawai_id', '=', 'pegawai.id')
             ->leftJoin('tugas', function ($join) use ($tanggal) {
                 $join->on('tugas.id', '=', 'penugasan.tugas_id')
-                    ->whereDate('tugas.tanggal_tugas', '=', $tanggal->toDateString());
+                    ->whereDate('tugas.' . $this->getTugasDateColumn(), '=', $tanggal->toDateString());
             })
             ->whereNotNull('tugas.id')
             ->groupBy('ref_unitkerja.id', 'ref_unitkerja.nama_unitkerja');
@@ -144,7 +149,7 @@ class DashboardMonitoringService
 
         return $query->get()->map(function ($unit) use ($tanggal) {
             $base = Penugasan::query()
-                ->whereHas('tugas', fn(Builder $q) => $q->whereDate('tanggal_tugas', $tanggal->toDateString()))
+                ->whereHas('tugas', fn(Builder $q) => $q->whereDate($this->getTugasDateColumn(), $tanggal->toDateString()))
                 ->whereHas('pegawai', fn(Builder $q) => $q->where('unitkerja_id', $unit->id));
 
             $selesai = (clone $base)->where('status', 'selesai')->count();
@@ -167,5 +172,18 @@ class DashboardMonitoringService
                 'persentase_selesai' => $persentaseSelesai,
             ];
         });
+    }
+
+    private function getTugasDateColumn(): string
+    {
+        if ($this->tugasDateColumn !== null) {
+            return $this->tugasDateColumn;
+        }
+
+        $this->tugasDateColumn = Schema::hasColumn('tugas', 'tanggal_tugas')
+            ? 'tanggal_tugas'
+            : 'deadline';
+
+        return $this->tugasDateColumn;
     }
 }

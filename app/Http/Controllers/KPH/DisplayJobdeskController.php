@@ -100,22 +100,49 @@ class DisplayJobdeskController extends Controller
 
     public function scan(Request $request, DisplayJobdeskService $displayJobdeskService)
     {
-        $validated = $request->validate([
-            'token' => 'required|string|max:64',
-        ]);
+        try {
+            $rawToken = $request->input('token');
+            if (!is_string($rawToken)) {
+                $response = [
+                    'status' => 'invalid_format',
+                    'message' => 'QR tidak terbaca dengan benar. Silakan scan ulang.',
+                    '_pegawai_id' => null,
+                    '_task_count' => 0,
+                ];
+                $this->logScan('', $response);
+                unset($response['_pegawai_id'], $response['_task_count']);
 
-        $response = $displayJobdeskService->scanToken($validated['token']);
-        $setting = DisplayJobdeskSetting::active();
+                return response()->json($response, 422);
+            }
 
-        if (!$setting->show_employee_photo && isset($response['pegawai'])) {
-            $response['pegawai']['foto_url'] = null;
+            $normalizedToken = $displayJobdeskService->normalizeToken($rawToken);
+            $response = $displayJobdeskService->scanToken($normalizedToken);
+            $setting = DisplayJobdeskSetting::active();
+
+            if (!$setting->show_employee_photo && isset($response['pegawai'])) {
+                $response['pegawai']['foto_url'] = null;
+            }
+
+            $this->logScan($normalizedToken, $response);
+
+            unset($response['_pegawai_id'], $response['_task_count']);
+
+            return response()->json($response);
+        } catch (\Throwable $th) {
+            report($th);
+            $response = [
+                'status' => 'error',
+                'message' => 'Terjadi kesalahan. Silakan scan ulang.',
+                '_pegawai_id' => null,
+                '_task_count' => 0,
+            ];
+            $this->logScan('', $response);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Terjadi kesalahan. Silakan scan ulang.',
+            ], 500);
         }
-
-        $this->logScan($validated['token'], $response);
-
-        unset($response['_pegawai_id'], $response['_task_count']);
-
-        return response()->json($response);
     }
 
     private function logScan(string $token, array $response): void
@@ -123,15 +150,30 @@ class DisplayJobdeskController extends Controller
         try {
             DisplayScanLog::create([
                 'scanned_at' => now(),
-                'qr_token_hash' => hash('sha256', strtoupper(trim($token))),
+                'qr_token_hash' => trim($token) !== '' ? hash('sha256', strtoupper(trim($token))) : null,
                 'pegawai_id' => $response['_pegawai_id'] ?? null,
                 'scanned_by' => Auth::id(),
                 'status' => $response['status'] ?? 'error',
                 'task_count' => (int) ($response['_task_count'] ?? 0),
-                'message' => $response['message'] ?? null,
+                'message' => $this->safeLogMessage($response),
             ]);
         } catch (\Throwable $th) {
             report($th);
         }
+    }
+
+    private function safeLogMessage(array $response): string
+    {
+        $status = $response['status'] ?? 'error';
+
+        return match ($status) {
+            'success' => 'Scan berhasil.',
+            'empty_task' => 'Tidak ada job desk hari ini.',
+            'inactive_employee' => 'Pegawai tidak aktif. Silakan hubungi admin/KPH.',
+            'invalid_format' => 'QR tidak terbaca dengan benar. Silakan scan ulang.',
+            'invalid_token' => 'QR tidak valid.',
+            'rate_limited' => 'Terlalu banyak percobaan scan. Silakan tunggu sebentar.',
+            default => 'Terjadi kesalahan. Silakan scan ulang.',
+        };
     }
 }

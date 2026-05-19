@@ -15,7 +15,9 @@ Route::middleware(['auth', 'role:kph'])->prefix('kph')->name('kph.')->group(func
     Route::post('/display-jobdesk/settings', [KphDisplayJobdeskController::class, 'updateSettings'])->name('display-jobdesk.settings.update');
     Route::post('/display-jobdesk/reset', [KphDisplayJobdeskController::class, 'reset'])->name('display-jobdesk.reset');
     Route::get('/display-jobdesk/state', [KphDisplayJobdeskController::class, 'state'])->name('display-jobdesk.state');
-    Route::post('/display-jobdesk/scan', [KphDisplayJobdeskController::class, 'scan'])->name('display-jobdesk.scan');
+    Route::post('/display-jobdesk/scan', [KphDisplayJobdeskController::class, 'scan'])
+        ->middleware('throttle:120,1')
+        ->name('display-jobdesk.scan');
 
     Route::get('/pegawai', [KphPegawaiController::class, 'index'])->name('pegawai.index');
     Route::get('/pegawai/{id}', [KphPegawaiController::class, 'show'])->name('pegawai.show');

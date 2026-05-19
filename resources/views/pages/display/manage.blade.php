@@ -89,8 +89,8 @@
                                 @class([
                                     'bg-emerald-100 text-emerald-700' => $log->status === 'success',
                                     'bg-amber-100 text-amber-700' => $log->status === 'empty_task',
-                                    'bg-red-100 text-red-700' => in_array($log->status, ['invalid_token','inactive_employee','error']),
-                                    'bg-slate-100 text-slate-700' => !in_array($log->status, ['success','empty_task','invalid_token','inactive_employee','error']),
+                                    'bg-red-100 text-red-700' => in_array($log->status, ['invalid_token','invalid_format','inactive_employee','error','rate_limited']),
+                                    'bg-slate-100 text-slate-700' => !in_array($log->status, ['success','empty_task','invalid_token','invalid_format','inactive_employee','error','rate_limited']),
                                 ])">
                                 {{ str_replace('_', ' ', $log->status) }}
                             </span>

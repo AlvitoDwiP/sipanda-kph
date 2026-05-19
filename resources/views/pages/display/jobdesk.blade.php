@@ -201,6 +201,12 @@ async function submitToken(token) {
       headers: {'Content-Type':'application/json','X-CSRF-TOKEN':csrf,'Accept':'application/json'},
       body: JSON.stringify({token})
     });
+    if (res.status === 429) {
+      renderMessage('Terlalu Banyak Scan', 'Terlalu banyak percobaan scan. Silakan tunggu sebentar.', true);
+      scheduleReset(5);
+      return;
+    }
+
     const data = await res.json();
 
     if (data.status === 'success' || data.status === 'empty_task') {
@@ -215,10 +221,16 @@ async function submitToken(token) {
       return;
     }
 
+    if (data.status === 'invalid_format') {
+      renderMessage('QR Tidak Terbaca', data.message || 'Silakan scan ulang.', true);
+      scheduleReset(5);
+      return;
+    }
+
     renderMessage('QR Tidak Valid', data.message || 'Silakan gunakan QR pegawai yang terdaftar.', true);
     scheduleReset(5);
   } catch (e) {
-    renderMessage('Terjadi Kesalahan', 'Silakan scan ulang.', true);
+    renderMessage('Terjadi Kesalahan', 'Terjadi kesalahan. Silakan scan ulang.', true);
     scheduleReset(5);
   }
 }

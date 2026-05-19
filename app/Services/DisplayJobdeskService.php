@@ -4,16 +4,19 @@ namespace App\Services;
 
 use App\Models\Pegawai;
 use App\Models\Penugasan;
+use Illuminate\Support\Str;
 
 class DisplayJobdeskService
 {
+    private const TOKEN_REGEX = '/^PGW-[A-Z2-9]{16}$/';
+
     public function scanToken(string $token): array
     {
-        $token = strtoupper(trim($token));
+        $token = $this->normalizeToken($token);
 
-        if ($token === '' || !preg_match('/^PGW-[A-Z2-9]{10,32}$/', $token)) {
+        if (!$this->isValidTokenFormat($token)) {
             return [
-                'status' => 'invalid_token',
+                'status' => 'invalid_format',
                 'message' => 'QR tidak terbaca dengan benar. Silakan scan ulang.',
                 '_pegawai_id' => null,
                 '_task_count' => 0,
@@ -36,7 +39,7 @@ class DisplayJobdeskService
         if (!$pegawai->isAktif()) {
             return [
                 'status' => 'inactive_employee',
-                'message' => 'Pegawai tidak aktif.',
+                'message' => 'Pegawai tidak aktif. Silakan hubungi admin/KPH.',
                 '_pegawai_id' => $pegawai->id,
                 '_task_count' => 0,
             ];
@@ -84,7 +87,7 @@ class DisplayJobdeskService
         $tasks = $rows->map(function ($item) {
             return [
                 'judul' => $item->tugas->judul ?? '-',
-                'instruksi' => $item->tugas->deskripsi ?? '-',
+                'instruksi' => Str::limit((string) ($item->tugas->deskripsi ?? '-'), 160),
                 'prioritas' => $item->tugas->prioritas ?? '-',
                 'deadline' => optional($item->tugas->deadline)->format('d-m-Y') ?? '-',
                 'status' => $item->status,
@@ -128,6 +131,20 @@ class DisplayJobdeskService
             '_pegawai_id' => $pegawai->id,
             '_task_count' => $rows->count(),
         ];
+    }
+
+    public function normalizeToken(string $token): string
+    {
+        return strtoupper(trim($token));
+    }
+
+    public function isValidTokenFormat(string $token): bool
+    {
+        if ($token === '' || strlen($token) < 20 || strlen($token) > 20) {
+            return false;
+        }
+
+        return (bool) preg_match(self::TOKEN_REGEX, $token);
     }
 
     private function statusLabel(string $status): string
