@@ -5,6 +5,7 @@ use App\Http\Controllers\KPH\DashboardController as KphDashboard;
 use App\Http\Controllers\KPH\DisplayJobdeskController as KphDisplayJobdeskController;
 use App\Http\Controllers\KPH\PegawaiController as KphPegawaiController;
 use App\Http\Controllers\KPH\PenugasanController as KphPenugasanController;
+use App\Http\Controllers\KPH\RekapPekerjaanController as KphRekapPekerjaanController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'role:kph'])->prefix('kph')->name('kph.')->group(function () {
@@ -36,4 +37,5 @@ Route::middleware(['auth', 'role:kph'])->prefix('kph')->name('kph.')->group(func
     Route::post('/catatan-kegiatan/{catatan}/setujui', [CatatanKegiatanController::class, 'setujui'])->name('catatan_kegiatan.setujui');
     Route::post('/catatan-kegiatan/{catatan}/revisi', [CatatanKegiatanController::class, 'revisi'])->name('catatan_kegiatan.revisi');
     Route::post('/catatan-kegiatan/{catatan}/tolak', [CatatanKegiatanController::class, 'tolak'])->name('catatan_kegiatan.tolak');
+    Route::get('/rekap-pekerjaan', [KphRekapPekerjaanController::class, 'index'])->name('rekap-pekerjaan.index');
 });

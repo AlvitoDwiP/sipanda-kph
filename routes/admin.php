@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\LogController;
 use App\Http\Controllers\Admin\NotifAdminController;
 use App\Http\Controllers\Admin\PegawaiController;
 use App\Http\Controllers\Admin\PenugasanController;
+use App\Http\Controllers\Admin\RekapPekerjaanController;
 use App\Http\Controllers\Admin\RegisterController;
 use App\Http\Controllers\Admin\UnitKerjaController;
 use Illuminate\Support\Facades\Route;
@@ -45,6 +46,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::post('/catatan-kegiatan/{catatan}/revisi', [CatatanController::class, 'revisi'])->name('catatan_kegiatan.revisi');
     Route::post('/catatan-kegiatan/{catatan}/tolak', [CatatanController::class, 'tolak'])->name('catatan_kegiatan.tolak');
     Route::get('/catatan-kegiatan/{id}/download-pdf', [CatatanController::class, 'downloadPdf'])->name('catatan_kegiatan.pdf');
+    Route::get('/rekap-pekerjaan', [RekapPekerjaanController::class, 'index'])->name('rekap-pekerjaan.index');
 
     Route::resource('golongan', GolonganController::class)->only(['index', 'store', 'update', 'destroy']);
     Route::resource('jabatan', JabatanController::class)->only(['index', 'store', 'update', 'destroy']);

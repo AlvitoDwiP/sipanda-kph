@@ -59,6 +59,12 @@
         } elseif (str_contains($currentRoute, 'kph.catatan_kegiatan')) {
             $searchRoute = route('kph.catatan_kegiatan.index');
             $searchPlaceholder = 'Cari catatan kegiatan...';
+        } elseif (str_contains($currentRoute, 'admin.rekap-pekerjaan')) {
+            $searchRoute = route('admin.rekap-pekerjaan.index');
+            $searchPlaceholder = 'Filter rekap...';
+        } elseif (str_contains($currentRoute, 'kph.rekap-pekerjaan')) {
+            $searchRoute = route('kph.rekap-pekerjaan.index');
+            $searchPlaceholder = 'Filter rekap...';
         } elseif (str_contains($currentRoute, 'admin.logs')) {
             $searchRoute = route('admin.logs.index');
             $searchPlaceholder = 'Cari log...';

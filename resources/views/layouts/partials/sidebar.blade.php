@@ -82,6 +82,13 @@
                 Display Job Desk
             </a>
 
+            <a href="{{ route('admin.rekap-pekerjaan.index') }}" class="flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors @if(request()->routeIs('admin.rekap-pekerjaan.*')) bg-green-50 text-green-800 @else text-slate-700 hover:bg-emerald-50 hover:text-emerald-800 @endif">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-6m3 6V7m3 10v-4m4 7H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v12a2 2 0 01-2 2z"></path>
+                </svg>
+                Rekap Pekerjaan
+            </a>
+
             <!-- Data Referensi (Dropdown) -->
             <div class="relative">
                 <button type="button" onclick="toggleSidebarDropdown('ref-dropdown', 'ref-arrow')"
@@ -177,6 +184,13 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7h16M4 12h16M4 17h16"></path>
                 </svg>
                 Display Job Desk
+            </a>
+
+            <a href="{{ route('kph.rekap-pekerjaan.index') }}" class="flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors @if(request()->routeIs('kph.rekap-pekerjaan.*')) bg-green-50 text-green-800 @else text-slate-700 hover:bg-emerald-50 hover:text-emerald-800 @endif">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-6m3 6V7m3 10v-4m4 7H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v12a2 2 0 01-2 2z"></path>
+                </svg>
+                Rekap Pekerjaan
             </a>
             @endif
 
