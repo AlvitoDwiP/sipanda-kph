@@ -20,6 +20,10 @@ class Penugasan extends Model
         'foto_progres',
     ];
 
+    protected $casts = [
+        'foto_progres' => 'array',
+    ];
+
     public function pegawai()
     {
         return $this->belongsTo(Pegawai::class);

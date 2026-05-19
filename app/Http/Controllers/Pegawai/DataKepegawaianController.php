@@ -36,6 +36,10 @@ class DataKepegawaianController extends Controller
 
     public function updateKepegawaian(Request $request, Pegawai $pegawai)
     {
+        if ($pegawai->user_id !== $request->user()->id) {
+            abort(403, 'Anda tidak memiliki akses untuk mengubah data ini.');
+        }
+
         $request->validate([
             'unitkerja_id'   => 'required|exists:ref_unitkerja,id',
             'golongan_id'    => 'required|exists:ref_golongan,id',

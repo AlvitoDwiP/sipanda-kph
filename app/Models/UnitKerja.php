@@ -11,4 +11,9 @@ class UnitKerja extends Model
     protected $fillable = [
         'nama_unitkerja',
     ];
+
+    public function pegawai()
+    {
+        return $this->hasMany(Pegawai::class, 'unitkerja_id');
+    }
 }

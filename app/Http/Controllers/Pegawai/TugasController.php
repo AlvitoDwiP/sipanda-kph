@@ -64,8 +64,7 @@ class TugasController extends Controller
                 $paths[] = $file->store('progres_tugas', 'public');
             }
 
-            // simpan sebagai JSON (TIDAK mengubah blade)
-            $data['foto_progres'] = json_encode($paths);
+            $data['foto_progres'] = $paths;
         }
 
         /* ================= SELESAI ================= */

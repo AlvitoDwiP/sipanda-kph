@@ -62,7 +62,7 @@ class PegawaiController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'user_id'         => 'required|exists:users,id',
+            'user_id'         => 'required|exists:users,id|unique:pegawai,user_id',
             'unitkerja_id'    => 'required|exists:ref_unitkerja,id',
             'golongan_id'     => 'required|exists:ref_golongan,id',
             'jabatan_id'      => 'required|exists:ref_jabatan,id',
@@ -105,6 +105,7 @@ class PegawaiController extends Controller
     public function update(Request $request, Pegawai $pegawai)
     {
         $request->validate([
+            'user_id'        => 'required|exists:users,id|unique:pegawai,user_id,' . $pegawai->id,
             'unitkerja_id'   => 'required|exists:ref_unitkerja,id',
             'golongan_id'    => 'required|exists:ref_golongan,id',
             'jabatan_id'     => 'required|exists:ref_jabatan,id',
@@ -118,6 +119,7 @@ class PegawaiController extends Controller
                 $pegawai->jabatan_id   != $request->jabatan_id;
 
             $pegawai->update([
+                'user_id'        => $request->user_id,
                 'unitkerja_id'   => $request->unitkerja_id,
                 'golongan_id'    => $request->golongan_id,
                 'jabatan_id'     => $request->jabatan_id,

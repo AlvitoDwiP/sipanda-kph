@@ -32,15 +32,17 @@ class PegawaiController extends Controller
             ->when($request->filled('q'), function ($query) use ($request) {
                 $q = $request->q;
 
-                $query->orWhereHas('unitkerja', function ($u) use ($q) {
-                    $u->where('nama_unitkerja', 'like', "%{$q}%");
-                })
-                    ->orWhereHas('golongan', function ($g) use ($q) {
-                        $g->where('nama_golongan', 'like', "%{$q}%");
+                $query->where(function ($sub) use ($q) {
+                    $sub->whereHas('unitkerja', function ($u) use ($q) {
+                        $u->where('nama_unitkerja', 'like', "%{$q}%");
                     })
-                    ->orWhereHas('jabatan', function ($j) use ($q) {
-                        $j->where('nama_jabatan', 'like', "%{$q}%");
-                    });
+                        ->orWhereHas('golongan', function ($g) use ($q) {
+                            $g->where('nama_golongan', 'like', "%{$q}%");
+                        })
+                        ->orWhereHas('jabatan', function ($j) use ($q) {
+                            $j->where('nama_jabatan', 'like', "%{$q}%");
+                        });
+                });
             })
             ->get();
 

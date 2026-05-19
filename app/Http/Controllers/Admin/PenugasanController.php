@@ -117,6 +117,12 @@ class PenugasanController extends Controller
         ]);
 
         DB::transaction(function () use ($request, $penugasan) {
+            $updateData = [
+                'judul'     => $request->judul,
+                'deskripsi' => $request->deskripsi,
+                'deadline'  => $request->deadline,
+                'prioritas' => $request->prioritas,
+            ];
 
             if ($request->hasFile('template')) {
 
@@ -129,15 +135,10 @@ class PenugasanController extends Controller
                 $templatePath = $request->file('template')
                     ->store('template_tugas', 'public');
 
-                $penugasan->template = $templatePath;
+                $updateData['template'] = $templatePath;
             }
 
-            $penugasan->update([
-                'judul'     => $request->judul,
-                'deskripsi' => $request->deskripsi,
-                'deadline'  => $request->deadline,
-                'prioritas' => $request->prioritas,
-            ]);
+            $penugasan->update($updateData);
 
             $pegawaiIds = $request->pegawai_id;
 
