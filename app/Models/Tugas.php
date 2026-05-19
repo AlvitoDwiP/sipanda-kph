@@ -15,14 +15,25 @@ class Tugas extends Model
         'user_id',
         'judul',
         'deskripsi',
+        'tanggal_tugas',
         'deadline',
         'prioritas',
         'template',
     ];
 
+    protected $casts = [
+        'tanggal_tugas' => 'date',
+        'deadline' => 'date',
+    ];
+
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function pemberiTugas()
+    {
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function penugasan()

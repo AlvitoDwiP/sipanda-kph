@@ -8,6 +8,7 @@ use App\Models\Penugasan;
 use App\Models\Tugas;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class PenugasanController extends Controller
 {
@@ -15,22 +16,162 @@ class PenugasanController extends Controller
     {
         $tugasQuery = Tugas::with(['user', 'penugasan.pegawai.user']);
 
-        // Apply search filter if provided
         if ($request->filled('q')) {
             $q = $request->q;
             $tugasQuery->where(function ($query) use ($q) {
                 $query->where('judul', 'like', "%{$q}%")
-                      ->orWhere('deskripsi', 'like', "%{$q}%")
-                      ->orWhere('prioritas', 'like', "%{$q}%")
-                      ->orWhereHas('user', function ($userQuery) use ($q) {
-                          $userQuery->where('name', 'like', "%{$q}%")
-                                   ->orWhere('email', 'like', "%{$q}%")
-                                   ->orWhere('nip', 'like', "%{$q}%");
-                      });
+                    ->orWhere('deskripsi', 'like', "%{$q}%")
+                    ->orWhere('prioritas', 'like', "%{$q}%")
+                    ->orWhereHas('user', function ($userQuery) use ($q) {
+                        $userQuery->where('name', 'like', "%{$q}%")
+                            ->orWhere('email', 'like', "%{$q}%")
+                            ->orWhere('nip', 'like', "%{$q}%");
+                    });
             });
         }
 
         $tugas = $tugasQuery->orderBy('created_at', 'desc')->get();
+
         return view('pages.kph.penugasan.index', compact('tugas'));
+    }
+
+    public function create()
+    {
+        $pegawai = Pegawai::with('user')
+            ->join('users', 'users.id', '=', 'pegawai.user_id')
+            ->orderBy('users.name')
+            ->select('pegawai.*')
+            ->get();
+
+        return view('pages.kph.penugasan.create', compact('pegawai'));
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'judul'        => 'required|string|max:255',
+            'deskripsi'    => 'required|string',
+            'tanggal_tugas' => 'required|date',
+            'deadline'     => 'required|date|after_or_equal:tanggal_tugas',
+            'prioritas'    => 'required|in:rendah,sedang,tinggi',
+            'pegawai_id'   => 'required|array|min:1',
+            'pegawai_id.*' => 'exists:pegawai,id',
+            'template'     => 'required|file|mimes:pdf,doc,docx|max:2048',
+        ]);
+
+        DB::transaction(function () use ($request) {
+            $templatePath = $request->file('template')->store('template_tugas', 'public');
+
+            $tugas = Tugas::create([
+                'judul'        => $request->judul,
+                'deskripsi'    => $request->deskripsi,
+                'tanggal_tugas' => $request->tanggal_tugas,
+                'deadline'     => $request->deadline,
+                'prioritas'    => $request->prioritas,
+                'template'     => $templatePath,
+                'user_id'      => auth()->id(),
+            ]);
+
+            foreach ($request->pegawai_id as $pegawaiId) {
+                Penugasan::create([
+                    'pegawai_id' => $pegawaiId,
+                    'tugas_id'   => $tugas->id,
+                    'status'     => 'belum_dikerjakan',
+                ]);
+            }
+        });
+
+        return redirect()
+            ->route('kph.penugasan.index')
+            ->with('success', 'Penugasan berhasil dibuat.');
+    }
+
+    public function show(Tugas $penugasan)
+    {
+        $penugasan->load(['user', 'penugasan.pegawai.user']);
+
+        return view('pages.kph.penugasan.show', [
+            'penugasan' => $penugasan,
+            'routePrefix' => 'kph',
+        ]);
+    }
+
+    public function edit(Tugas $penugasan)
+    {
+        $pegawai = Pegawai::with('user')
+            ->join('users', 'users.id', '=', 'pegawai.user_id')
+            ->orderBy('users.name')
+            ->select('pegawai.*')
+            ->get();
+
+        $pegawaiTerpilih = $penugasan->penugasan->pluck('pegawai_id')->toArray();
+
+        return view('pages.kph.penugasan.edit', compact('penugasan', 'pegawai', 'pegawaiTerpilih'));
+    }
+
+    public function update(Request $request, Tugas $penugasan)
+    {
+        $request->validate([
+            'judul'        => 'required|string|max:255',
+            'deskripsi'    => 'required|string',
+            'tanggal_tugas' => 'required|date',
+            'deadline'     => 'required|date|after_or_equal:tanggal_tugas',
+            'prioritas'    => 'required|in:rendah,sedang,tinggi',
+            'pegawai_id'   => 'required|array|min:1',
+            'pegawai_id.*' => 'exists:pegawai,id',
+            'template'     => 'nullable|file|mimes:pdf,doc,docx|max:2048',
+        ]);
+
+        DB::transaction(function () use ($request, $penugasan) {
+            $updateData = [
+                'judul'        => $request->judul,
+                'deskripsi'    => $request->deskripsi,
+                'tanggal_tugas' => $request->tanggal_tugas,
+                'deadline'     => $request->deadline,
+                'prioritas'    => $request->prioritas,
+            ];
+
+            if ($request->hasFile('template')) {
+                if ($penugasan->template && Storage::disk('public')->exists($penugasan->template)) {
+                    Storage::disk('public')->delete($penugasan->template);
+                }
+
+                $updateData['template'] = $request->file('template')->store('template_tugas', 'public');
+            }
+
+            $penugasan->update($updateData);
+
+            $pegawaiIds = $request->pegawai_id;
+
+            Penugasan::where('tugas_id', $penugasan->id)
+                ->whereNotIn('pegawai_id', $pegawaiIds)
+                ->delete();
+
+            foreach ($pegawaiIds as $pegawaiId) {
+                Penugasan::firstOrCreate(
+                    [
+                        'tugas_id' => $penugasan->id,
+                        'pegawai_id' => $pegawaiId,
+                    ],
+                    ['status' => 'belum_dikerjakan']
+                );
+            }
+        });
+
+        return redirect()
+            ->route('kph.penugasan.index')
+            ->with('success', 'Penugasan berhasil diperbarui.');
+    }
+
+    public function destroy(Tugas $penugasan)
+    {
+        DB::transaction(function () use ($penugasan) {
+            Penugasan::where('tugas_id', $penugasan->id)->delete();
+            $penugasan->delete();
+        });
+
+        return redirect()
+            ->route('kph.penugasan.index')
+            ->with('success', 'Penugasan berhasil dihapus.');
     }
 }

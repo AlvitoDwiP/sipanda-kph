@@ -1,5 +1,5 @@
 @extends('layouts.master')
-@php($routePrefix = $routePrefix ?? 'admin')
+@php($routePrefix = 'kph')
 
 @section('title', 'Penugasan')
 @section('page-title', 'Edit Penugasan')

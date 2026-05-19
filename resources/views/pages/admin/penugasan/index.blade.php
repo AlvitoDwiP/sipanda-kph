@@ -1,4 +1,5 @@
 @extends('layouts.master')
+@php($routePrefix = $routePrefix ?? 'admin')
 
 @section('title', 'Penugasan Pegawai')
 @section('page-title', 'Penugasan Pegawai')
@@ -16,7 +17,7 @@
     <!-- Header -->
     <div class="p-6 border-b border-slate-100 flex justify-between items-center">
         <h3 class="font-bold text-slate-800">Penugasan Pegawai</h3>
-        <a href="{{ route('admin.penugasan.create') }}"
+        <a href="{{ route($routePrefix . '.penugasan.create') }}"
             class="px-4 py-2 text-sm text-white bg-green-800 rounded-lg hover:bg-green-900 transition">
             Tambah Data
         </a>
@@ -30,9 +31,11 @@
                     <tr class="text-slate-500 uppercase text-xs">
                         <th class="pb-3 text-left">No</th>
                         <th class="pb-3 text-left">Judul Tugas</th>
+                        <th class="pb-3 text-left">Tanggal Tugas</th>
                         <th class="pb-3 text-left">Deadline</th>
                         <th class="pb-3 text-left">Prioritas</th>
                         <th class="pb-3 text-left">Dibuat Oleh</th>
+                        <th class="pb-3 text-left">Status Awal</th>
                         <th class="pb-3 text-left">Template</th>
                         <th class="pb-3 text-right">Aksi</th>
                     </tr>
@@ -46,6 +49,9 @@
                         </td>
                         <td class="py-4 font-medium text-slate-800">
                             {{ $item->judul }}
+                        </td>
+                        <td class="py-4">
+                            {{ optional($item->tanggal_tugas)->format('d-m-Y') ?? '-' }}
                         </td>
                         <td class="py-4">
                             {{ \Carbon\Carbon::parse($item->deadline)->format('d-m-Y') }}
@@ -73,6 +79,11 @@
                         <td class="py-4">
                             {{ $item->user->name ?? '-' }}
                         </td>
+                        <td class="py-4">
+                            <span class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-700">
+                                Belum Dikerjakan
+                            </span>
+                        </td>
 
                         <td class="py-4">
                             @if ($item->template)
@@ -88,15 +99,14 @@
 
                         <!-- Aksi -->
                         <td class="py-4 text-right">
-                            <button type="button"
-                                onclick="openDetailModal({{ $item->id }})"
+                            <a href="{{ route($routePrefix . '.penugasan.show', $item->id) }}"
                                 class="text-slate-600 hover:text-green-800 font-medium transition">
                                 Detail
-                            </button>
+                            </a>
 
                             <span class="mx-2 text-slate-300">|</span>
 
-                            <a href="{{ route('admin.penugasan.edit', $item->id) }}"
+                            <a href="{{ route($routePrefix . '.penugasan.edit', $item->id) }}"
                                 class="text-slate-600 hover:text-green-800 font-medium transition">
                                 Edit
                             </a>
@@ -112,7 +122,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="6" class="py-8 text-center text-slate-400">
+                        <td colspan="9" class="py-8 text-center text-slate-400">
                             Data penugasan belum tersedia
                         </td>
                     </tr>
@@ -187,7 +197,7 @@
     function openDeleteModal(id, nama) {
         document.getElementById('deleteNama').innerText = nama;
         document.getElementById('formDelete').action =
-            "{{ route('admin.penugasan.destroy', ':id') }}".replace(':id', id);
+            "{{ route($routePrefix . '.penugasan.destroy', ':id') }}".replace(':id', id);
         modalToggle('modalDelete', true);
     }
 

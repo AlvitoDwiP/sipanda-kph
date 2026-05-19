@@ -1,4 +1,5 @@
 @extends('layouts.master')
+@php($routePrefix = $routePrefix ?? 'admin')
 
 @section('title', 'Penugasan')
 @section('page-title', 'Tambah Penugasan')
@@ -9,14 +10,14 @@
     <!-- Header -->
     <div class="p-6 border-b border-slate-100 flex justify-between items-center">
         <h3 class="font-bold text-slate-800">Tambah Penugasan</h3>
-        <a href="{{ route('admin.penugasan.index') }}"
+        <a href="{{ route($routePrefix . '.penugasan.index') }}"
             class="text-sm text-slate-500 hover:text-slate-700">
             ✕
         </a>
     </div>
 
     <!-- Form -->
-    <form method="POST" action="{{ route('admin.penugasan.store') }}" enctype="multipart/form-data" class="p-6 space-y-6">
+    <form method="POST" action="{{ route($routePrefix . '.penugasan.store') }}" enctype="multipart/form-data" class="p-6 space-y-6">
         @csrf
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -40,6 +41,17 @@
                 <textarea name="deskripsi" rows="4" required
                     class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm">{{ old('deskripsi') }}</textarea>
                 <x-input-error :messages="$errors->get('deskripsi')" class="mt-1" />
+            </div>
+
+            <!-- Tanggal Tugas -->
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">
+                    Tanggal Tugas
+                </label>
+                <input type="date" name="tanggal_tugas" required
+                    value="{{ old('tanggal_tugas') }}"
+                    class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm">
+                <x-input-error :messages="$errors->get('tanggal_tugas')" class="mt-1" />
             </div>
 
             <!-- Deadline -->
@@ -117,7 +129,7 @@
 
         <!-- Action -->
         <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
-            <a href="{{ route('admin.penugasan.index') }}"
+            <a href="{{ route($routePrefix . '.penugasan.index') }}"
                 class="px-4 py-2 text-sm rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50">
                 Batal
             </a>

@@ -20,7 +20,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/pegawai/{pegawai}/detail', [PegawaiController::class, 'show'])->name('pegawai.show');
     Route::resource('pegawai', PegawaiController::class)->except(['show']);
 
-    Route::resource('penugasan', PenugasanController::class)->only(['index', 'create', 'store', 'edit', 'update', 'destroy']);
+    Route::resource('penugasan', PenugasanController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
 
     Route::get('/catatan-kegiatan', [CatatanController::class, 'index'])->name('catatan_kegiatan.index');
     Route::patch('/catatan-kegiatan/{catatan}/status', [CatatanController::class, 'updateStatus'])->name('catatan_kegiatan.status');

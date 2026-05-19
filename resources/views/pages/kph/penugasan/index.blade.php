@@ -1,4 +1,5 @@
 @extends('layouts.master')
+@php($routePrefix = 'kph')
 
 @section('title', 'Penugasan Pegawai')
 @section('page-title', 'Penugasan Pegawai')
@@ -6,7 +7,7 @@
 @section('content')
 
 @if (session('success'))
-<div class="mb-4 px-4 py-3 rounded-lg bg-green-100 text-green-700 text-sm">
+<div class="mb-4 px-4 py-3 rounded-lg bg-green-100 text-green-800 text-sm">
     {{ session('success') }}
 </div>
 @endif
@@ -16,6 +17,10 @@
     <!-- Header -->
     <div class="p-6 border-b border-slate-100 flex justify-between items-center">
         <h3 class="font-bold text-slate-800">Penugasan Pegawai</h3>
+        <a href="{{ route($routePrefix . '.penugasan.create') }}"
+            class="px-4 py-2 text-sm text-white bg-green-800 rounded-lg hover:bg-green-900 transition">
+            Tambah Data
+        </a>
     </div>
 
     <!-- Table -->
@@ -26,9 +31,12 @@
                     <tr class="text-slate-500 uppercase text-xs">
                         <th class="pb-3 text-left">No</th>
                         <th class="pb-3 text-left">Judul Tugas</th>
+                        <th class="pb-3 text-left">Tanggal Tugas</th>
                         <th class="pb-3 text-left">Deadline</th>
                         <th class="pb-3 text-left">Prioritas</th>
                         <th class="pb-3 text-left">Dibuat Oleh</th>
+                        <th class="pb-3 text-left">Status Awal</th>
+                        <th class="pb-3 text-left">Template</th>
                         <th class="pb-3 text-right">Aksi</th>
                     </tr>
                 </thead>
@@ -43,27 +51,78 @@
                             {{ $item->judul }}
                         </td>
                         <td class="py-4">
-                            {{ \Carbon\Carbon::parse($item->deadline)->format('d-m-Y') }}
-                        </td>
-                        <td class="py-4 capitalize">
-                            {{ $item->prioritas }}
+                            {{ optional($item->tanggal_tugas)->format('d-m-Y') ?? '-' }}
                         </td>
                         <td class="py-4">
+                            {{ \Carbon\Carbon::parse($item->deadline)->format('d-m-Y') }}
+                        </td>
+                        <td class="py-4">
+                            @if ($item->prioritas === 'rendah')
+                            <span class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-700">
+                                Rendah
+                            </span>
+                            @elseif ($item->prioritas === 'sedang')
+                            <span class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-700">
+                                Sedang
+                            </span>
+                            @elseif ($item->prioritas === 'tinggi')
+                            <span class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-700">
+                                Tinggi
+                            </span>
+                            @else
+                            <span class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-slate-100 text-slate-600">
+                                -
+                            </span>
+                            @endif
+                        </td>
+
+                        <td class="py-4">
                             {{ $item->user->name ?? '-' }}
+                        </td>
+                        <td class="py-4">
+                            <span class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-700">
+                                Belum Dikerjakan
+                            </span>
+                        </td>
+
+                        <td class="py-4">
+                            @if ($item->template)
+                            <a href="{{ asset('storage/' . $item->template) }}"
+                                target="_blank"
+                                class="text-blue-600 hover:underline text-sm">
+                                Lihat Template
+                            </a>
+                            @else
+                            <span class="text-slate-400 text-sm">-</span>
+                            @endif
                         </td>
 
                         <!-- Aksi -->
                         <td class="py-4 text-right">
-                            <button type="button"
-                                onclick="openDetailModal({{ $item->id }})"
-                                class="text-slate-600 hover:text-green-600 font-medium transition">
+                            <a href="{{ route($routePrefix . '.penugasan.show', $item->id) }}"
+                                class="text-slate-600 hover:text-green-800 font-medium transition">
                                 Detail
+                            </a>
+
+                            <span class="mx-2 text-slate-300">|</span>
+
+                            <a href="{{ route($routePrefix . '.penugasan.edit', $item->id) }}"
+                                class="text-slate-600 hover:text-green-800 font-medium transition">
+                                Edit
+                            </a>
+
+                            <span class="mx-2 text-slate-300">|</span>
+
+                            <button type="button"
+                                onclick="openDeleteModal({{ $item->id }}, '{{ $item->judul }}')"
+                                class="text-slate-600 hover:text-red-600 font-medium transition">
+                                Hapus
                             </button>
                         </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="6" class="py-8 text-center text-slate-400">
+                        <td colspan="9" class="py-8 text-center text-slate-400">
                             Data penugasan belum tersedia
                         </td>
                     </tr>
@@ -74,6 +133,7 @@
     </div>
 </div>
 
+<!-- Modal Detail -->
 <div id="modalDetail" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50">
     <div class="bg-white w-full max-w-lg rounded-xl shadow-lg">
         <div class="px-6 py-4 border-b flex justify-between items-center">
@@ -92,11 +152,54 @@
     </div>
 </div>
 
+<!-- Modal Delete -->
+<div id="modalDelete" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50">
+    <div class="bg-white w-full max-w-md rounded-xl shadow-lg">
+        <form method="POST" id="formDelete">
+            @csrf
+            @method('DELETE')
+
+            <div class="px-6 py-4 border-b flex justify-between items-center">
+                <h3 class="font-semibold">Konfirmasi Hapus</h3>
+                <button type="button" onclick="closeDeleteModal()">✕</button>
+            </div>
+
+            <div class="px-6 py-6 text-sm">
+                Yakin ingin menghapus tugas
+                <strong id="deleteNama"></strong>?
+                <br>
+                <span class="text-slate-500">
+                    Seluruh data penugasan pegawai akan ikut terhapus.
+                </span>
+            </div>
+
+            <div class="px-6 py-4 border-t flex justify-end gap-3">
+                <button type="button"
+                    onclick="closeDeleteModal()"
+                    class="px-4 py-2 border rounded-lg">
+                    Batal
+                </button>
+                <button type="submit"
+                    class="px-4 py-2 bg-red-600 text-white rounded-lg">
+                    Hapus
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 @endsection
 
 @push('scripts')
 <script>
     const tugasData = @json($tugas);
+
+    function openDeleteModal(id, nama) {
+        document.getElementById('deleteNama').innerText = nama;
+        document.getElementById('formDelete').action =
+            "{{ route($routePrefix . '.penugasan.destroy', ':id') }}".replace(':id', id);
+        modalToggle('modalDelete', true);
+    }
 
     function openDetailModal(id) {
         const tugas = tugasData.find(t => t.id === id);
@@ -217,6 +320,10 @@
 
     function closeDetailModal() {
         modalToggle('modalDetail', false);
+    }
+
+    function closeDeleteModal() {
+        modalToggle('modalDelete', false);
     }
 
     function modalToggle(id, show) {

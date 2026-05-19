@@ -5,6 +5,18 @@
 
 @section('content')
 
+@if (session('error'))
+<div class="mb-4 px-4 py-3 rounded-lg bg-red-100 text-red-700 text-sm">
+    {{ session('error') }}
+</div>
+@endif
+
+@if (!empty($pegawaiTidakTerhubung) && $pegawaiTidakTerhubung === true)
+<div class="mb-4 px-4 py-3 rounded-lg bg-amber-100 text-amber-700 text-sm">
+    Akun Anda belum terhubung dengan data pegawai.
+</div>
+@endif
+
 <div class="bg-white rounded-xl shadow-sm border border-slate-100">
 
     <!-- Header -->
@@ -21,6 +33,7 @@
                         <th class="pb-3 text-left">No</th>
                         <th class="pb-3 text-left">Judul Tugas</th>
                         <th class="pb-3 text-left">Deskripsi</th>
+                        <th class="pb-3 text-left">Tanggal Tugas</th>
                         <th class="pb-3 text-left">Deadline</th>
                         <th class="pb-3 text-left">Status</th>
                         <th class="pb-3 text-right">Aksi</th>
@@ -40,6 +53,9 @@
                         <td class="py-4 text-slate-600">
                             {{ $item['deskripsi'] }}
                         </td>
+                        <td class="py-4">
+                            {{ optional($item->tanggal_tugas)->format('d M Y') ?? '-' }}
+                        </td>
 
                         <td class="py-4">
                             {{ \Carbon\Carbon::parse($item['deadline'])->format('d M Y') }}
@@ -52,9 +68,10 @@
                         );
 
                         $statusClass = match ($penugasanSaya?->status) {
-                        'baru' => 'bg-blue-100 text-blue-700 border-blue-200',
-                        'proses' => 'bg-yellow-100 text-yellow-700 border-yellow-200',
+                        'baru', 'belum_dikerjakan' => 'bg-blue-100 text-blue-700 border-blue-200',
+                        'proses', 'sedang_dikerjakan' => 'bg-yellow-100 text-yellow-700 border-yellow-200',
                         'selesai' => 'bg-green-100 text-green-700 border-green-200',
+                        default => 'bg-slate-100 text-slate-700 border-slate-200',
                         };
                         @endphp
 
@@ -65,11 +82,11 @@
                                 data-id="{{ $penugasanSaya->id }}"
                                 data-current="{{ $penugasanSaya->status }}">
 
-                                <option value="baru" @selected($penugasanSaya->status === 'baru')>
-                                    Baru
+                                <option value="belum_dikerjakan" @selected(in_array($penugasanSaya->status, ['baru','belum_dikerjakan']))>
+                                    Belum Dikerjakan
                                 </option>
-                                <option value="proses" @selected($penugasanSaya->status === 'proses')>
-                                    Proses
+                                <option value="sedang_dikerjakan" @selected(in_array($penugasanSaya->status, ['proses','sedang_dikerjakan']))>
+                                    Sedang Dikerjakan
                                 </option>
                                 <option value="selesai" @selected($penugasanSaya->status === 'selesai')>
                                     Selesai
@@ -81,17 +98,17 @@
                         </td>
 
                         <td class="py-4 text-right">
-                            <button
-                                onclick="openDetailModal({{ $item['id'] }})"
+                            <a
+                                href="{{ route('pegawai.tugas.show', $item['id']) }}"
                                 class="text-slate-600 hover:text-blue-600 font-medium transition">
                                 Detail
-                            </button>
+                            </a>
                         </td>
 
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="6" class="py-8 text-center text-slate-400">
+                        <td colspan="7" class="py-8 text-center text-slate-400">
                             Tugas belum tersedia
                         </td>
                     </tr>

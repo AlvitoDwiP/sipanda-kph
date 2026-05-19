@@ -20,6 +20,7 @@ Route::middleware(['auth', 'role:pegawai'])->prefix('pegawai')->name('pegawai.')
     Route::put('/data-kepegawaian/{pegawai}', [DataKepegawaianController::class, 'updateKepegawaian'])->name('data_kepegawaian.update');
 
     Route::get('/tugas-saya', [TugasSayaController::class, 'index'])->name('tugas.index');
+    Route::get('/tugas-saya/{tugas}', [TugasSayaController::class, 'show'])->name('tugas.show');
     Route::patch('/tugas-saya/penugasan/{penugasan}/status', [TugasSayaController::class, 'updateStatus'])->name('tugas.update-status');
 
     Route::resource('catatan-kegiatan', CatatanKegiatanController::class)

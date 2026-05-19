@@ -58,4 +58,9 @@ class User extends Authenticatable
     {
         return $this->pegawai?->dataDiri?->foto;
     }
+
+    public function tugasDiberikan()
+    {
+        return $this->hasMany(Tugas::class, 'user_id');
+    }
 }

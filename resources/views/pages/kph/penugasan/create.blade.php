@@ -1,15 +1,15 @@
 @extends('layouts.master')
-@php($routePrefix = $routePrefix ?? 'admin')
+@php($routePrefix = 'kph')
 
 @section('title', 'Penugasan')
-@section('page-title', 'Edit Penugasan')
+@section('page-title', 'Tambah Penugasan')
 
 @section('content')
 <div class="bg-white rounded-xl shadow-sm border border-slate-100 mb-6">
 
     <!-- Header -->
     <div class="p-6 border-b border-slate-100 flex justify-between items-center">
-        <h3 class="font-bold text-slate-800">Edit Penugasan</h3>
+        <h3 class="font-bold text-slate-800">Tambah Penugasan</h3>
         <a href="{{ route($routePrefix . '.penugasan.index') }}"
             class="text-sm text-slate-500 hover:text-slate-700">
             ✕
@@ -17,9 +17,8 @@
     </div>
 
     <!-- Form -->
-    <form method="POST" action="{{ route($routePrefix . '.penugasan.update', $penugasan->id) }}" enctype="multipart/form-data" class="p-6 space-y-6">
+    <form method="POST" action="{{ route($routePrefix . '.penugasan.store') }}" enctype="multipart/form-data" class="p-6 space-y-6">
         @csrf
-        @method('PUT')
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
@@ -29,7 +28,7 @@
                     Judul Tugas
                 </label>
                 <input type="text" name="judul" required
-                    value="{{ old('judul', $penugasan->judul) }}"
+                    value="{{ old('judul') }}"
                     class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm">
                 <x-input-error :messages="$errors->get('judul')" class="mt-1" />
             </div>
@@ -40,7 +39,7 @@
                     Deskripsi
                 </label>
                 <textarea name="deskripsi" rows="4" required
-                    class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm">{{ old('deskripsi', $penugasan->deskripsi) }}</textarea>
+                    class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm">{{ old('deskripsi') }}</textarea>
                 <x-input-error :messages="$errors->get('deskripsi')" class="mt-1" />
             </div>
 
@@ -50,7 +49,7 @@
                     Tanggal Tugas
                 </label>
                 <input type="date" name="tanggal_tugas" required
-                    value="{{ old('tanggal_tugas', optional($penugasan->tanggal_tugas)->format('Y-m-d') ?? $penugasan->tanggal_tugas) }}"
+                    value="{{ old('tanggal_tugas') }}"
                     class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm">
                 <x-input-error :messages="$errors->get('tanggal_tugas')" class="mt-1" />
             </div>
@@ -61,7 +60,7 @@
                     Deadline
                 </label>
                 <input type="date" name="deadline" required
-                    value="{{ old('deadline', $penugasan->deadline) }}"
+                    value="{{ old('deadline') }}"
                     class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm">
                 <x-input-error :messages="$errors->get('deadline')" class="mt-1" />
             </div>
@@ -74,31 +73,22 @@
                 <select name="prioritas" required
                     class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm">
                     <option value="">-- Pilih Prioritas --</option>
-                    <option value="rendah" @selected(old('prioritas', $penugasan->prioritas)=='rendah')>Rendah</option>
-                    <option value="sedang" @selected(old('prioritas', $penugasan->prioritas)=='sedang')>Sedang</option>
-                    <option value="tinggi" @selected(old('prioritas', $penugasan->prioritas)=='tinggi')>Tinggi</option>
+                    <option value="rendah" @selected(old('prioritas')=='rendah' )>Rendah</option>
+                    <option value="sedang" @selected(old('prioritas')=='sedang' )>Sedang</option>
+                    <option value="tinggi" @selected(old('prioritas')=='tinggi' )>Tinggi</option>
                 </select>
                 <x-input-error :messages="$errors->get('prioritas')" class="mt-1" />
             </div>
 
-            <!-- Template -->
+            <!-- Template Tugas -->
             <div class="md:col-span-2">
                 <label class="block text-sm font-medium text-slate-700 mb-1">
-                    Template Tugas
+                    Template Tugas <span class="text-red-600">*</span>
                 </label>
-
-                @if ($penugasan->template)
-                <div class="mb-2">
-                    <a href="{{ asset('storage/' . $penugasan->template) }}"
-                        target="_blank"
-                        class="text-blue-600 text-sm hover:underline">
-                        📄 Lihat Template Saat Ini
-                    </a>
-                </div>
-                @endif
 
                 <input type="file"
                     name="template"
+                    required
                     accept=".pdf,.doc,.docx"
                     class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm
                     file:mr-4 file:py-2 file:px-4
@@ -108,60 +98,30 @@
                     hover:file:bg-blue-100">
 
                 <p class="text-xs text-slate-500 mt-1">
-                    Kosongkan jika tidak ingin mengganti template
+                    Format: PDF, DOC, DOCX (maks 2MB)
                 </p>
 
                 <x-input-error :messages="$errors->get('template')" class="mt-1" />
             </div>
 
-            <!-- Pegawai -->
             <div class="md:col-span-2" id="pegawai-wrapper">
                 <label class="block text-sm font-medium text-slate-700 mb-1">
                     Pegawai yang Ditugaskan
                 </label>
 
-                <button type="button" onclick="addPegawaiDropdown()"
-                    class="px-3 py-2 bg-green-800 text-white rounded-lg hover:bg-green-900">
-                    +
-                </button>
-
-                @foreach(old('pegawai_id', $penugasan->penugasan->pluck('pegawai_id')->toArray()) as $pegawaiId)
                 <div class="flex gap-2 mb-2">
                     <select name="pegawai_id[]" required
                         class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm">
                         <option value="">-- Pilih Pegawai --</option>
                         @foreach ($pegawai as $item)
-                        <option value="{{ $item->id }}"
-                            @selected($pegawaiId==$item->id)>
-                            {{ $item->user->name }}
-                        </option>
+                        <option value="{{ $item->id }}">{{ $item->user->name }}</option>
                         @endforeach
                     </select>
-                    <button type="button" onclick="this.parentNode.remove()"
-                        class="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
-                        -
+                    <button type="button" onclick="addPegawaiDropdown()"
+                        class="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                        +
                     </button>
                 </div>
-                @endforeach
-
-                <!-- Default dropdown kosong jika tidak ada -->
-                @if(count(old('pegawai_id', $penugasan->penugasan)) == 0)
-                <div class="flex gap-2 mb-2">
-                    <select name="pegawai_id[]" required
-                        class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm">
-                        <option value="">-- Pilih Pegawai --</option>
-                        @foreach ($pegawai as $item)
-                        <option value="{{ $item->id }}">
-                            {{ $item->user->name }}
-                        </option>
-                        @endforeach
-                    </select>
-                    <button type="button" onclick="this.parentNode.remove()"
-                        class="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
-                        -
-                    </button>
-                </div>
-                @endif
 
                 <x-input-error :messages="$errors->get('pegawai_id')" class="mt-1" />
             </div>

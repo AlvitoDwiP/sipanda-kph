@@ -58,7 +58,7 @@
             </a>
 
             <!-- Penugasan -->
-            <a href="{{ route('admin.penugasan.index') }}" class="flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors @if(request()->routeIs('admin.penugasan.index')) bg-green-50 text-green-800 @else text-slate-700 hover:bg-emerald-50 hover:text-emerald-800 @endif">
+            <a href="{{ route('admin.penugasan.index') }}" class="flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors @if(request()->routeIs('admin.penugasan.*')) bg-green-50 text-green-800 @else text-slate-700 hover:bg-emerald-50 hover:text-emerald-800 @endif">
                 <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
@@ -148,7 +148,7 @@
                 Data Kepegawaian
             </a>
             
-            <a href="{{ route('kph.penugasan.index') }}" class="flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors @if(request()->routeIs('kph.penugasan.index')) bg-green-50 text-green-800 @else text-slate-700 hover:bg-emerald-50 hover:text-emerald-800 @endif">
+            <a href="{{ route('kph.penugasan.index') }}" class="flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors @if(request()->routeIs('kph.penugasan.*')) bg-green-50 text-green-800 @else text-slate-700 hover:bg-emerald-50 hover:text-emerald-800 @endif">
                 <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>

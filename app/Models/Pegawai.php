@@ -44,4 +44,16 @@ class Pegawai extends Model
     {
         return $this->belongsTo(DataDiri::class, 'data_diri_id');
     }
+
+    public function penugasan()
+    {
+        return $this->hasMany(Penugasan::class, 'pegawai_id');
+    }
+
+    public function tugas()
+    {
+        return $this->belongsToMany(Tugas::class, 'penugasan', 'pegawai_id', 'tugas_id')
+            ->withPivot(['status', 'catatan_kepegawaian', 'laporan', 'foto_progres'])
+            ->withTimestamps();
+    }
 }

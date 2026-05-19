@@ -12,7 +12,7 @@ Route::middleware(['auth', 'role:kph'])->prefix('kph')->name('kph.')->group(func
     Route::get('/pegawai', [KphPegawaiController::class, 'index'])->name('pegawai.index');
     Route::get('/pegawai/{id}', [KphPegawaiController::class, 'show'])->name('pegawai.show');
 
-    Route::get('/penugasan', [KphPenugasanController::class, 'index'])->name('penugasan.index');
+    Route::resource('penugasan', KphPenugasanController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
 
     Route::get('/catatan-kegiatan', [CatatanKegiatanController::class, 'index'])->name('catatan_kegiatan.index');
 });

@@ -51,13 +51,24 @@ class PenugasanController extends Controller
         return view('pages.admin.penugasan.create', compact('pegawai'));
     }
 
+    public function show(Tugas $penugasan)
+    {
+        $penugasan->load(['user', 'penugasan.pegawai.user']);
+
+        return view('pages.admin.penugasan.show', [
+            'penugasan' => $penugasan,
+            'routePrefix' => 'admin',
+        ]);
+    }
+
     public function store(Request $request)
     {
         $request->validate([
             'judul'        => 'required|string|max:255',
             'deskripsi'    => 'required|string',
-            'deadline'     => 'required|date',
-            'prioritas'    => 'required|string',
+            'tanggal_tugas' => 'required|date',
+            'deadline'     => 'required|date|after_or_equal:tanggal_tugas',
+            'prioritas'    => 'required|in:rendah,sedang,tinggi',
             'pegawai_id'   => 'required|array|min:1',
             'pegawai_id.*' => 'exists:pegawai,id',
             'template'     => 'required|file|mimes:pdf,doc,docx|max:2048',
@@ -71,6 +82,7 @@ class PenugasanController extends Controller
             $tugas = Tugas::create([
                 'judul'     => $request->judul,
                 'deskripsi' => $request->deskripsi,
+                'tanggal_tugas' => $request->tanggal_tugas,
                 'deadline'  => $request->deadline,
                 'prioritas' => $request->prioritas,
                 'template'  => $templatePath,
@@ -81,7 +93,7 @@ class PenugasanController extends Controller
                 Penugasan::create([
                     'pegawai_id' => $pegawaiId,
                     'tugas_id'   => $tugas->id,
-                    'status'     => 'baru',
+                    'status'     => 'belum_dikerjakan',
                 ]);
             }
         });
@@ -109,8 +121,9 @@ class PenugasanController extends Controller
         $request->validate([
             'judul'        => 'required|string|max:255',
             'deskripsi'    => 'required|string',
-            'deadline'     => 'required|date',
-            'prioritas'    => 'required|string',
+            'tanggal_tugas' => 'required|date',
+            'deadline'     => 'required|date|after_or_equal:tanggal_tugas',
+            'prioritas'    => 'required|in:rendah,sedang,tinggi',
             'pegawai_id'   => 'required|array|min:1',
             'pegawai_id.*' => 'exists:pegawai,id',
             'template'     => 'nullable|file|mimes:pdf,doc,docx|max:2048',
@@ -120,6 +133,7 @@ class PenugasanController extends Controller
             $updateData = [
                 'judul'     => $request->judul,
                 'deskripsi' => $request->deskripsi,
+                'tanggal_tugas' => $request->tanggal_tugas,
                 'deadline'  => $request->deadline,
                 'prioritas' => $request->prioritas,
             ];
@@ -152,7 +166,7 @@ class PenugasanController extends Controller
                         'tugas_id'   => $penugasan->id,
                         'pegawai_id' => $pegawaiId,
                     ],
-                    ['status' => 'baru']
+                    ['status' => 'belum_dikerjakan']
                 );
             }
         });
