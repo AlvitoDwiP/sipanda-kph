@@ -72,11 +72,15 @@
 
 <script>
 const scanRoute = @json($scanRoute);
+const stateRoute = @json($stateRoute ?? null);
 const csrf = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 const scannerInput = document.getElementById('qrScannerInput');
 const resetCountdown = document.getElementById('resetCountdown');
 let timerHandle = null;
 let countdownHandle = null;
+let lastResetAt = null;
+let displayDurationSeconds = Number(@json($displayDurationSeconds ?? 10));
+let showEmployeePhoto = Boolean(@json($showEmployeePhoto ?? false));
 
 function keepFocus() { scannerInput.focus(); }
 window.addEventListener('click', keepFocus);
@@ -151,7 +155,7 @@ function renderSuccess(data) {
   document.getElementById('pegawaiMeta').textContent = `${data.pegawai.jabatan} • ${data.pegawai.unit_kerja}`;
 
   const fotoEl = document.getElementById('pegawaiFoto');
-  if (data.pegawai.foto_url) {
+  if (showEmployeePhoto && data.pegawai.foto_url) {
     fotoEl.src = data.pegawai.foto_url;
     fotoEl.classList.remove('hidden');
   } else {
@@ -173,6 +177,22 @@ function renderMessage(title, message, danger=false) {
   document.getElementById('messageBody').textContent = message;
 }
 
+async function pollState() {
+  if (!stateRoute) return;
+  try {
+    const res = await fetch(stateRoute, { headers: { 'Accept': 'application/json' } });
+    if (!res.ok) return;
+    const data = await res.json();
+    displayDurationSeconds = Number(data.display_duration_seconds || displayDurationSeconds);
+    showEmployeePhoto = Boolean(data.show_employee_photo);
+
+    if (data.reset_requested_at && data.reset_requested_at !== lastResetAt) {
+      lastResetAt = data.reset_requested_at;
+      resetToIdle();
+    }
+  } catch (e) {}
+}
+
 async function submitToken(token) {
   setState('stateLoading');
   try {
@@ -183,15 +203,9 @@ async function submitToken(token) {
     });
     const data = await res.json();
 
-    if (data.status === 'success') {
+    if (data.status === 'success' || data.status === 'empty_task') {
       renderSuccess(data);
-      scheduleReset(15);
-      return;
-    }
-
-    if (data.status === 'empty_task') {
-      renderSuccess(data);
-      scheduleReset(10);
+      scheduleReset(displayDurationSeconds);
       return;
     }
 
@@ -218,6 +232,8 @@ scannerInput.addEventListener('keydown', (e) => {
   }
 });
 
+setInterval(pollState, 5000);
+pollState();
 resetToIdle();
 </script>
 </body>

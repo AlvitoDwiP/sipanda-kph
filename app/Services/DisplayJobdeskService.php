@@ -9,12 +9,14 @@ class DisplayJobdeskService
 {
     public function scanToken(string $token): array
     {
-        $token = trim($token);
+        $token = strtoupper(trim($token));
 
         if ($token === '' || !preg_match('/^PGW-[A-Z2-9]{10,32}$/', $token)) {
             return [
                 'status' => 'invalid_token',
                 'message' => 'QR tidak terbaca dengan benar. Silakan scan ulang.',
+                '_pegawai_id' => null,
+                '_task_count' => 0,
             ];
         }
 
@@ -26,6 +28,8 @@ class DisplayJobdeskService
             return [
                 'status' => 'invalid_token',
                 'message' => 'QR tidak valid.',
+                '_pegawai_id' => null,
+                '_task_count' => 0,
             ];
         }
 
@@ -33,6 +37,8 @@ class DisplayJobdeskService
             return [
                 'status' => 'inactive_employee',
                 'message' => 'Pegawai tidak aktif.',
+                '_pegawai_id' => $pegawai->id,
+                '_task_count' => 0,
             ];
         }
 
@@ -76,7 +82,6 @@ class DisplayJobdeskService
             ->values();
 
         $tasks = $rows->map(function ($item) {
-            $isLate = (bool) $item->is_terlambat;
             return [
                 'judul' => $item->tugas->judul ?? '-',
                 'instruksi' => $item->tugas->deskripsi ?? '-',
@@ -84,7 +89,7 @@ class DisplayJobdeskService
                 'deadline' => optional($item->tugas->deadline)->format('d-m-Y') ?? '-',
                 'status' => $item->status,
                 'status_label' => $this->statusLabel($item->status),
-                'is_terlambat' => $isLate,
+                'is_terlambat' => (bool) $item->is_terlambat,
             ];
         })->all();
 
@@ -109,6 +114,8 @@ class DisplayJobdeskService
                 'pegawai' => $pegawaiPayload,
                 'summary' => $summary,
                 'tugas' => [],
+                '_pegawai_id' => $pegawai->id,
+                '_task_count' => 0,
             ];
         }
 
@@ -118,6 +125,8 @@ class DisplayJobdeskService
             'pegawai' => $pegawaiPayload,
             'summary' => $summary,
             'tugas' => $tasks,
+            '_pegawai_id' => $pegawai->id,
+            '_task_count' => $rows->count(),
         ];
     }
 
