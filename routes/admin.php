@@ -15,7 +15,7 @@ use App\Http\Controllers\Admin\RegisterController;
 use App\Http\Controllers\Admin\UnitKerjaController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'role:super_admin,admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminDashboard::class, 'index'])->name('dashboard');
     Route::get('/display-jobdesk', [DisplayJobdeskController::class, 'index'])->name('display-jobdesk.index');
     Route::get('/display-jobdesk/manage', [DisplayJobdeskController::class, 'manage'])->name('display-jobdesk.manage');

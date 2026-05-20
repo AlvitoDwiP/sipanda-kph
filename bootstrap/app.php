@@ -15,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 require __DIR__.'/../routes/admin.php';
                 require __DIR__.'/../routes/pegawai.php';
                 require __DIR__.'/../routes/kph.php';
+                require __DIR__.'/../routes/operator_display.php';
             });
         },
     )

@@ -42,9 +42,11 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerate();
 
         return match ($user->role) {
-            'admin'   => redirect()->route('admin.dashboard'),
-            'pegawai' => redirect()->route('pegawai.dashboard'),
-            'kph'     => redirect()->route('kph.dashboard'),
+            'super_admin'      => redirect()->route('admin.dashboard'),
+            'admin'            => redirect()->route('admin.dashboard'),
+            'kph'              => redirect()->route('kph.dashboard'),
+            'operator_display' => redirect()->route('operator-display.display-jobdesk.manage'),
+            'pegawai'          => redirect()->route('pegawai.dashboard'),
             default   => redirect('/'),
         };
     }
