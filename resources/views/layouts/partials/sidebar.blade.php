@@ -4,16 +4,19 @@
          lg:translate-x-0 lg:static lg:inset-0">
     <div class="flex flex-col h-full">
         <!-- Sidebar Header -->
-        <div class="flex items-center justify-between h-16 px-6 bg-slate-50 border-b border-slate-200">
+        <div class="sidebar-brand flex items-center justify-between">
             <div class="flex items-center gap-3">
                 <img
                     src="{{ asset('assets/images/avatar.png') }}"
                     alt="Logo"
-                    class="h-11 w-auto">
-                <span class="text-xl font-semibold text-slate-700">SIPANDA-KPH</span>
+                    class="sidebar-logo">
+                <div class="min-w-0">
+                    <div class="sidebar-title truncate">SIPANDA-KPH</div>
+                    <div class="sidebar-subtitle truncate">PERHUTANI</div>
+                </div>
             </div>
 
-            <button onclick="toggleSidebar()" class="lg:hidden">
+            <button type="button" onclick="closeSidebar()" class="lg:hidden text-white/70 hover:text-white" aria-label="Tutup sidebar">
                 <svg class="w-6 h-6 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M6 18L18 6M6 6l12 12"></path>
@@ -25,10 +28,11 @@
         <nav class="flex-1 px-4 py-4 space-y-2 overflow-y-auto custom-scrollbar">
 
             @if(in_array(auth()->user()->role, ['super_admin', 'admin'], true))
-            <p class="px-2 pb-2 text-xs font-semibold text-slate-500 uppercase">Menu Utama</p>
+            <p class="px-2 pb-2">Menu Utama</p>
 
             <!-- Dashboard -->
             <a href="{{ route('admin.dashboard') }}"
+                @if(request()->routeIs('admin.dashboard')) aria-current="page" @endif
                 class="flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors @if(request()->routeIs('admin.dashboard')) bg-green-50 text-green-800 @else text-slate-700 hover:bg-emerald-50 hover:text-emerald-800 @endif">
                 <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -39,6 +43,7 @@
 
             <!-- Registrasi & Verifikasi -->
             <a href="{{ route('admin.register.index') }}"
+                @if(request()->routeIs('admin.register.*')) aria-current="page" @endif
                 class="flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors @if(request()->routeIs('admin.register.index')) bg-green-50 text-green-800 @else text-slate-700 hover:bg-emerald-50 hover:text-emerald-800 @endif">
                 <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -49,6 +54,7 @@
 
             <!-- Data Kepegawaian -->
             <a href="{{ route('admin.pegawai.index') }}"
+                @if(request()->routeIs('admin.pegawai.*')) aria-current="page" @endif
                 class="flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors @if(request()->routeIs('admin.pegawai.index')) bg-green-50 text-green-800   @else text-slate-700 hover:bg-emerald-50 hover:text-emerald-800 @endif">
                 <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -105,7 +111,7 @@
                 </button>
 
                 <div id="ref-dropdown"
-                    class="mt-1 ml-8 space-y-1 @unless(request()->routeIs('admin.golongan.*', 'admin.jabatan.*', 'admin.unitkerja.*')) hidden @endunless">
+                    class="sidebar-submenu mt-1 ml-8 space-y-1 @unless(request()->routeIs('admin.golongan.*', 'admin.jabatan.*', 'admin.unitkerja.*')) hidden @endunless">
 
                     <a href="{{ route('admin.golongan.index') }}"
                         class="block px-4 py-2 text-sm rounded-lg transition 
@@ -143,8 +149,8 @@
             </a>
             @endif
 
-            @if(in_array(auth()->user()->role, ['super_admin', 'admin', 'kph'], true))
-            <p class="px-2 pb-2 text-xs font-semibold text-slate-500 uppercase">Menu Utama</p>
+            @if(auth()->user()->role === 'kph')
+            <p class="px-2 pb-2">Menu Utama</p>
 
             <a href="{{ route('kph.dashboard') }}" class="flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors @if(request()->routeIs('kph.dashboard')) bg-green-50 text-green-800   @else text-slate-700 hover:bg-emerald-50 hover:text-emerald-800 @endif">
                 <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -195,7 +201,7 @@
             @endif
 
             @if(auth()->user()->role === 'operator_display')
-            <p class="px-2 pb-2 text-xs font-semibold text-slate-500 uppercase">Menu Utama</p>
+            <p class="px-2 pb-2">Menu Utama</p>
 
             <a href="{{ route('operator-display.display-jobdesk.manage') }}" class="flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors @if(request()->routeIs('operator-display.display-jobdesk.*')) bg-green-50 text-green-800 @else text-slate-700 hover:bg-emerald-50 hover:text-emerald-800 @endif">
                 <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -206,7 +212,7 @@
             @endif
 
             @if(auth()->user()->role === 'pegawai')
-            <p class="px-2 pb-2 text-xs font-semibold text-slate-500 uppercase">Menu Utama</p>
+            <p class="px-2 pb-2">Menu Utama</p>
 
             <a href="{{ route('pegawai.dashboard') }}" class="flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors @if(request()->routeIs('pegawai.dashboard')) bg-green-50 text-green-800 @else text-slate-700 hover:bg-emerald-50 hover:text-emerald-800 @endif">
                 <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -252,8 +258,21 @@
         </nav>
 
         <!-- Sidebar Footer -->
-        <div class="p-4 bg-slate-50 border-t border-slate-200 text-center text-[10px] text-slate-500">
-            Versi 1.0.0
+        <div class="sidebar-footer">
+            <div class="flex items-center gap-2 min-w-0">
+                <div class="sidebar-avatar flex items-center justify-center overflow-hidden">
+                    @if (Auth::user()->avatar)
+                        <img src="{{ asset('storage/'.Auth::user()->avatar) }}" class="h-full w-full object-cover" alt="Avatar">
+                    @else
+                        {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                    @endif
+                </div>
+                <div class="min-w-0 text-left">
+                    <div class="truncate text-[11.5px] font-semibold text-white">{{ Auth::user()->name }}</div>
+                    <div class="truncate text-[10px] text-white/55">{{ Auth::user()->email }}</div>
+                </div>
+            </div>
+            <div class="mt-2 text-[9.5px] text-white/45">Versi 1.0.0</div>
         </div>
     </div>
 </aside>

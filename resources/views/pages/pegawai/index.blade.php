@@ -136,7 +136,7 @@
                 Perbarui Status Tugas
             </a>
 
-            <a href="{{ route('pegawai.catatan_kegiatan.create') }}"
+            <a href="{{ route('pegawai.catatan_kegiatan.index') }}"
                 class="w-full flex items-center justify-center gap-2 px-4 py-3
                   text-sm font-medium text-white bg-emerald-600
                   rounded-lg hover:bg-emerald-700 transition">
@@ -149,7 +149,7 @@
                        a2 2 0 112.828 2.828
                        L11.828 15H9v-2.828l8.586-8.586z" />
                 </svg>
-                Buat Catatan Kegiatan
+                Lihat Catatan Kegiatan
             </a>
         </div>
     </div>

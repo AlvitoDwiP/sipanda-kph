@@ -1,18 +1,26 @@
-<header class="flex items-center justify-between h-16 px-6 bg-white border-b border-gray-200">
-    <div class="flex items-center">
-        <button onclick="toggleSidebar()"
-            class="p-1 mr-4 text-gray-600 rounded-md lg:hidden hover:bg-gray-100 focus:outline-none">
+<header class="app-topbar flex items-center justify-between">
+    <div class="flex items-center min-w-0 gap-3">
+        <button type="button"
+            onclick="toggleSidebar()"
+            aria-controls="sidebar"
+            aria-expanded="false"
+            aria-label="Buka sidebar"
+            class="p-1 text-gray-600 rounded-md lg:hidden hover:bg-gray-100 focus:outline-none">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M4 6h16M4 12h16M4 18h16"></path>
             </svg>
         </button>
+        <div class="min-w-0">
+            <div class="truncate text-[12px] font-semibold text-[#064E3B]">@yield('page-title', 'SIPANDA-KPH')</div>
+            <div class="hidden sm:block truncate text-[10.5px] text-[#667085]">{{ ucfirst(str_replace('_', ' ', Auth::user()->role)) }}</div>
+        </div>
     </div>
 
-    <div class="flex items-center space-x-4">
+    <div class="flex items-center gap-3 min-w-0">
 
         {{-- SEARCH --}}
-        <div class="hidden md:block relative">
+        <div class="topbar-search hidden md:block relative">
             @php
                 // Determine search route and placeholder based on current page
                 $currentRoute = Route::currentRouteName();
@@ -24,9 +32,6 @@
                     $searchPlaceholder = 'Cari pegawai...';
                 } elseif (str_contains($currentRoute, 'kph.pegawai')) {
                     $searchRoute = route('kph.pegawai.index');
-                    $searchPlaceholder = 'Cari pegawai...';
-                } elseif (str_contains($currentRoute, 'pegawai.direktori')) {
-                    $searchRoute = route('pegawai.direktori.index');
                     $searchPlaceholder = 'Cari pegawai...';
                 } elseif (str_contains($currentRoute, 'notifications.')) {
                     $searchRoute = route('notifications.index');
@@ -81,16 +86,20 @@
                     name="q"
                     value="{{ request('q') }}"
                     placeholder="{{ $searchPlaceholder }}"
-                    class="px-4 py-2.5 text-sm bg-gray-100 rounded-full focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none w-96">
+                    class="outline-none">
             </form>
         </div>
 
         @php
-            $unreadNotificationsCount = auth()->user()->unreadNotifications()->count();
+            $unreadNotificationsCount = 0;
+            if (\Illuminate\Support\Facades\Schema::hasTable('notifications')) {
+                $unreadNotificationsCount = auth()->user()->unreadNotifications()->count();
+            }
         @endphp
         <a href="{{ route('notifications.index') }}"
-            class="p-2 text-gray-400 hover:text-gray-600 border-r pr-4 inline-flex items-center relative">
-            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            aria-label="Buka notifikasi"
+            class="p-2 text-gray-400 hover:text-gray-600 border-r border-[#DDE7DC] pr-3 inline-flex items-center relative">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11
                     a6.002 6.002 0 00-4-5.659V5
@@ -114,11 +123,11 @@
                 class="flex items-center gap-2 hover:bg-gray-50 p-1 rounded-lg">
 
                 <div class="hidden md:block text-right">
-                    <p class="text-xs font-semibold text-gray-800">{{ Auth::user()->name }}</p>
+                    <p class="text-[11.5px] font-semibold text-gray-800">{{ Auth::user()->name }}</p>
                     <p class="text-[10px] text-gray-500">{{ Auth::user()->email }}</p>
                 </div>
 
-                <div class="w-8 h-8 rounded-full overflow-hidden border border-gray-300 bg-gray-100 flex items-center justify-center">
+                <div class="w-8 h-8 rounded-full overflow-hidden border border-[#DDE7DC] bg-gray-100 flex items-center justify-center text-[11px] font-semibold text-[#064E3B]">
                     @if (Auth::user()->avatar)
                     <img src="{{ asset('storage/'.Auth::user()->avatar) }}">
                     @else

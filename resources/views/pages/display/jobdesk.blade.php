@@ -5,49 +5,69 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $pageTitle }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: "Inter", sans-serif;
+            background: #064E3B;
+        }
+
+        .tv-panel {
+            border: 1px solid rgba(110, 231, 168, .24);
+            background: rgba(255, 255, 255, .08);
+            box-shadow: none;
+        }
+
+        .tv-panel-soft {
+            border: 1px solid rgba(224, 232, 223, .22);
+            background: rgba(255, 255, 255, .1);
+        }
+    </style>
 </head>
-<body class="bg-slate-950 text-white min-h-screen">
+<body class="text-white min-h-screen">
     <div class="max-w-7xl mx-auto px-6 py-8">
         <div class="flex items-start justify-between mb-8">
             <div>
                 <h1 class="text-4xl font-black tracking-tight">SIPANDA-KPH</h1>
-                <p class="text-slate-300 text-xl">Display Job Desk Harian</p>
+                <p class="text-emerald-100 text-xl">Display Job Desk Harian</p>
             </div>
             <div class="text-right">
                 <div id="clock" class="text-2xl font-bold"></div>
-                <div id="dateText" class="text-slate-300"></div>
+                <div id="dateText" class="text-emerald-100"></div>
             </div>
         </div>
 
-        <div id="stateIdle" class="rounded-2xl border border-cyan-700/40 bg-cyan-900/20 p-10 text-center">
+        <div id="stateIdle" class="tv-panel rounded-2xl p-10 text-center">
             <p class="text-5xl font-extrabold mb-5">Silakan scan QR pegawai Anda</p>
-            <p class="text-xl text-slate-300">Scanner siap. Fitur ini bukan absensi.</p>
+            <p class="text-xl text-emerald-100">Scanner siap. Fitur ini bukan absensi.</p>
         </div>
 
-        <div id="stateLoading" class="hidden rounded-2xl border border-blue-700/40 bg-blue-900/20 p-10 text-center">
+        <div id="stateLoading" class="hidden tv-panel rounded-2xl p-10 text-center">
             <p class="text-4xl font-bold">Memproses QR...</p>
         </div>
 
         <div id="stateResult" class="hidden mt-6 space-y-6">
-            <div class="rounded-2xl border border-emerald-700/40 bg-emerald-900/20 p-6">
+            <div class="tv-panel rounded-2xl p-6">
                 <div class="flex items-center gap-6">
-                    <img id="pegawaiFoto" class="w-24 h-24 rounded-full object-cover border border-slate-700 hidden" alt="Foto Pegawai">
+                    <img id="pegawaiFoto" class="w-24 h-24 rounded-full object-cover border border-emerald-100/30 hidden" alt="Foto Pegawai">
                     <div>
                         <p id="pegawaiNama" class="text-4xl font-extrabold"></p>
-                        <p id="pegawaiMeta" class="text-slate-200 text-lg"></p>
+                        <p id="pegawaiMeta" class="text-emerald-100 text-lg"></p>
                     </div>
                 </div>
             </div>
 
             <div class="grid md:grid-cols-4 gap-4">
-                <div class="p-4 rounded-xl bg-slate-800 border border-slate-700"><p class="text-slate-300">Total</p><p id="sumTotal" class="text-3xl font-bold">0</p></div>
-                <div class="p-4 rounded-xl bg-slate-800 border border-slate-700"><p class="text-slate-300">Selesai</p><p id="sumDone" class="text-3xl font-bold text-green-400">0</p></div>
-                <div class="p-4 rounded-xl bg-slate-800 border border-slate-700"><p class="text-slate-300">Belum Selesai</p><p id="sumPending" class="text-3xl font-bold text-amber-400">0</p></div>
-                <div class="p-4 rounded-xl bg-slate-800 border border-slate-700"><p class="text-slate-300">Terlambat</p><p id="sumLate" class="text-3xl font-bold text-red-400">0</p></div>
+                <div class="p-4 rounded-xl tv-panel-soft"><p class="text-emerald-100">Total</p><p id="sumTotal" class="text-3xl font-bold">0</p></div>
+                <div class="p-4 rounded-xl tv-panel-soft"><p class="text-emerald-100">Selesai</p><p id="sumDone" class="text-3xl font-bold text-[#6EE7A8]">0</p></div>
+                <div class="p-4 rounded-xl tv-panel-soft"><p class="text-emerald-100">Belum Selesai</p><p id="sumPending" class="text-3xl font-bold text-amber-200">0</p></div>
+                <div class="p-4 rounded-xl tv-panel-soft"><p class="text-emerald-100">Terlambat</p><p id="sumLate" class="text-3xl font-bold text-red-200">0</p></div>
             </div>
 
-            <div class="rounded-2xl border border-slate-700 bg-slate-900/80 p-5">
+            <div class="tv-panel rounded-2xl p-5">
                 <h2 class="text-2xl font-bold mb-3">Job Desk Hari Ini</h2>
                 <div id="taskContainer" class="space-y-3"></div>
             </div>
@@ -59,12 +79,12 @@
         </div>
 
         <div class="mt-6 flex justify-between items-center">
-            <p class="text-slate-400 text-sm">QR Display Job Desk Harian hanya untuk informasi pekerjaan, bukan absensi.</p>
-            <p id="resetCountdown" class="text-slate-300 text-sm"></p>
+            <p class="text-emerald-100/80 text-sm">QR Display Job Desk Harian hanya untuk informasi pekerjaan, bukan absensi.</p>
+            <p id="resetCountdown" class="text-emerald-100 text-sm"></p>
         </div>
 
         <div class="mt-6">
-            <a href="{{ $backRoute }}" class="inline-block px-4 py-2 rounded bg-slate-700 hover:bg-slate-600 text-sm">Kembali</a>
+            <a href="{{ $backRoute }}" class="inline-block px-4 py-2 rounded bg-white/12 hover:bg-white/18 text-sm">Kembali</a>
         </div>
     </div>
 
@@ -126,25 +146,25 @@ function esc(str){ return (str || '').replace(/[&<>\"']/g, c => ({'&':'&amp;','<
 function renderTasks(tasks) {
   const container = document.getElementById('taskContainer');
   if (!tasks.length) {
-    container.innerHTML = '<div class="text-slate-300">Tidak ada job desk hari ini. Silakan konfirmasi ke admin/KPH jika ada pekerjaan yang belum tercatat.</div>';
+    container.innerHTML = '<div class="text-emerald-100">Tidak ada job desk hari ini. Silakan konfirmasi ke admin/KPH jika ada pekerjaan yang belum tercatat.</div>';
     return;
   }
 
   container.innerHTML = tasks.map(task => {
     const prioClass = task.prioritas === 'tinggi' ? 'bg-red-700/30 text-red-200' : (task.prioritas === 'sedang' ? 'bg-amber-700/30 text-amber-200' : 'bg-emerald-700/30 text-emerald-200');
     const lateBadge = task.is_terlambat ? '<span class="px-2 py-1 rounded text-xs bg-red-800 text-red-100">Terlambat</span>' : '';
-    return `<div class="rounded-lg border border-slate-700 bg-slate-800 p-4">
+    return `<div class="rounded-lg border border-emerald-100/20 bg-white/10 p-4">
       <div class="flex justify-between items-start gap-3">
         <div>
           <div class="text-xl font-bold">${esc(task.judul)}</div>
-          <div class="text-slate-300 text-sm mt-1">${esc(task.instruksi)}</div>
+          <div class="text-emerald-100 text-sm mt-1">${esc(task.instruksi)}</div>
         </div>
         <div class="text-right shrink-0">
           <span class="px-2 py-1 rounded text-xs ${prioClass}">${esc(task.prioritas)}</span>
           ${lateBadge}
         </div>
       </div>
-      <div class="mt-3 text-sm text-slate-300">Deadline: ${esc(task.deadline)} | Status: ${esc(task.status_label)}</div>
+      <div class="mt-3 text-sm text-emerald-100">Deadline: ${esc(task.deadline)} | Status: ${esc(task.status_label)}</div>
     </div>`;
   }).join('');
 }
@@ -172,7 +192,7 @@ function renderSuccess(data) {
 function renderMessage(title, message, danger=false) {
   setState('stateMessage');
   const box = document.getElementById('stateMessage');
-  box.className = `rounded-2xl border p-10 text-center mt-6 ${danger ? 'border-red-600 bg-red-900/20' : 'border-amber-600 bg-amber-900/20'}`;
+  box.className = `rounded-2xl border p-10 text-center mt-6 ${danger ? 'border-red-200/50 bg-red-900/25' : 'border-amber-200/50 bg-amber-900/25'}`;
   document.getElementById('messageTitle').textContent = title;
   document.getElementById('messageBody').textContent = message;
 }
