@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\DisplayJobdeskController;
 use App\Http\Controllers\Admin\GolonganController;
 use App\Http\Controllers\Admin\JabatanController;
 use App\Http\Controllers\Admin\LogController;
+use App\Http\Controllers\Admin\LaporanPdfController;
 use App\Http\Controllers\Admin\NotifAdminController;
 use App\Http\Controllers\Admin\PegawaiController;
 use App\Http\Controllers\Admin\PenugasanController;
@@ -47,6 +48,9 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::post('/catatan-kegiatan/{catatan}/tolak', [CatatanController::class, 'tolak'])->name('catatan_kegiatan.tolak');
     Route::get('/catatan-kegiatan/{id}/download-pdf', [CatatanController::class, 'downloadPdf'])->name('catatan_kegiatan.pdf');
     Route::get('/rekap-pekerjaan', [RekapPekerjaanController::class, 'index'])->name('rekap-pekerjaan.index');
+    Route::get('/rekap-pekerjaan/export-pdf', [LaporanPdfController::class, 'exportRekapPekerjaan'])->name('rekap-pekerjaan.export-pdf');
+    Route::get('/laporan/tugas/export-pdf', [LaporanPdfController::class, 'exportTugas'])->name('laporan.tugas.export-pdf');
+    Route::get('/laporan/catatan/export-pdf', [LaporanPdfController::class, 'exportCatatan'])->name('laporan.catatan.export-pdf');
 
     Route::resource('golongan', GolonganController::class)->only(['index', 'store', 'update', 'destroy']);
     Route::resource('jabatan', JabatanController::class)->only(['index', 'store', 'update', 'destroy']);

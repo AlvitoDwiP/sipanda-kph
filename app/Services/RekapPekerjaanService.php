@@ -8,7 +8,6 @@ use App\Models\Penugasan;
 use App\Models\UnitKerja;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class RekapPekerjaanService
@@ -247,6 +246,17 @@ class RekapPekerjaanService
             ->withQueryString();
     }
 
+    public function getDaftarTugasForExport(Carbon $startDate, Carbon $endDate, array $filters)
+    {
+        return $this->basePenugasanQuery($startDate, $endDate, $filters)
+            ->with(['tugas:id,judul,deskripsi,tanggal_tugas,deadline,prioritas', 'pegawai.user:id,name', 'pegawai.unitkerja:id,nama_unitkerja'])
+            ->orderByDesc('tugas.tanggal_tugas')
+            ->orderByDesc('penugasan.created_at')
+            ->select('penugasan.*')
+            ->limit(500)
+            ->get();
+    }
+
     public function getDaftarCatatan(Carbon $startDate, Carbon $endDate, array $filters)
     {
         return $this->baseCatatanQuery($startDate, $endDate, $filters)
@@ -260,6 +270,21 @@ class RekapPekerjaanService
             ->orderByDesc('created_at')
             ->paginate(20, ['*'], 'catatan_page')
             ->withQueryString();
+    }
+
+    public function getDaftarCatatanForExport(Carbon $startDate, Carbon $endDate, array $filters)
+    {
+        return $this->baseCatatanQuery($startDate, $endDate, $filters)
+            ->with([
+                'pegawai.user:id,name',
+                'pegawai.unitkerja:id,nama_unitkerja',
+                'penugasan.tugas:id,judul',
+                'verifier:id,name',
+            ])
+            ->orderByDesc('tanggal_kegiatan')
+            ->orderByDesc('created_at')
+            ->limit(500)
+            ->get();
     }
 
     private function basePenugasanQuery(Carbon $startDate, Carbon $endDate, array $filters): Builder

@@ -3,6 +3,7 @@
 use App\Http\Controllers\KPH\CatatanKegiatanController;
 use App\Http\Controllers\KPH\DashboardController as KphDashboard;
 use App\Http\Controllers\KPH\DisplayJobdeskController as KphDisplayJobdeskController;
+use App\Http\Controllers\KPH\LaporanPdfController as KphLaporanPdfController;
 use App\Http\Controllers\KPH\PegawaiController as KphPegawaiController;
 use App\Http\Controllers\KPH\PenugasanController as KphPenugasanController;
 use App\Http\Controllers\KPH\RekapPekerjaanController as KphRekapPekerjaanController;
@@ -38,4 +39,7 @@ Route::middleware(['auth', 'role:kph'])->prefix('kph')->name('kph.')->group(func
     Route::post('/catatan-kegiatan/{catatan}/revisi', [CatatanKegiatanController::class, 'revisi'])->name('catatan_kegiatan.revisi');
     Route::post('/catatan-kegiatan/{catatan}/tolak', [CatatanKegiatanController::class, 'tolak'])->name('catatan_kegiatan.tolak');
     Route::get('/rekap-pekerjaan', [KphRekapPekerjaanController::class, 'index'])->name('rekap-pekerjaan.index');
+    Route::get('/rekap-pekerjaan/export-pdf', [KphLaporanPdfController::class, 'exportRekapPekerjaan'])->name('rekap-pekerjaan.export-pdf');
+    Route::get('/laporan/tugas/export-pdf', [KphLaporanPdfController::class, 'exportTugas'])->name('laporan.tugas.export-pdf');
+    Route::get('/laporan/catatan/export-pdf', [KphLaporanPdfController::class, 'exportCatatan'])->name('laporan.catatan.export-pdf');
 });

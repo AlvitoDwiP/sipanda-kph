@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\LaporanValidasiController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -10,6 +11,8 @@ Route::get('/', function () {
 Route::get('/register/waiting', function () {
     return view('auth.register-waiting');
 })->name('register.waiting');
+
+Route::get('/validasi-laporan/{token}', [LaporanValidasiController::class, 'show'])->name('laporan.validasi.show');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

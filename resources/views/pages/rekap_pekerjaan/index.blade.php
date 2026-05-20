@@ -71,7 +71,11 @@
                 <a href="{{ route($routePrefix . '.rekap-pekerjaan.index') }}" class="px-4 py-2 rounded-lg bg-slate-200 text-slate-700 hover:bg-slate-300 text-sm font-medium">Reset</a>
             </div>
         </form>
-        <p class="text-xs text-slate-500 mt-3">Export PDF akan tersedia pada tahap berikutnya.</p>
+        <div class="mt-3 flex flex-wrap gap-2">
+            <a href="{{ route($routePrefix . '.rekap-pekerjaan.export-pdf', request()->query()) }}" class="px-3 py-2 rounded-lg bg-slate-700 text-white hover:bg-slate-800 text-xs font-medium">Export PDF Rekap</a>
+            <a href="{{ route($routePrefix . '.laporan.tugas.export-pdf', request()->query()) }}" class="px-3 py-2 rounded-lg bg-slate-700 text-white hover:bg-slate-800 text-xs font-medium">Export PDF Tugas</a>
+            <a href="{{ route($routePrefix . '.laporan.catatan.export-pdf', request()->query()) }}" class="px-3 py-2 rounded-lg bg-slate-700 text-white hover:bg-slate-800 text-xs font-medium">Export PDF Catatan</a>
+        </div>
     </div>
 
     <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
