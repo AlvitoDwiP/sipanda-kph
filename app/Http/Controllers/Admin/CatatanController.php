@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\CatatanKegiatan;
+use App\Services\ActionableNotificationService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 
@@ -56,6 +57,18 @@ class CatatanController extends Controller
             ]);
         }
 
+        $catatan->loadMissing('pegawai.user', 'penugasan');
+        if ($catatan->pegawai?->user) {
+            app(ActionableNotificationService::class)->notifyUser(
+                $catatan->pegawai->user,
+                'catatan_disetujui',
+                'Catatan kegiatan disetujui',
+                'Catatan kegiatan Anda telah disetujui.',
+                $catatan->penugasan ? route('pegawai.tugas.show', $catatan->penugasan->tugas_id) : route('pegawai.catatan_kegiatan.index'),
+                ['catatan_id' => $catatan->id]
+            );
+        }
+
         return back()->with('success', 'Catatan kegiatan berhasil disetujui.');
     }
 
@@ -85,6 +98,18 @@ class CatatanController extends Controller
             ]);
         }
 
+        $catatan->loadMissing('pegawai.user', 'penugasan');
+        if ($catatan->pegawai?->user) {
+            app(ActionableNotificationService::class)->notifyUser(
+                $catatan->pegawai->user,
+                'catatan_revisi',
+                'Catatan kegiatan perlu revisi',
+                'Catatan kegiatan Anda diminta revisi oleh admin/KPH.',
+                route('pegawai.catatan_kegiatan.show', $catatan->id),
+                ['catatan_id' => $catatan->id]
+            );
+        }
+
         return back()->with('success', 'Catatan kegiatan dikembalikan untuk revisi.');
     }
 
@@ -112,6 +137,18 @@ class CatatanController extends Controller
                 'status' => 'revisi',
                 'catatan_revisi' => $request->catatan_verifikasi,
             ]);
+        }
+
+        $catatan->loadMissing('pegawai.user');
+        if ($catatan->pegawai?->user) {
+            app(ActionableNotificationService::class)->notifyUser(
+                $catatan->pegawai->user,
+                'catatan_revisi',
+                'Catatan kegiatan ditolak',
+                'Catatan kegiatan Anda ditolak dan perlu perbaikan.',
+                route('pegawai.catatan_kegiatan.show', $catatan->id),
+                ['catatan_id' => $catatan->id]
+            );
         }
 
         return back()->with('success', 'Catatan kegiatan ditolak.');

@@ -7,6 +7,7 @@ use App\Models\Pegawai;
 use App\Models\Penugasan;
 use App\Models\PenugasanStatusHistory;
 use App\Models\Tugas;
+use App\Services\ActionableNotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -62,7 +63,7 @@ class PenugasanController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(Request $request, ActionableNotificationService $notificationService)
     {
         $request->validate([
             'judul'        => 'required|string|max:255',
@@ -91,11 +92,12 @@ class PenugasanController extends Controller
             ]);
 
             foreach ($request->pegawai_id as $pegawaiId) {
-                Penugasan::create([
+                $penugasan = Penugasan::create([
                     'pegawai_id' => $pegawaiId,
                     'tugas_id'   => $tugas->id,
                     'status'     => 'belum_dikerjakan',
                 ]);
+                $notificationService->notifyTaskAssigned($penugasan, 'admin');
             }
         });
 
@@ -197,6 +199,17 @@ class PenugasanController extends Controller
         }
 
         $this->changeStatus($penugasan, 'selesai', 'Tugas disetujui admin.');
+        $penugasan->loadMissing('pegawai.user', 'tugas');
+        if ($penugasan->pegawai?->user) {
+            app(ActionableNotificationService::class)->notifyUser(
+                $penugasan->pegawai->user,
+                'tugas_verifikasi',
+                'Tugas disetujui',
+                'Tugas "' . ($penugasan->tugas->judul ?? '-') . '" telah disetujui.',
+                route('pegawai.tugas.show', $penugasan->tugas_id),
+                ['penugasan_id' => $penugasan->id]
+            );
+        }
 
         return back()->with('success', 'Tugas berhasil disetujui.');
     }
@@ -216,6 +229,17 @@ class PenugasanController extends Controller
         ]);
 
         $this->changeStatus($penugasan, 'revisi', $request->catatan_revisi);
+        $penugasan->loadMissing('pegawai.user', 'tugas');
+        if ($penugasan->pegawai?->user) {
+            app(ActionableNotificationService::class)->notifyUser(
+                $penugasan->pegawai->user,
+                'tugas_verifikasi',
+                'Tugas perlu revisi',
+                'Tugas "' . ($penugasan->tugas->judul ?? '-') . '" diminta revisi.',
+                route('pegawai.tugas.show', $penugasan->tugas_id),
+                ['penugasan_id' => $penugasan->id]
+            );
+        }
 
         return back()->with('success', 'Tugas dikembalikan untuk revisi.');
     }

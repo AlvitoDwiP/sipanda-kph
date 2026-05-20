@@ -4,6 +4,7 @@ namespace App\Http\Controllers\KPH;
 
 use App\Http\Controllers\Controller;
 use App\Models\CatatanKegiatan;
+use App\Services\ActionableNotificationService;
 use Illuminate\Http\Request;
 
 class CatatanKegiatanController extends Controller
@@ -52,6 +53,18 @@ class CatatanKegiatanController extends Controller
             $catatan->penugasan->update(['status' => 'selesai', 'selesai_at' => now()]);
         }
 
+        $catatan->loadMissing('pegawai.user', 'penugasan');
+        if ($catatan->pegawai?->user) {
+            app(ActionableNotificationService::class)->notifyUser(
+                $catatan->pegawai->user,
+                'catatan_disetujui',
+                'Catatan kegiatan disetujui',
+                'Catatan kegiatan Anda telah disetujui.',
+                $catatan->penugasan ? route('pegawai.tugas.show', $catatan->penugasan->tugas_id) : route('pegawai.catatan_kegiatan.index'),
+                ['catatan_id' => $catatan->id]
+            );
+        }
+
         return back()->with('success', 'Catatan kegiatan berhasil disetujui.');
     }
 
@@ -78,6 +91,18 @@ class CatatanKegiatanController extends Controller
             $catatan->penugasan->update(['status' => 'revisi', 'catatan_revisi' => $request->catatan_verifikasi]);
         }
 
+        $catatan->loadMissing('pegawai.user');
+        if ($catatan->pegawai?->user) {
+            app(ActionableNotificationService::class)->notifyUser(
+                $catatan->pegawai->user,
+                'catatan_revisi',
+                'Catatan kegiatan perlu revisi',
+                'Catatan kegiatan Anda diminta revisi oleh admin/KPH.',
+                route('pegawai.catatan_kegiatan.show', $catatan->id),
+                ['catatan_id' => $catatan->id]
+            );
+        }
+
         return back()->with('success', 'Catatan kegiatan dikembalikan untuk revisi.');
     }
 
@@ -102,6 +127,18 @@ class CatatanKegiatanController extends Controller
 
         if ($catatan->penugasan) {
             $catatan->penugasan->update(['status' => 'revisi', 'catatan_revisi' => $request->catatan_verifikasi]);
+        }
+
+        $catatan->loadMissing('pegawai.user');
+        if ($catatan->pegawai?->user) {
+            app(ActionableNotificationService::class)->notifyUser(
+                $catatan->pegawai->user,
+                'catatan_revisi',
+                'Catatan kegiatan ditolak',
+                'Catatan kegiatan Anda ditolak dan perlu perbaikan.',
+                route('pegawai.catatan_kegiatan.show', $catatan->id),
+                ['catatan_id' => $catatan->id]
+            );
         }
 
         return back()->with('success', 'Catatan kegiatan ditolak.');

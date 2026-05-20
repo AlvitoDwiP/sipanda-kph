@@ -20,6 +20,9 @@
         } elseif (str_contains($currentRoute, 'pegawai.direktori')) {
             $searchRoute = route('pegawai.direktori.index');
             $searchPlaceholder = 'Cari pegawai...';
+        } elseif (str_contains($currentRoute, 'notifications.')) {
+            $searchRoute = route('notifications.index');
+            $searchPlaceholder = 'Cari notifikasi...';
         } elseif (str_contains($currentRoute, 'admin.notifikasi')) {
             $searchRoute = route('admin.notifikasi.index');
             $searchPlaceholder = 'Cari notifikasi...';

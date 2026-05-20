@@ -8,6 +8,8 @@ use App\Models\CatatanKegiatan;
 use App\Models\Penugasan;
 use App\Models\PenugasanStatusHistory;
 use App\Models\Tugas;
+use App\Models\User;
+use App\Services\ActionableNotificationService;
 use Illuminate\Http\Request;
 
 class TugasController extends Controller
@@ -191,6 +193,29 @@ class TugasController extends Controller
         }
 
         $this->changeStatus($penugasan, 'menunggu_verifikasi', 'Pegawai mengirim progres untuk verifikasi.');
+
+        $penugasan->loadMissing('tugas.user', 'pegawai.user');
+        $judulTugas = $penugasan->tugas->judul ?? '-';
+        $namaPegawai = $penugasan->pegawai->user->name ?? 'Pegawai';
+        $notificationService = app(ActionableNotificationService::class);
+
+        $targets = User::query()
+            ->whereIn('role', ['admin', 'kph'])
+            ->where('status_akun', 'aktif')
+            ->get();
+
+        foreach ($targets as $target) {
+            $prefix = $target->role === 'admin' ? 'admin' : 'kph';
+            $notificationService->notifyUser(
+                $target,
+                'tugas_verifikasi',
+                'Tugas menunggu verifikasi',
+                $namaPegawai . ' mengirim progres tugas "' . $judulTugas . '" untuk verifikasi.',
+                route($prefix . '.penugasan.show', $penugasan->tugas_id),
+                ['penugasan_id' => $penugasan->id, 'tugas_id' => $penugasan->tugas_id],
+                'wait_verify_task:' . $penugasan->id . ':' . now()->toDateString() . ':u' . $target->id
+            );
+        }
 
         return back()->with('success', 'Tugas berhasil dikirim untuk verifikasi.');
     }

@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\CatatanKegiatan;
 use App\Models\Pegawai;
 use App\Models\Penugasan;
+use App\Models\User;
+use App\Services\ActionableNotificationService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -73,7 +75,7 @@ class CatatanKegiatanController extends Controller
             }
         }
 
-        CatatanKegiatan::create([
+        $catatan = CatatanKegiatan::create([
             'pegawai_id' => $pegawai->id,
             'penugasan_id' => $penugasan->id,
             'periode_bulan' => now()->month,
@@ -91,6 +93,21 @@ class CatatanKegiatanController extends Controller
         ]);
 
         $penugasan->update(['status' => 'menunggu_verifikasi']);
+
+        $targets = User::query()->whereIn('role', ['admin', 'kph'])->where('status_akun', 'aktif')->get();
+        $notificationService = app(ActionableNotificationService::class);
+        foreach ($targets as $target) {
+            $prefix = $target->role === 'admin' ? 'admin' : 'kph';
+            $notificationService->notifyUser(
+                $target,
+                'catatan_baru',
+                'Catatan kegiatan baru',
+                ($pegawai->user->name ?? 'Pegawai') . ' mengirim catatan kegiatan untuk verifikasi.',
+                route($prefix . '.catatan_kegiatan.show', $catatan->id),
+                ['catatan_id' => $catatan->id, 'penugasan_id' => $penugasan->id],
+                'new_catatan:' . $catatan->id . ':u' . $target->id
+            );
+        }
 
         return redirect()->route('pegawai.tugas.show', $penugasan->tugas_id)
             ->with('success', 'Catatan kegiatan berhasil dikirim untuk verifikasi.');
@@ -176,6 +193,21 @@ class CatatanKegiatanController extends Controller
 
         if ($catatan_kegiatan->penugasan) {
             $catatan_kegiatan->penugasan->update(['status' => 'menunggu_verifikasi']);
+        }
+
+        $targets = User::query()->whereIn('role', ['admin', 'kph'])->where('status_akun', 'aktif')->get();
+        $notificationService = app(ActionableNotificationService::class);
+        foreach ($targets as $target) {
+            $prefix = $target->role === 'admin' ? 'admin' : 'kph';
+            $notificationService->notifyUser(
+                $target,
+                'catatan_baru',
+                'Catatan kegiatan dikirim ulang',
+                ($pegawai->user->name ?? 'Pegawai') . ' mengirim ulang catatan kegiatan untuk verifikasi.',
+                route($prefix . '.catatan_kegiatan.show', $catatan_kegiatan->id),
+                ['catatan_id' => $catatan_kegiatan->id],
+                'resubmit_catatan:' . $catatan_kegiatan->id . ':u' . $target->id . ':' . now()->toDateString()
+            );
         }
 
         return redirect()->route('pegawai.catatan_kegiatan.show', $catatan_kegiatan)
