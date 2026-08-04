@@ -3,53 +3,94 @@
 @section('title', 'Notifikasi')
 
 @section('content')
-<div class="bg-white rounded-xl shadow-sm border border-slate-100 p-6 space-y-4">
-    <div class="flex flex-wrap justify-between items-center gap-3">
-        <div>
-            <h1 class="text-xl font-bold text-slate-800">Notifikasi</h1>
-            <p class="text-sm text-slate-500">Notifikasi internal yang perlu ditindaklanjuti.</p>
-        </div>
-        <div class="flex items-center gap-2">
-            <a href="{{ route('notifications.index', ['filter' => 'all']) }}" class="px-3 py-2 rounded-lg text-sm {{ $filter === 'all' ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-700' }}">Semua</a>
-            <a href="{{ route('notifications.index', ['filter' => 'unread']) }}" class="px-3 py-2 rounded-lg text-sm {{ $filter === 'unread' ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-700' }}">Belum Dibaca</a>
-            <form method="POST" action="{{ route('notifications.read-all') }}">
-                @csrf
-                <button class="px-3 py-2 rounded-lg bg-slate-700 text-white text-sm">Tandai Semua Dibaca</button>
-            </form>
-        </div>
-    </div>
+<div class="space-y-6">
+    <!-- PAGE HEADER -->
+    <x-ui.page-header title="Notifikasi" subtitle="Notifikasi internal dan tugas penting yang memerlukan tindakan Anda.">
+        <x-slot name="breadcrumbs">
+            <x-ui.breadcrumb />
+        </x-slot>
+        <x-slot name="actions">
+            <div class="flex items-center gap-2 flex-wrap">
+                <span class="inline-flex items-center px-3 py-1 rounded-ui-md text-xs font-bold bg-ui-primary-soft text-ui-primary border border-ui-primary/10 mr-2">
+                    Belum Dibaca: {{ $unreadCount }}
+                </span>
+                <x-ui.button variant="secondary" size="sm" :href="route('notifications.index', ['filter' => 'all'])" class="{{ $filter === 'all' ? 'bg-ui-border text-ui-text-primary' : '' }}">
+                    Semua
+                </x-ui.button>
+                <x-ui.button variant="secondary" size="sm" :href="route('notifications.index', ['filter' => 'unread'])" class="{{ $filter === 'unread' ? 'bg-ui-border text-ui-text-primary' : '' }}">
+                    Belum Dibaca
+                </x-ui.button>
+                @if($unreadCount > 0)
+                    <form method="POST" action="{{ route('notifications.read-all') }}" class="inline">
+                        @csrf
+                        <x-ui.button type="submit" variant="primary" size="sm" leadingIcon="check-check">
+                            Tandai Semua Dibaca
+                        </x-ui.button>
+                    </form>
+                @endif
+            </div>
+        </x-slot>
+    </x-ui.page-header>
 
-    <p class="text-sm text-slate-600">Belum dibaca: <span class="font-semibold">{{ $unreadCount }}</span></p>
-
+    <!-- NOTIFICATION LIST -->
     <div class="space-y-3">
         @forelse($notifications as $item)
             @php
                 $data = $item->data;
+                $unread = !$item->read_at;
             @endphp
-            <div class="border rounded-lg p-4 {{ $item->read_at ? 'bg-white border-slate-200' : 'bg-emerald-50 border-emerald-200' }}">
-                <div class="flex justify-between gap-3">
-                    <div>
-                        <p class="font-semibold text-slate-800">{{ $data['title'] ?? '-' }}</p>
-                        <p class="text-sm text-slate-600 mt-1">{{ $data['message'] ?? '-' }}</p>
-                        <div class="mt-2 text-xs text-slate-500 flex gap-2">
-                            <span class="px-2 py-1 rounded bg-slate-100">{{ str_replace('_', ' ', $data['category'] ?? 'umum') }}</span>
+            <x-ui.card variant="{{ $unread ? 'flat' : 'default' }}" class="{{ $unread ? 'border-l-4 border-l-ui-primary bg-ui-primary-soft/30' : '' }}">
+                <div class="flex items-start justify-between gap-4 flex-wrap sm:flex-nowrap">
+                    <div class="space-y-1.5 flex-1 min-w-0">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="font-bold text-xs sm:text-sm text-ui-text-primary truncate">
+                                {{ $data['title'] ?? 'Notifikasi Sistem' }}
+                            </span>
+                            @if($unread)
+                                <x-ui.badge variant="primary" styleType="solid" size="sm">Baru</x-ui.badge>
+                            @endif
+                        </div>
+                        <p class="text-xs sm:text-sm text-ui-text-secondary leading-relaxed">
+                            {{ $data['message'] ?? '-' }}
+                        </p>
+                        <div class="flex items-center gap-2 text-[10px] text-ui-muted font-semibold mt-1">
+                            <span class="px-2 py-0.5 rounded bg-ui-border text-ui-text-secondary capitalize">
+                                {{ str_replace('_', ' ', $data['category'] ?? 'umum') }}
+                            </span>
+                            <span>•</span>
                             <span>{{ $item->created_at->diffForHumans() }}</span>
-                            <span>{{ $item->read_at ? 'Sudah dibaca' : 'Belum dibaca' }}</span>
+                            @if($item->read_at)
+                                <span>•</span>
+                                <span class="text-ui-success flex items-center gap-0.5">
+                                    <i data-lucide="check" class="w-3 h-3"></i> Sudah Dibaca
+                                </span>
+                            @endif
                         </div>
                     </div>
-                    <div class="flex items-center">
+                    <div class="shrink-0 flex items-center self-center">
                         <form method="POST" action="{{ route('notifications.read', $item->id) }}">
                             @csrf
-                            <button class="text-sm px-3 py-2 rounded bg-emerald-600 text-white">Lihat Detail</button>
+                            <x-ui.button type="submit" variant="{{ $unread ? 'primary' : 'outline' }}" size="sm" leadingIcon="eye">
+                                Lihat Detail
+                            </x-ui.button>
                         </form>
                     </div>
                 </div>
-            </div>
+            </x-ui.card>
         @empty
-            <div class="text-center text-slate-500 py-8">Belum ada notifikasi.</div>
+            <x-ui.empty-state 
+                icon="bell-off" 
+                title="Tidak Ada Notifikasi" 
+                description="Semua notifikasi sudah Anda baca atau belum ada pembaruan baru untuk akun Anda saat ini." 
+            />
         @endforelse
     </div>
 
-    <div>{{ $notifications->links() }}</div>
+    <!-- PAGINATION -->
+    @if($notifications->hasPages())
+        <div class="mt-4">
+            {{ $notifications->links() }}
+        </div>
+    @endif
 </div>
 @endsection

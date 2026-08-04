@@ -8,7 +8,7 @@ use App\Http\Controllers\Pegawai\NotifikasiController;
 use App\Http\Controllers\Pegawai\TugasController as TugasSayaController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth', 'role:pegawai'])->prefix('pegawai')->name('pegawai.')->group(function () {
+Route::middleware(['auth', 'role:pegawai', 'active'])->prefix('pegawai')->name('pegawai.')->group(function () {
     Route::get('/dashboard', [PegawaiDashboard::class, 'index'])->name('dashboard');
 
     Route::get('/data-diri', [DataDiriController::class, 'index'])->name('data_diri.index');

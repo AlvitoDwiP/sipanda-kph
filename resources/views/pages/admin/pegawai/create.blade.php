@@ -1,130 +1,123 @@
 @extends('layouts.master')
 
-@section('title', 'Pegawai')
-@section('page-title', 'Tambah Pegawai')
+@section('title', 'Tambah Pegawai')
 
 @section('content')
-<div class="bg-white rounded-xl shadow-sm border border-slate-100 mb-6">
 
-    <!-- Header -->
-    <div class="p-6 border-b border-slate-100 flex justify-between items-center">
-        <h3 class="font-bold text-slate-800">Tambah Pegawai</h3>
-        <a href="{{ route('admin.pegawai.index') }}"
-            class="text-sm text-slate-500 hover:text-slate-700">
-            ✕
-        </a>
-    </div>
+<x-ui.page-header title="Tambah Pegawai" subtitle="Tambahkan data kepegawaian baru ke sistem.">
+    <x-slot name="breadcrumbs">
+        <x-ui.breadcrumb />
+    </x-slot>
+    <x-slot name="actions">
+        <x-ui.button variant="ghost" size="sm" leadingIcon="arrow-left" :href="route('admin.pegawai.index')">
+            Kembali
+        </x-ui.button>
+    </x-slot>
+</x-ui.page-header>
 
-    <!-- Form -->
-    <form method="POST" action="{{ route('admin.pegawai.store') }}" class="p-6 space-y-6">
+<x-ui.card>
+    <form method="POST" action="{{ route('admin.pegawai.store') }}" class="space-y-6">
         @csrf
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
             <!-- User / Nama -->
             <div class="md:col-span-2">
-                <label class="block text-sm font-medium text-slate-700 mb-1">
-                    Nama Pegawai (User)
-                </label>
-                <select name="user_id" required
-                    class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm">
+                <x-ui.input 
+                    type="select"
+                    name="user_id"
+                    label="Nama Pegawai (User)"
+                    required
+                    :error="$errors->first('user_id')"
+                >
                     <option value="">-- Pilih User --</option>
                     @foreach ($users as $user)
-                        <option value="{{ $user->id }}"
-                            @selected(old('user_id') == $user->id)>
+                        <option value="{{ $user->id }}" @selected(old('user_id') == $user->id)>
                             {{ $user->name }} ({{ $user->username ?? $user->email }})
                         </option>
                     @endforeach
-                </select>
-                <x-input-error :messages="$errors->get('user_id')" class="mt-1" />
+                </x-ui.input>
             </div>
 
             <!-- Unit Kerja -->
             <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">
-                    Unit Kerja
-                </label>
-                <select name="unitkerja_id" required
-                    class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm">
+                <x-ui.input 
+                    type="select"
+                    name="unitkerja_id"
+                    label="Unit Kerja"
+                    required
+                    :error="$errors->first('unitkerja_id')"
+                >
                     <option value="">-- Pilih Unit Kerja --</option>
                     @foreach ($unitkerja as $item)
-                        <option value="{{ $item->id }}"
-                            @selected(old('unitkerja_id') == $item->id)>
+                        <option value="{{ $item->id }}" @selected(old('unitkerja_id') == $item->id)>
                             {{ $item->nama_unitkerja }}
                         </option>
                     @endforeach
-                </select>
-                <x-input-error :messages="$errors->get('unitkerja_id')" class="mt-1" />
+                </x-ui.input>
             </div>
 
             <!-- Golongan -->
             <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">
-                    Golongan
-                </label>
-                <select name="golongan_id" required
-                    class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm">
+                <x-ui.input 
+                    type="select"
+                    name="golongan_id"
+                    label="Golongan"
+                    required
+                    :error="$errors->first('golongan_id')"
+                >
                     <option value="">-- Pilih Golongan --</option>
                     @foreach ($golongan as $item)
-                        <option value="{{ $item->id }}"
-                            @selected(old('golongan_id') == $item->id)>
+                        <option value="{{ $item->id }}" @selected(old('golongan_id') == $item->id)>
                             {{ $item->nama_golongan }}
                         </option>
                     @endforeach
-                </select>
-                <x-input-error :messages="$errors->get('golongan_id')" class="mt-1" />
+                </x-ui.input>
             </div>
 
             <!-- Jabatan -->
             <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">
-                    Jabatan
-                </label>
-                <select name="jabatan_id" required
-                    class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm">
+                <x-ui.input 
+                    type="select"
+                    name="jabatan_id"
+                    label="Jabatan"
+                    required
+                    :error="$errors->first('jabatan_id')"
+                >
                     <option value="">-- Pilih Jabatan --</option>
                     @foreach ($jabatan as $item)
-                        <option value="{{ $item->id }}"
-                            @selected(old('jabatan_id') == $item->id)>
+                        <option value="{{ $item->id }}" @selected(old('jabatan_id') == $item->id)>
                             {{ $item->nama_jabatan }}
                         </option>
                     @endforeach
-                </select>
-                <x-input-error :messages="$errors->get('jabatan_id')" class="mt-1" />
+                </x-ui.input>
             </div>
 
             <!-- Status Pegawai -->
             <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">
-                    Status Pegawai
-                </label>
-                <select name="status_pegawai" required
-                    class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm">
+                <x-ui.input 
+                    type="select"
+                    name="status_pegawai"
+                    label="Status Pegawai"
+                    required
+                    :error="$errors->first('status_pegawai')"
+                >
                     <option value="">-- Pilih Status --</option>
-                    <option value="aktif" @selected(old('status_pegawai') == 'aktif')>
-                        Aktif
-                    </option>
-                    <option value="nonaktif" @selected(old('status_pegawai') == 'nonaktif')>
-                        Nonaktif
-                    </option>
-                </select>
-                <x-input-error :messages="$errors->get('status_pegawai')" class="mt-1" />
+                    <option value="aktif" @selected(old('status_pegawai') == 'aktif')>Aktif</option>
+                    <option value="nonaktif" @selected(old('status_pegawai') == 'nonaktif')>Nonaktif</option>
+                </x-ui.input>
             </div>
-
         </div>
 
-        <!-- Action -->
-        <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
-            <a href="{{ route('admin.pegawai.index') }}"
-                class="px-4 py-2 text-sm rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50">
+        <!-- Action Buttons -->
+        <x-slot name="footer">
+            <x-ui.button variant="ghost" size="sm" :href="route('admin.pegawai.index')">
                 Batal
-            </a>
-            <button type="submit"
-                class="px-5 py-2 text-sm rounded-lg bg-green-800 text-white hover:bg-green-900">
+            </x-ui.button>
+            <x-ui.button type="submit" variant="primary" size="sm" leadingIcon="save">
                 Simpan
-            </button>
-        </div>
-
+            </x-ui.button>
+        </x-slot>
     </form>
-</div>
+</x-ui.card>
+
 @endsection

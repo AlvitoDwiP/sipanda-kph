@@ -132,13 +132,20 @@ class DashboardMonitoringService
 
     private function getSummaryUnitKerja(Carbon $tanggal, ?int $unitKerjaId = null, string $tugasDateColumn = 'deadline'): Collection
     {
+        $dateColumn = $this->getTugasDateColumn();
+        $todayString = now()->toDateString();
+
         $query = UnitKerja::query()
-            ->selectRaw('ref_unitkerja.id, ref_unitkerja.nama_unitkerja, COUNT(penugasan.id) as total_tugas')
+            ->select('ref_unitkerja.id', 'ref_unitkerja.nama_unitkerja')
+            ->selectRaw('COUNT(penugasan.id) as total_tugas')
+            ->selectRaw("SUM(CASE WHEN penugasan.status = 'selesai' THEN 1 ELSE 0 END) as selesai")
+            ->selectRaw("SUM(CASE WHEN penugasan.status NOT IN ('selesai', 'dibatalkan') THEN 1 ELSE 0 END) as belum_selesai")
+            ->selectRaw("SUM(CASE WHEN penugasan.status NOT IN ('selesai', 'dibatalkan') AND tugas.deadline < ? THEN 1 ELSE 0 END) as terlambat", [$todayString])
             ->leftJoin('pegawai', 'pegawai.unitkerja_id', '=', 'ref_unitkerja.id')
             ->leftJoin('penugasan', 'penugasan.pegawai_id', '=', 'pegawai.id')
-            ->leftJoin('tugas', function ($join) use ($tanggal) {
+            ->leftJoin('tugas', function ($join) use ($tanggal, $dateColumn) {
                 $join->on('tugas.id', '=', 'penugasan.tugas_id')
-                    ->whereDate('tugas.' . $this->getTugasDateColumn(), '=', $tanggal->toDateString());
+                    ->whereDate('tugas.' . $dateColumn, '=', $tanggal->toDateString());
             })
             ->whereNotNull('tugas.id')
             ->groupBy('ref_unitkerja.id', 'ref_unitkerja.nama_unitkerja');
@@ -147,25 +154,19 @@ class DashboardMonitoringService
             $query->where('ref_unitkerja.id', $unitKerjaId);
         }
 
-        return $query->get()->map(function ($unit) use ($tanggal) {
-            $base = Penugasan::query()
-                ->whereHas('tugas', fn(Builder $q) => $q->whereDate($this->getTugasDateColumn(), $tanggal->toDateString()))
-                ->whereHas('pegawai', fn(Builder $q) => $q->where('unitkerja_id', $unit->id));
+        return $query->get()->map(function ($unit) {
+            $total_tugas = (int) $unit->total_tugas;
+            $selesai = (int) $unit->selesai;
+            $belumSelesai = (int) $unit->belum_selesai;
+            $terlambat = (int) $unit->terlambat;
 
-            $selesai = (clone $base)->where('status', 'selesai')->count();
-            $belumSelesai = (clone $base)->whereNotIn('status', ['selesai', 'dibatalkan'])->count();
-            $terlambat = (clone $base)
-                ->whereHas('tugas', fn(Builder $q) => $q->whereDate('deadline', '<', now()->toDateString()))
-                ->whereNotIn('status', ['selesai', 'dibatalkan'])
-                ->count();
-
-            $persentaseSelesai = $unit->total_tugas > 0
-                ? (int) round(($selesai / $unit->total_tugas) * 100)
+            $persentaseSelesai = $total_tugas > 0
+                ? (int) round(($selesai / $total_tugas) * 100)
                 : 0;
 
             return [
                 'nama_unitkerja' => $unit->nama_unitkerja,
-                'total_tugas' => (int) $unit->total_tugas,
+                'total_tugas' => $total_tugas,
                 'selesai' => $selesai,
                 'belum_selesai' => $belumSelesai,
                 'terlambat' => $terlambat,

@@ -1,199 +1,150 @@
 @extends('layouts.master')
 
 @section('title', 'Data Unit Kerja')
-@section('page-title', 'Data Unit Kerja')
 
 @section('content')
 
-{{-- NOTIFIKASI SUKSES --}}
 @if (session('success'))
-<div class="mb-4 px-4 py-3 rounded-lg bg-green-100 text-green-800 text-sm">
-    {{ session('success') }}
-</div>
+    <x-ui.alert variant="success" class="mb-5" :description="session('success')" />
+@endif
+@if (session('error'))
+    <x-ui.alert variant="danger" class="mb-5" :description="session('error')" />
 @endif
 
-<div class="bg-white rounded-xl shadow-sm border border-slate-100">
-    <div class="p-6 border-b border-slate-100 flex justify-between items-center">
-        <h3 class="font-bold text-slate-800">Data Unit Kerja</h3>
+<x-ui.page-header title="Data Unit Kerja" subtitle="Manajemen wilayah / unit kerja operasional SIPANDA-KPH.">
+    <x-slot name="breadcrumbs">
+        <x-ui.breadcrumb />
+    </x-slot>
+    <x-slot name="actions">
+        <x-ui.button variant="primary" size="sm" leadingIcon="plus" onclick="openTambahModal()">
+            Tambah Unit Kerja
+        </x-ui.button>
+    </x-slot>
+</x-ui.page-header>
 
-        <button type="button"
-            onclick="openModal()"
-            class="px-4 py-2 text-sm text-white bg-green-800 hover:bg-green-900 rounded-lg transition">
-            Tambah Data
-        </button>
-    </div>
+<x-ui.card>
+    <x-ui.table :headers="['No', 'Nama Unit Kerja', 'Aksi']" :empty="$unitkerja->isEmpty()">
+        @foreach ($unitkerja as $i => $item)
+            <tr class="hover:bg-ui-primary-soft/30 transition-colors">
+                <td class="px-4 py-3 text-xs sm:text-sm text-ui-text-secondary">{{ $i + 1 }}</td>
+                <td class="px-4 py-3 text-xs sm:text-sm font-semibold text-ui-text-primary">
+                    {{ $item->nama_unitkerja }}
+                </td>
+                <td class="px-4 py-3 text-xs sm:text-sm text-right">
+                    <div class="flex items-center justify-end gap-2">
+                        <x-ui.button variant="ghost" size="xs" leadingIcon="edit" onclick="openEditModal({{ $item->id }}, '{{ $item->nama_unitkerja }}')">
+                            Edit
+                        </x-ui.button>
+                        <x-ui.button variant="ghost" size="xs" leadingIcon="trash-2" class="text-ui-danger hover:bg-ui-danger-soft active:bg-ui-danger-soft" onclick="openDeleteModal({{ $item->id }}, '{{ $item->nama_unitkerja }}')">
+                            Hapus
+                        </x-ui.button>
+                    </div>
+                </td>
+            </tr>
+        @endforeach
+    </x-ui.table>
+</x-ui.card>
 
-    <div class="p-6">
-        <div class="overflow-x-auto">
-            <table class="w-full text-sm">
-                <thead>
-                    <tr class="text-slate-500 uppercase text-xs">
-                        <th class="pb-3 text-left">No</th>
-                        <th class="pb-3 text-left">Nama Unit Kerja</th>
-                        <th class="pb-3 text-right">Aksi</th>
-                    </tr>
-                </thead>
+{{-- MODAL TAMBAH --}}
+<x-ui.modal name="tambah-unitkerja" :show="$errors->has('nama_unitkerja') && !session('edit_id')" title="Tambah Unit Kerja" maxWidth="sm">
+    <form method="POST" action="{{ route('admin.unitkerja.store') }}" class="space-y-4">
+        @csrf
+        <x-ui.input 
+            type="text"
+            name="nama_unitkerja"
+            label="Nama Unit Kerja"
+            placeholder="Contoh: RPH, Bagian Umum"
+            value="{{ old('nama_unitkerja') }}"
+            :error="$errors->first('nama_unitkerja')"
+            required
+        />
+        
+        <x-slot name="footer">
+            <x-ui.button variant="ghost" size="sm" type="button" onclick="window.dispatchEvent(new CustomEvent('close-modal', { detail: 'tambah-unitkerja' }))">
+                Batal
+            </x-ui.button>
+            <x-ui.button type="submit" variant="primary" size="sm">
+                Simpan
+            </x-ui.button>
+        </x-slot>
+    </form>
+</x-ui.modal>
 
-                <tbody class="divide-y divide-slate-100">
-                    @forelse ($unitkerja as $i => $item)
-                    <tr class="hover:bg-slate-50 transition">
-                        <td class="py-4">{{ $i + 1 }}</td>
+{{-- MODAL EDIT --}}
+<x-ui.modal name="edit-unitkerja" :show="$errors->has('nama_unitkerja') && session('edit_id')" title="Edit Unit Kerja" maxWidth="sm">
+    <form method="POST" id="formEdit" class="space-y-4">
+        @csrf
+        @method('PUT')
+        
+        <x-ui.input 
+            type="text"
+            id="edit_nama"
+            name="nama_unitkerja"
+            label="Nama Unit Kerja"
+            placeholder="Contoh: RPH, Bagian Umum"
+            value="{{ old('nama_unitkerja') }}"
+            :error="$errors->first('nama_unitkerja')"
+            required
+        />
+        
+        <x-slot name="footer">
+            <x-ui.button variant="ghost" size="sm" type="button" onclick="window.dispatchEvent(new CustomEvent('close-modal', { detail: 'edit-unitkerja' }))">
+                Batal
+            </x-ui.button>
+            <x-ui.button type="submit" variant="primary" size="sm">
+                Perbarui
+            </x-ui.button>
+        </x-slot>
+    </form>
+</x-ui.modal>
 
-                        <td class="py-4 font-medium text-slate-800">
-                            {{ $item->nama_unitkerja }}
-                        </td>
-
-                        <td class="py-4 text-right">
-                            <button type="button"
-                                onclick="openEditModal({{ $item->id }}, '{{ $item->nama_unitkerja }}', '{{ $item->aktif }}')"
-                                class="text-slate-600 hover:text-green-800 font-medium transition">
-                                Edit
-                            </button>
-
-                            <span class="mx-2 text-slate-300">|</span>
-
-                            <button type="button"
-                                onclick="openDeleteModal({{ $item->id }}, '{{ $item->nama_unitkerja }}')"
-                                class="text-slate-600 hover:text-red-600 font-medium transition">
-                                Hapus
-                            </button>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="4" class="py-8 text-center text-slate-400">
-                            Data unit kerja belum tersedia
-                        </td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
+{{-- MODAL DELETE --}}
+<x-ui.modal name="delete-unitkerja" title="Konfirmasi Hapus" maxWidth="sm">
+    <form method="POST" id="formDelete">
+        @csrf
+        @method('DELETE')
+        
+        <div class="flex items-start gap-3.5">
+            <div class="p-2.5 rounded-ui-lg bg-ui-danger-soft text-ui-danger shrink-0 border border-ui-danger/10">
+                <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+            </div>
+            <div class="min-w-0">
+                <h4 class="text-xs sm:text-sm font-bold text-ui-text-primary leading-tight">Yakin ingin menghapus unit kerja?</h4>
+                <p class="text-[11px] sm:text-xs text-ui-text-secondary mt-1 leading-normal">
+                    Unit kerja <span id="deleteNama" class="font-semibold text-ui-text-primary"></span> akan dihapus permanen. Data pegawai dengan unit kerja ini akan terdampak.
+                </p>
+            </div>
         </div>
-    </div>
-</div>
-
-{{-- ================= MODAL TAMBAH ================= --}}
-<div id="modalTambah" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50">
-    <div class="bg-white w-full max-w-md rounded-xl shadow-lg">
-        <form method="POST" action="{{ route('admin.unitkerja.store') }}">
-            @csrf
-
-            <div class="flex justify-between items-center px-6 py-4 border-b">
-                <h3 class="font-semibold">Tambah Unit Kerja</h3>
-                <button type="button" onclick="closeModal()">✕</button>
-            </div>
-
-            <div class="px-6 py-4 space-y-4">
-                <div>
-                    <label class="text-sm font-medium">Nama Unit Kerja</label>
-                    <input type="text" name="nama_unitkerja"
-                        value="{{ old('nama_unitkerja') }}"
-                        class="w-full mt-1 px-4 py-2 border rounded-lg" required>
-                </div>
-            </div>
-
-            <div class="flex justify-end px-6 py-4 border-t gap-2">
-                <button type="button" onclick="closeModal()" class="px-4 py-2 border rounded-lg">
-                    Batal
-                </button>
-                <button type="submit" class="px-4 py-2 bg-green-800 hover:bg-green-900 text-white rounded-lg">
-                    Simpan
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
-
-{{-- ================= MODAL EDIT ================= --}}
-<div id="modalEdit" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50">
-    <div class="bg-white w-full max-w-md rounded-xl shadow-lg">
-        <form method="POST" id="formEdit">
-            @csrf
-            @method('PUT')
-
-            <div class="flex justify-between items-center px-6 py-4 border-b">
-                <h3 class="font-semibold">Edit Unit Kerja</h3>
-                <button type="button" onclick="closeEditModal()">✕</button>
-            </div>
-
-            <div class="px-6 py-4 space-y-4">
-                <div>
-                    <label class="text-sm font-medium">Nama Unit Kerja</label>
-                    <input type="text" id="edit_nama" name="nama_unitkerja"
-                        class="w-full mt-1 px-4 py-2 border rounded-lg">
-                </div>
-            </div>
-
-            <div class="flex justify-end px-6 py-4 border-t gap-2">
-                <button type="button" onclick="closeEditModal()" class="px-4 py-2 border rounded-lg">
-                    Batal
-                </button>
-                <button type="submit" class="px-4 py-2 bg-green-800 hover:bg-green-900 text-white rounded-lg">
-                    Update
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
-
-{{-- ================= MODAL DELETE ================= --}}
-<div id="modalDelete" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50">
-    <div class="bg-white w-full max-w-md rounded-xl shadow-lg">
-        <form method="POST" id="formDelete">
-            @csrf
-            @method('DELETE')
-
-            <div class="px-6 py-4 border-b font-semibold">Konfirmasi Hapus</div>
-
-            <div class="px-6 py-4 text-sm">
-                Hapus <span id="deleteNama" class="font-semibold"></span>?
-            </div>
-
-            <div class="flex justify-end px-6 py-4 border-t gap-2">
-                <button type="button" onclick="closeDeleteModal()" class="px-4 py-2 border rounded-lg">
-                    Batal
-                </button>
-                <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-lg">
-                    Hapus
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
+        
+        <x-slot name="footer">
+            <x-ui.button variant="ghost" size="sm" type="button" onclick="window.dispatchEvent(new CustomEvent('close-modal', { detail: 'delete-unitkerja' }))">
+                Batal
+            </x-ui.button>
+            <x-ui.button type="submit" variant="danger" size="sm">
+                Ya, Hapus
+            </x-ui.button>
+        </x-slot>
+    </form>
+</x-ui.modal>
 
 @endsection
 
 @push('scripts')
 <script>
-    function openModal() {
-        modalTambah.classList.remove('hidden');
-        modalTambah.classList.add('flex');
+    function openTambahModal() {
+        window.dispatchEvent(new CustomEvent('open-modal', { detail: 'tambah-unitkerja' }));
     }
 
-    function closeModal() {
-        modalTambah.classList.add('hidden');
-    }
-
-    function openEditModal(id, nama, aktif) {
-        edit_nama.value = nama;
-        formEdit.action = "{{ route('admin.unitkerja.update', ':id') }}".replace(':id', id);
-        modalEdit.classList.remove('hidden');
-        modalEdit.classList.add('flex');
-    }
-
-    function closeEditModal() {
-        modalEdit.classList.add('hidden');
+    function openEditModal(id, nama) {
+        document.getElementById('edit_nama').value = nama;
+        document.getElementById('formEdit').action = `/admin/unitkerja/${id}`;
+        window.dispatchEvent(new CustomEvent('open-modal', { detail: 'edit-unitkerja' }));
     }
 
     function openDeleteModal(id, nama) {
-        deleteNama.innerText = nama;
-        formDelete.action = "{{ route('admin.unitkerja.destroy', ':id') }}".replace(':id', id);
-        modalDelete.classList.remove('hidden');
-        modalDelete.classList.add('flex');
-    }
-
-    function closeDeleteModal() {
-        modalDelete.classList.add('hidden');
+        document.getElementById('deleteNama').innerText = nama;
+        document.getElementById('formDelete').action = `/admin/unitkerja/${id}`;
+        window.dispatchEvent(new CustomEvent('open-modal', { detail: 'delete-unitkerja' }));
     }
 </script>
 @endpush

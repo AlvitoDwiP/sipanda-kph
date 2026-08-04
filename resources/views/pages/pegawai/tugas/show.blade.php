@@ -1,146 +1,240 @@
 @extends('layouts.master')
 
-@section('title', 'Detail Tugas')
-@section('page-title', 'Detail Tugas Saya')
+@section('title', 'Detail Tugas Saya')
 
 @section('content')
+
 @if (session('success'))
-<div class="mb-4 px-4 py-3 rounded-lg bg-green-100 text-green-700 text-sm">
-    {{ session('success') }}
-</div>
+    <x-ui.alert variant="success" class="mb-5" :description="session('success')" />
 @endif
 @if (session('error'))
-<div class="mb-4 px-4 py-3 rounded-lg bg-red-100 text-red-700 text-sm">
-    {{ session('error') }}
-</div>
+    <x-ui.alert variant="danger" class="mb-5" :description="session('error')" />
 @endif
 
-<div class="bg-white rounded-xl shadow-sm border border-slate-100 mb-6">
-    <div class="p-6 border-b border-slate-100 flex justify-between items-center">
-        <h3 class="font-bold text-slate-800">Detail Tugas Harian</h3>
-        <a href="{{ route('pegawai.tugas.index') }}" class="text-sm text-slate-500 hover:text-slate-700">Kembali</a>
-    </div>
+<x-ui.page-header title="Detail Tugas" subtitle="Rincian penugasan harian, perkembangan progres, dan aksi pelaporan.">
+    <x-slot name="breadcrumbs">
+        <x-ui.breadcrumb />
+    </x-slot>
+    <x-slot name="actions">
+        <x-ui.button variant="ghost" size="sm" leadingIcon="arrow-left" :href="route('pegawai.tugas.index')">
+            Kembali
+        </x-ui.button>
+    </x-slot>
+</x-ui.page-header>
 
-    <div class="p-6 space-y-6 text-sm">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-                <p class="text-slate-500">Judul</p>
-                <p class="font-medium text-slate-800">{{ $tugas->judul }}</p>
+<div class="space-y-6">
+    <!-- METADATA TUGAS -->
+    <x-ui.card title="Rincian Tugas Harian" icon="file-text">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 text-xs sm:text-sm">
+            <div class="flex flex-col gap-0.5">
+                <span class="text-[10px] sm:text-xs text-ui-text-secondary">Judul Tugas</span>
+                <span class="font-bold text-ui-text-primary text-xs sm:text-sm">{{ $tugas->judul }}</span>
             </div>
-            <div>
-                <p class="text-slate-500">Pemberi Tugas</p>
-                <p class="font-medium text-slate-800">{{ $tugas->user->name ?? '-' }}</p>
+            <div class="flex flex-col gap-0.5">
+                <span class="text-[10px] sm:text-xs text-ui-text-secondary">Pemberi Tugas</span>
+                <span class="font-medium text-ui-text-primary">{{ $tugas->user->name ?? '-' }}</span>
             </div>
-            <div>
-                <p class="text-slate-500">Tanggal Tugas</p>
-                <p class="font-medium text-slate-800">{{ optional($tugas->tanggal_tugas)->format('d-m-Y') ?? '-' }}</p>
+            <div class="flex flex-col gap-0.5">
+                <span class="text-[10px] sm:text-xs text-ui-text-secondary">Prioritas</span>
+                <span>
+                    @if ($tugas->prioritas === 'rendah')
+                        <x-ui.badge variant="success" size="sm">Rendah</x-ui.badge>
+                    @elseif ($tugas->prioritas === 'sedang')
+                        <x-ui.badge variant="warning" size="sm">Sedang</x-ui.badge>
+                    @elseif ($tugas->prioritas === 'tinggi')
+                        <x-ui.badge variant="danger" size="sm">Tinggi</x-ui.badge>
+                    @else
+                        <x-ui.badge variant="neutral" size="sm">-</x-ui.badge>
+                    @endif
+                </span>
             </div>
-            <div>
-                <p class="text-slate-500">Deadline</p>
-                <p class="font-medium text-slate-800">{{ optional($tugas->deadline)->format('d-m-Y') ?? '-' }}</p>
+            <div class="flex flex-col gap-0.5">
+                <span class="text-[10px] sm:text-xs text-ui-text-secondary">Tanggal Mulai</span>
+                <span class="font-medium text-ui-text-primary">{{ optional($tugas->tanggal_tugas)->format('d-m-Y') ?? '-' }}</span>
             </div>
-            <div>
-                <p class="text-slate-500">Prioritas</p>
-                <p class="font-medium text-slate-800 capitalize">{{ $tugas->prioritas }}</p>
+            <div class="flex flex-col gap-0.5">
+                <span class="text-[10px] sm:text-xs text-ui-text-secondary">Batas Akhir (Deadline)</span>
+                <span class="font-medium text-ui-text-primary">{{ optional($tugas->deadline)->format('d-m-Y') ?? '-' }}</span>
             </div>
-            <div>
-                <p class="text-slate-500">Status</p>
-                <p class="font-medium text-slate-800">{{ $penugasanSaya->status }}</p>
+            <div class="flex flex-col gap-0.5">
+                <span class="text-[10px] sm:text-xs text-ui-text-secondary">Kondisi Pengerjaan</span>
+                <span>
+                    @if($penugasanSaya->is_terlambat)
+                        <x-ui.badge variant="danger" size="sm">Terlambat</x-ui.badge>
+                    @else
+                        <x-ui.badge variant="success" size="sm">Normal</x-ui.badge>
+                    @endif
+                </span>
             </div>
-            <div>
-                <p class="text-slate-500">Progres</p>
-                <p class="font-medium text-slate-800">{{ $penugasanSaya->progres_persen ?? 0 }}%</p>
+            <div class="flex flex-col gap-0.5">
+                <span class="text-[10px] sm:text-xs text-ui-text-secondary">Status Tugas Saya</span>
+                <span class="capitalize font-semibold">
+                    @if($penugasanSaya->status === 'selesai')
+                        <x-ui.badge variant="success" size="sm">{{ $penugasanSaya->status }}</x-ui.badge>
+                    @elseif(in_array($penugasanSaya->status, ['proses', 'menunggu_verifikasi']))
+                        <x-ui.badge variant="warning" size="sm">{{ str_replace('_', ' ', $penugasanSaya->status) }}</x-ui.badge>
+                    @elseif($penugasanSaya->status === 'dibatalkan')
+                        <x-ui.badge variant="neutral" size="sm">{{ $penugasanSaya->status }}</x-ui.badge>
+                    @else
+                        <x-ui.badge variant="primary" size="sm">{{ $penugasanSaya->status }}</x-ui.badge>
+                    @endif
+                </span>
             </div>
-            <div>
-                <p class="text-slate-500">Kondisi</p>
-                @if($penugasanSaya->is_terlambat)
-                    <span class="inline-flex items-center px-2 py-1 text-xs rounded-full bg-red-100 text-red-700">Terlambat</span>
-                @else
-                    <p class="font-medium text-slate-800">Normal</p>
-                @endif
+            <div class="flex flex-col gap-0.5">
+                <span class="text-[10px] sm:text-xs text-ui-text-secondary">Progres Pengerjaan</span>
+                <span class="font-semibold text-ui-text-primary">{{ $penugasanSaya->progres_persen ?? 0 }}%</span>
             </div>
-            <div class="md:col-span-2">
-                <p class="text-slate-500">Instruksi</p>
-                <p class="font-medium text-slate-800">{{ $tugas->deskripsi }}</p>
+            <div class="flex flex-col gap-0.5">
+                <span class="text-[10px] sm:text-xs text-ui-text-secondary">Dokumen Acuan</span>
+                <div>
+                    @if ($tugas->template)
+                        <x-ui.button variant="secondary" size="xs" leadingIcon="file-text" :href="asset('storage/' . $tugas->template)" target="_blank">
+                            Unduh Template
+                        </x-ui.button>
+                    @else
+                        <span class="text-ui-muted font-medium">-</span>
+                    @endif
+                </div>
             </div>
-            <div class="md:col-span-2">
-                <p class="text-slate-500">Catatan Progres Terakhir</p>
-                <p class="font-medium text-slate-800">{{ $penugasanSaya->catatan_progres ?? '-' }}</p>
+
+            <div class="flex flex-col gap-0.5 sm:col-span-2 md:col-span-3">
+                <span class="text-[10px] sm:text-xs text-ui-text-secondary">Instruksi Tugas</span>
+                <div class="bg-ui-primary-soft/30 p-3.5 rounded-lg border border-ui-border text-ui-text-primary leading-relaxed">
+                    {{ $tugas->deskripsi }}
+                </div>
             </div>
-            <div class="md:col-span-2">
-                <p class="text-slate-500">Catatan Revisi</p>
-                <p class="font-medium text-slate-800">{{ $penugasanSaya->catatan_revisi ?? '-' }}</p>
-            </div>
-            <div class="md:col-span-2">
-                <p class="text-slate-500">Template</p>
-                @if ($tugas->template)
-                    <a href="{{ asset('storage/' . $tugas->template) }}" target="_blank" class="text-blue-600 hover:underline">
-                        Lihat Template
-                    </a>
-                @else
-                    <p class="font-medium text-slate-800">-</p>
-                @endif
-            </div>
+            @if($penugasanSaya->catatan_progres)
+                <div class="flex flex-col gap-0.5 sm:col-span-2 md:col-span-3">
+                    <span class="text-[10px] sm:text-xs text-ui-text-secondary">Catatan Progres Terakhir</span>
+                    <span class="font-medium text-ui-text-primary">{{ $penugasanSaya->catatan_progres }}</span>
+                </div>
+            @endif
+            @if($penugasanSaya->catatan_revisi)
+                <div class="flex flex-col gap-0.5 sm:col-span-2 md:col-span-3">
+                    <span class="text-[10px] sm:text-xs text-ui-text-secondary">Catatan Revisi / Evaluasi</span>
+                    <span class="font-medium text-ui-danger bg-ui-danger-soft/20 p-3 rounded-lg border border-ui-danger/10">{{ $penugasanSaya->catatan_revisi }}</span>
+                </div>
+            @endif
         </div>
+    </x-ui.card>
 
-        <div class="border-t pt-6 space-y-4">
+    <!-- FORM & AKSI -->
+    <x-ui.card title="Aksi Pelaporan Tugas" icon="edit-3">
+        <div class="space-y-4 text-xs sm:text-sm">
             @if (in_array($penugasanSaya->status, ['sedang_dikerjakan', 'revisi', 'menunggu_verifikasi', 'proses']))
-                <a href="{{ route('pegawai.tugas.catatan.create', $penugasanSaya->id) }}" class="inline-flex px-4 py-2 rounded bg-indigo-700 text-white text-sm">
-                    Buat Catatan Kegiatan
-                </a>
+                <div class="pb-4 border-b border-ui-border/50">
+                    <x-ui.button variant="primary" size="sm" leadingIcon="file-plus" :href="route('pegawai.tugas.catatan.create', $penugasanSaya->id)">
+                        Buat Catatan Kegiatan
+                    </x-ui.button>
+                </div>
             @endif
 
             @if (in_array($penugasanSaya->status, ['selesai']))
-                <div class="px-3 py-2 rounded bg-green-50 text-green-700 text-sm">Tugas sudah selesai dan tidak dapat diubah.</div>
+                <x-ui.alert variant="success" :dismissible="false" description="Tugas sudah selesai diverifikasi dan tidak dapat diubah lagi." />
             @elseif (in_array($penugasanSaya->status, ['dibatalkan']))
-                <div class="px-3 py-2 rounded bg-red-50 text-red-700 text-sm">Tugas dibatalkan dan tidak dapat diubah.</div>
+                <x-ui.alert variant="danger" :dismissible="false" description="Tugas telah dibatalkan." />
             @else
                 @if (in_array($penugasanSaya->status, ['belum_dikerjakan', 'baru']))
                     <form method="POST" action="{{ route('pegawai.tugas.mulai', $penugasanSaya->id) }}">
                         @csrf
-                        <button type="submit" class="px-4 py-2 rounded bg-blue-700 text-white text-sm">Mulai Kerjakan</button>
+                        <x-ui.button type="submit" variant="primary" size="sm" leadingIcon="play">
+                            Mulai Kerjakan Tugas
+                        </x-ui.button>
                     </form>
                 @endif
 
                 @if (in_array($penugasanSaya->status, ['sedang_dikerjakan', 'revisi', 'proses']))
-                    <form method="POST" action="{{ route('pegawai.tugas.progres', $penugasanSaya->id) }}" class="space-y-3">
-                        @csrf
-                        <div>
-                            <label class="block text-sm mb-1">Progres (%)</label>
-                            <input type="number" name="progres_persen" min="0" max="100" value="{{ old('progres_persen', $penugasanSaya->progres_persen ?? 0) }}" class="w-full border rounded px-3 py-2 text-sm" required>
-                        </div>
-                        <div>
-                            <label class="block text-sm mb-1">Catatan Progres</label>
-                            <textarea name="catatan_progres" rows="3" class="w-full border rounded px-3 py-2 text-sm" required>{{ old('catatan_progres', $penugasanSaya->catatan_progres) }}</textarea>
-                        </div>
-                        <button type="submit" class="px-4 py-2 rounded bg-amber-600 text-white text-sm">Update Progres</button>
-                    </form>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Update Progres Form -->
+                        <form method="POST" action="{{ route('pegawai.tugas.progres', $penugasanSaya->id) }}" class="space-y-4 bg-slate-50 border rounded-xl p-4">
+                            @csrf
+                            <h4 class="font-semibold text-ui-text-primary text-xs uppercase tracking-wider mb-2">Update Perkembangan</h4>
+                            
+                            <x-ui.input 
+                                type="number"
+                                name="progres_persen"
+                                label="Progres Pengerjaan (%)"
+                                min="0"
+                                max="100"
+                                value="{{ old('progres_persen', $penugasanSaya->progres_persen ?? 0) }}"
+                                required
+                            />
+                            
+                            <x-ui.input 
+                                type="textarea"
+                                name="catatan_progres"
+                                label="Catatan Perkembangan"
+                                placeholder="Apa saja yang telah diselesaikan?"
+                                required
+                                rows="3"
+                            >{{ old('catatan_progres', $penugasanSaya->catatan_progres) }}</x-ui.input>
 
-                    <form method="POST" action="{{ route('pegawai.tugas.kirim-verifikasi', $penugasanSaya->id) }}">
-                        @csrf
-                        <button type="submit" class="px-4 py-2 rounded bg-green-700 text-white text-sm">Kirim untuk Verifikasi</button>
-                    </form>
+                            <x-ui.button type="submit" variant="secondary" size="sm" leadingIcon="save">
+                                Perbarui Progres
+                            </x-ui.button>
+                        </form>
+
+                        <!-- Verifikasi Action Card -->
+                        <div class="bg-ui-primary-soft/20 border border-ui-primary/10 rounded-xl p-4 flex flex-col justify-between">
+                            <div>
+                                <h4 class="font-semibold text-ui-text-primary text-xs uppercase tracking-wider mb-2">Kirim Hasil Kerja</h4>
+                                <p class="text-xs text-ui-text-secondary leading-relaxed mb-4">
+                                    Jika Anda telah menyelesaikan pengerjaan tugas harian ini, klik tombol di bawah untuk mengajukan verifikasi laporan kepada pemberi tugas.
+                                </p>
+                            </div>
+                            <form method="POST" action="{{ route('pegawai.tugas.kirim-verifikasi', $penugasanSaya->id) }}">
+                                @csrf
+                                <x-ui.button type="submit" variant="success" size="sm" leadingIcon="check-circle" fullWidth>
+                                    Ajukan Verifikasi Sekarang
+                                </x-ui.button>
+                            </form>
+                        </div>
+                    </div>
                 @endif
             @endif
         </div>
+    </x-ui.card>
 
-        <div class="border-t pt-6">
-            <h4 class="font-semibold text-slate-800 mb-3">Catatan Kegiatan Terkait Tugas</h4>
-            <div class="space-y-2">
-                @forelse($catatanTerkait as $catatan)
-                    <div class="border rounded p-3 text-sm">
-                        <div class="font-medium">{{ optional($catatan->tanggal_kegiatan)->format('d-m-Y') ?? '-' }} - {{ $catatan->status_verifikasi_label }}</div>
-                        <div class="text-slate-600">{{ \Illuminate\Support\Str::limit($catatan->hasil_kegiatan ?? $catatan->deskripsi, 140) }}</div>
+    <!-- CATATAN KEGIATAN TERKAIT -->
+    <x-ui.card title="Catatan Kegiatan Terkait Tugas" icon="list">
+        <div class="space-y-3">
+            @forelse($catatanTerkait as $catatan)
+                <div class="border border-ui-border rounded-xl p-4 hover:border-ui-primary/30 transition-all flex items-start justify-between gap-4 text-xs sm:text-sm text-left">
+                    <div class="space-y-1">
+                        <div class="font-semibold text-ui-text-primary flex items-center gap-2">
+                            <span>Kegiatan Tanggal: {{ optional($catatan->tanggal_kegiatan)->format('d-m-Y') ?? '-' }}</span>
+                            <span class="text-xs">
+                                @if($catatan->status_verifikasi === 'disetujui')
+                                    <x-ui.badge variant="success" size="sm">Disetujui</x-ui.badge>
+                                @elseif(in_array($catatan->status_verifikasi, ['revisi', 'menunggu_verifikasi']))
+                                    <x-ui.badge variant="warning" size="sm">{{ str_replace('_', ' ', $catatan->status_verifikasi) }}</x-ui.badge>
+                                @elseif($catatan->status_verifikasi === 'ditolak')
+                                    <x-ui.badge variant="danger" size="sm">Ditolak</x-ui.badge>
+                                @else
+                                    <x-ui.badge variant="neutral" size="sm">{{ $catatan->status_verifikasi }}</x-ui.badge>
+                                @endif
+                            </span>
+                        </div>
+                        <p class="text-ui-text-secondary leading-relaxed">{{ \Illuminate\Support\Str::limit($catatan->hasil_kegiatan ?? $catatan->deskripsi, 200) }}</p>
                         @if($catatan->catatan_verifikasi)
-                            <div class="text-amber-700 mt-1">Catatan verifikasi: {{ $catatan->catatan_verifikasi }}</div>
+                            <div class="text-ui-warning bg-ui-warning-soft/20 px-3 py-1 rounded-lg border border-ui-warning/10 inline-block font-semibold mt-1">
+                                Catatan Verifikasi: {{ $catatan->catatan_verifikasi }}
+                            </div>
                         @endif
-                        <a href="{{ route('pegawai.catatan_kegiatan.show', $catatan->id) }}" class="text-blue-700">Lihat detail</a>
                     </div>
-                @empty
-                    <div class="text-sm text-slate-500">Belum ada catatan kegiatan untuk tugas ini.</div>
-                @endforelse
-            </div>
+                    <x-ui.button variant="ghost" size="xs" :href="route('pegawai.catatan_kegiatan.show', $catatan->id)">
+                        Detail
+                    </x-ui.button>
+                </div>
+            @empty
+                <x-ui.empty-state 
+                    icon="clipboard" 
+                    title="Belum Ada Catatan Kegiatan" 
+                    description="Belum ada laporan harian / catatan kegiatan yang terkait dengan tugas harian ini." 
+                />
+            @endforelse
         </div>
-    </div>
+    </x-ui.card>
 </div>
+
 @endsection

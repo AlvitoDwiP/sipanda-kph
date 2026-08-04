@@ -1,65 +1,130 @@
 @extends('layouts.master')
 
-@section('title', 'Catatan Kegiatan')
-@section('page-title', 'Edit Catatan Kegiatan Revisi')
+@section('title', 'Perbaiki Catatan Kegiatan')
 
 @section('content')
-<div class="bg-white rounded-xl shadow-sm border border-slate-100 mb-6">
-    <div class="p-6 border-b border-slate-100 flex justify-between items-center">
-        <h3 class="font-bold text-slate-800">Perbaiki Catatan Kegiatan</h3>
-        <a href="{{ route('pegawai.catatan_kegiatan.show', $catatan_kegiatan->id) }}" class="text-sm text-slate-500 hover:text-slate-700">Kembali</a>
-    </div>
 
-    <form method="POST" action="{{ route('pegawai.catatan_kegiatan.update', $catatan_kegiatan) }}" enctype="multipart/form-data" class="p-6 space-y-6">
-        @csrf
-        @method('PUT')
+<x-ui.page-header title="Perbaiki Catatan Kegiatan" subtitle="Perbaiki catatan kegiatan Anda berdasarkan feedback / catatan verifikasi.">
+    <x-slot name="breadcrumbs">
+        <x-ui.breadcrumb />
+    </x-slot>
+    <x-slot name="actions">
+        <x-ui.button variant="ghost" size="sm" leadingIcon="arrow-left" :href="route('pegawai.catatan_kegiatan.show', $catatan_kegiatan->id)">
+            Kembali
+        </x-ui.button>
+    </x-slot>
+</x-ui.page-header>
 
-        <div class="p-4 rounded border bg-amber-50 text-sm text-amber-800">
-            Catatan verifikasi: {{ $catatan_kegiatan->catatan_verifikasi ?? '-' }}
-        </div>
+<div class="space-y-6">
+    <!-- FEEDBACK VERIFIKATOR ALERT -->
+    <x-ui.alert variant="warning" :dismissible="false" title="Catatan Verifikasi / Alasan Revisi" :description="$catatan_kegiatan->catatan_verifikasi ?? 'Harap tinjau kembali data kegiatan yang Anda kirim.'" />
 
-        <div>
-            <label class="block text-sm mb-1">Tanggal Kegiatan</label>
-            <input type="date" name="tanggal_kegiatan" value="{{ old('tanggal_kegiatan', optional($catatan_kegiatan->tanggal_kegiatan)->toDateString()) }}" class="w-full border rounded px-3 py-2" required>
-        </div>
+    <!-- FORM EDIT -->
+    <x-ui.card>
+        <form method="POST" action="{{ route('pegawai.catatan_kegiatan.update', $catatan_kegiatan) }}" enctype="multipart/form-data" class="space-y-6">
+            @csrf
+            @method('PUT')
 
-        <div>
-            <label class="block text-sm mb-1">Deskripsi Kegiatan</label>
-            <textarea name="deskripsi" rows="4" class="w-full border rounded px-3 py-2" required>{{ old('deskripsi', $catatan_kegiatan->deskripsi) }}</textarea>
-        </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <!-- Tanggal Kegiatan -->
+                <div>
+                    <x-ui.input 
+                        type="date"
+                        name="tanggal_kegiatan"
+                        label="Tanggal Kegiatan"
+                        value="{{ old('tanggal_kegiatan', optional($catatan_kegiatan->tanggal_kegiatan)->toDateString()) }}"
+                        required
+                        :error="$errors->first('tanggal_kegiatan')"
+                    />
+                </div>
 
-        <div>
-            <label class="block text-sm mb-1">Hasil Kegiatan</label>
-            <textarea name="hasil_kegiatan" rows="4" class="w-full border rounded px-3 py-2" required>{{ old('hasil_kegiatan', $catatan_kegiatan->hasil_kegiatan) }}</textarea>
-        </div>
+                <!-- Spacer -->
+                <div class="hidden md:block"></div>
 
-        <div>
-            <label class="block text-sm mb-1">Kendala</label>
-            <textarea name="kendala" rows="3" class="w-full border rounded px-3 py-2">{{ old('kendala', $catatan_kegiatan->kendala) }}</textarea>
-        </div>
+                <!-- Deskripsi Kegiatan -->
+                <div class="md:col-span-2">
+                    <x-ui.input 
+                        type="textarea"
+                        name="deskripsi"
+                        label="Deskripsi Rincian Kegiatan"
+                        placeholder="Uraikan rincian kegiatan..."
+                        required
+                        rows="4"
+                        :error="$errors->first('deskripsi')"
+                    >{{ old('deskripsi', $catatan_kegiatan->deskripsi) }}</x-ui.input>
+                </div>
 
-        @if ($catatan_kegiatan->foto_kegiatan)
-            <div>
-                <label class="block text-sm mb-2">File Saat Ini</label>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    @foreach ($catatan_kegiatan->foto_kegiatan as $foto)
-                        <label class="border rounded p-2 text-xs">
-                            <a href="{{ asset('storage/' . $foto) }}" target="_blank" class="text-blue-700">Lihat File</a>
-                            <div class="mt-1"><input type="checkbox" name="hapus_foto[]" value="{{ $foto }}"> Hapus</div>
-                        </label>
-                    @endforeach
+                <!-- Hasil Kegiatan -->
+                <div class="md:col-span-2">
+                    <x-ui.input 
+                        type="textarea"
+                        name="hasil_kegiatan"
+                        label="Hasil Kegiatan (Output)"
+                        placeholder="Uraikan hasil yang dicapai..."
+                        required
+                        rows="4"
+                        :error="$errors->first('hasil_kegiatan')"
+                    >{{ old('hasil_kegiatan', $catatan_kegiatan->hasil_kegiatan) }}</x-ui.input>
+                </div>
+
+                <!-- Kendala -->
+                <div class="md:col-span-2">
+                    <x-ui.input 
+                        type="textarea"
+                        name="kendala"
+                        label="Kendala / Hambatan (Opsional)"
+                        placeholder="Sebutkan kendala..."
+                        rows="3"
+                        :error="$errors->first('kendala')"
+                    >{{ old('kendala', $catatan_kegiatan->kendala) }}</x-ui.input>
+                </div>
+
+                <!-- Bukti Pendukung Saat Ini -->
+                @if ($catatan_kegiatan->foto_kegiatan)
+                    <div class="md:col-span-2 space-y-2">
+                        <label class="text-xs font-semibold text-ui-text-primary">Berkas Lampiran Saat Ini (Centang untuk menghapus)</label>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                            @foreach ($catatan_kegiatan->foto_kegiatan as $foto)
+                                <div class="border border-ui-border rounded-xl p-3 bg-slate-50 flex flex-col justify-between gap-3 text-xs">
+                                    <div class="truncate">
+                                        <x-ui.button variant="outline" size="xs" leadingIcon="external-link" :href="asset('storage/' . $foto)" target="_blank">
+                                            Buka Berkas
+                                        </x-ui.button>
+                                    </div>
+                                    <div class="flex items-center gap-2 mt-1">
+                                        <input type="checkbox" name="hapus_foto[]" value="{{ $foto }}" id="hapus_{{ md5($foto) }}" class="rounded text-ui-primary focus:ring-ui-primary/20">
+                                        <label for="hapus_{{ md5($foto) }}" class="text-[11px] text-ui-text-secondary select-none cursor-pointer">Hapus berkas ini</label>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+
+                <!-- Tambah Bukti Pendukung Baru -->
+                <div class="md:col-span-2">
+                    <x-ui.input 
+                        type="file"
+                        name="foto_kegiatan[]"
+                        label="Tambah Bukti Kegiatan / Foto Pendukung Baru (Bisa pilih beberapa)"
+                        multiple
+                        accept="image/*,application/pdf"
+                        :error="$errors->first('foto_kegiatan.*')"
+                    />
                 </div>
             </div>
-        @endif
 
-        <div>
-            <label class="block text-sm mb-1">Tambah File Baru</label>
-            <input type="file" name="foto_kegiatan[]" multiple class="w-full border rounded px-3 py-2">
-        </div>
-
-        <div>
-            <button type="submit" class="px-4 py-2 rounded bg-green-800 text-white text-sm">Kirim Ulang Verifikasi</button>
-        </div>
-    </form>
+            <!-- Actions -->
+            <x-slot name="footer">
+                <x-ui.button variant="ghost" size="sm" :href="route('pegawai.catatan_kegiatan.show', $catatan_kegiatan->id)">
+                    Batal
+                </x-ui.button>
+                <x-ui.button type="submit" variant="primary" size="sm" leadingIcon="send">
+                    Kirim Ulang Verifikasi
+                </x-ui.button>
+            </x-slot>
+        </form>
+    </x-ui.card>
 </div>
+
 @endsection

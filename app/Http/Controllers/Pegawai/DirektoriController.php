@@ -43,7 +43,7 @@ class DirektoriController extends Controller
             });
         }
 
-        $pegawai = $pegawaiQuery->get();
+        $pegawai = $pegawaiQuery->paginate(15);
 
         return view('pages.pegawai.direktori.index', compact('pegawai'));
     }

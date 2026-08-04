@@ -1,173 +1,189 @@
 @extends('layouts.master')
 
-@section('title', 'Registrasi & Verifikasi')
-@section('page-title', 'Registrasi & Verifikasi')
+@section('title', 'Tambah Akun Pengguna')
 
 @section('content')
+<div class="space-y-6">
 
-<div class="bg-white rounded-xl shadow-sm border border-slate-100 mb-6">
+    <!-- PAGE HEADER -->
+    <x-ui.page-header title="Tambah Akun Pengguna" subtitle="Daftarkan pengguna baru beserta data kepegawaiannya.">
+        <x-slot name="breadcrumbs">
+            <x-ui.breadcrumb />
+        </x-slot>
+        <x-slot name="actions">
+            <x-ui.button variant="ghost" size="sm" leadingIcon="arrow-left" :href="route('admin.register.index')">
+                Kembali
+            </x-ui.button>
+        </x-slot>
+    </x-ui.page-header>
 
-    <!-- Header -->
-    <div class="p-6 border-b border-slate-100 flex justify-between items-center">
-        <h3 class="font-bold text-slate-800">Tambah User</h3>
-        <a href="{{ route('admin.register.index') }}"
-            class="text-sm text-slate-500 hover:text-slate-700">
-            ✕
-        </a>
-    </div>
+    <!-- FORM CARD -->
+    <x-ui.card>
+        <form method="POST" action="{{ route('admin.register.store') }}" class="space-y-6">
+            @csrf
 
-    <!-- Form -->
-    <form method="POST" action="{{ route('admin.register.store') }}" class="p-6 space-y-8">
-        @csrf
+            <!-- SECTION: DATA AKUN -->
+            <div>
+                <x-ui.section-header title="Informasi Kredensial Akun" subtitle="Rincian informasi login dan hak akses pengguna." class="mb-4" />
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <x-ui.input 
+                        type="text" 
+                        name="name" 
+                        label="Nama Lengkap" 
+                        placeholder="Nama lengkap tanpa gelar..." 
+                        value="{{ old('name') }}" 
+                        required 
+                        :error="$errors->first('name')"
+                    />
 
-        <div>
-            <h4 class="font-semibold text-slate-700 mb-4">Data Akun</h4>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-                <!-- Nama -->
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Nama Lengkap</label>
-                    <input type="text" name="name" value="{{ old('name') }}" required
-                        class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm
-                        focus:ring-2 focus:ring-green-500 focus:border-green-500">
-                    <x-input-error :messages="$errors->get('name')" class="mt-1" />
-                </div>
-
-                <!-- NIP -->
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">NIP</label>
-                    <input type="text" name="nip" value="{{ old('nip') }}" required pattern="\d*"
+                    <x-ui.input 
+                        type="text" 
+                        name="nip" 
+                        label="Nomor Induk Pegawai (NIP)" 
+                        placeholder="18 digit angka NIP..." 
+                        value="{{ old('nip') }}" 
+                        required 
                         oninput="this.value = this.value.replace(/\D/g,'')"
-                        class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm
-                        focus:ring-2 focus:ring-green-500 focus:border-green-500">
-                    <x-input-error :messages="$errors->get('nip')" class="mt-1" />
-                </div>
+                        :error="$errors->first('nip')"
+                    />
 
-                <!-- Email -->
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Email</label>
-                    <input type="email" name="email" value="{{ old('email') }}" required
-                        class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm
-                        focus:ring-2 focus:ring-green-500 focus:border-green-500">
-                    <x-input-error :messages="$errors->get('email')" class="mt-1" />
-                </div>
+                    <x-ui.input 
+                        type="email" 
+                        name="email" 
+                        label="Alamat Email Resmi" 
+                        placeholder="nama@perhutani.co.id..." 
+                        value="{{ old('email') }}" 
+                        required 
+                        :error="$errors->first('email')"
+                    />
 
-                <!-- Password -->
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Password</label>
-                    <input type="password" name="password" required
-                        class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm
-                        focus:ring-2 focus:ring-green-500 focus:border-green-500">
-                    <x-input-error :messages="$errors->get('password')" class="mt-1" />
-                </div>
+                    <x-ui.input 
+                        type="password" 
+                        name="password" 
+                        label="Kata Sandi (Password)" 
+                        placeholder="Minimal 8 karakter..." 
+                        required 
+                        :error="$errors->first('password')"
+                    />
 
-                <!-- Role -->
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Role</label>
-                    <select name="role" required
-                        class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm">
-                        <option value="">-- Pilih Role --</option>
+                    <x-ui.input 
+                        type="select" 
+                        name="role" 
+                        label="Peran Akun (Role)" 
+                        value="{{ old('role') }}" 
+                        required 
+                        :error="$errors->first('role')"
+                    >
+                        <option value="">-- Pilih Peran --</option>
                         <option value="admin">Admin</option>
                         <option value="pegawai">Pegawai</option>
                         <option value="kph">KPH</option>
-                    </select>
-                    <x-input-error :messages="$errors->get('role')" class="mt-1" />
-                </div>
+                    </x-ui.input>
 
-                <!-- Status Akun -->
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Status Akun</label>
-                    <select name="status_akun" required
-                        class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm">
+                    <x-ui.input 
+                        type="select" 
+                        name="status_akun" 
+                        label="Status Akun Pengguna" 
+                        value="{{ old('status_akun', 'aktif') }}" 
+                        required 
+                        :error="$errors->first('status_akun')"
+                    >
                         <option value="nonaktif">Nonaktif</option>
                         <option value="aktif">Aktif</option>
-                    </select>
-                    <x-input-error :messages="$errors->get('status_akun')" class="mt-1" />
+                    </x-ui.input>
                 </div>
-
             </div>
-        </div>
 
-        {{-- Divider --}}
-        <div class="border-t border-slate-100"></div>
+            <!-- DIVIDER -->
+            <div class="border-t border-ui-border/50 my-6"></div>
 
-        <div>
-            <h4 class="font-semibold text-slate-700 mb-4">Data Kepegawaian</h4>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-                <!-- Unit Kerja -->
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Unit Kerja</label>
-                    <select name="unitkerja_id" required
-                        class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm">
+            <!-- SECTION: DATA KEPEGABAIAN -->
+            <div>
+                <x-ui.section-header title="Data Kepegawaian & Instansi" subtitle="Rincian penempatan, pangkat, dan kedudukan dinas." class="mb-4" />
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <x-ui.input 
+                        type="select" 
+                        name="unitkerja_id" 
+                        label="Unit Kerja / Bagian" 
+                        value="{{ old('unitkerja_id') }}" 
+                        required 
+                        :error="$errors->first('unitkerja_id')"
+                    >
                         <option value="">-- Pilih Unit Kerja --</option>
                         @foreach ($unitkerja as $item)
-                        <option value="{{ $item->id }}">{{ $item->nama_unitkerja }}</option>
+                            <option value="{{ $item->id }}">{{ $item->nama_unitkerja }}</option>
                         @endforeach
-                    </select>
-                </div>
+                    </x-ui.input>
 
-                <!-- Golongan -->
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Golongan</label>
-                    <select name="golongan_id" required
-                        class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm">
+                    <x-ui.input 
+                        type="select" 
+                        name="golongan_id" 
+                        label="Golongan / Pangkat" 
+                        value="{{ old('golongan_id') }}" 
+                        required 
+                        :error="$errors->first('golongan_id')"
+                    >
                         <option value="">-- Pilih Golongan --</option>
                         @foreach ($golongan as $item)
-                        <option value="{{ $item->id }}">{{ $item->nama_golongan }}</option>
+                            <option value="{{ $item->id }}">{{ $item->nama_golongan }}</option>
                         @endforeach
-                    </select>
-                </div>
+                    </x-ui.input>
 
-                <!-- Jabatan -->
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Jabatan</label>
-                    <select name="jabatan_id" required
-                        class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm">
+                    <x-ui.input 
+                        type="select" 
+                        name="jabatan_id" 
+                        label="Jabatan Dinas" 
+                        value="{{ old('jabatan_id') }}" 
+                        required 
+                        :error="$errors->first('jabatan_id')"
+                    >
                         <option value="">-- Pilih Jabatan --</option>
                         @foreach ($jabatan as $item)
-                        <option value="{{ $item->id }}">{{ $item->nama_jabatan }}</option>
+                            <option value="{{ $item->id }}">{{ $item->nama_jabatan }}</option>
                         @endforeach
-                    </select>
-                </div>
+                    </x-ui.input>
 
-                <!-- Status Pegawai -->
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Status Pegawai</label>
-                    <select name="status_pegawai" required
-                        class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm">
+                    <x-ui.input 
+                        type="select" 
+                        name="status_pegawai" 
+                        label="Status Kepegawaian" 
+                        value="{{ old('status_pegawai', 'aktif') }}" 
+                        required 
+                        :error="$errors->first('status_pegawai')"
+                    >
                         <option value="aktif">Aktif</option>
                         <option value="nonaktif">Nonaktif</option>
-                    </select>
+                    </x-ui.input>
                 </div>
-
             </div>
-        </div>
 
-        <div>
-            <label class="block text-sm font-medium text-slate-700 mb-1">
-                Catatan Verifikasi (Opsional)
-            </label>
-            <textarea name="catatan_verifikasi" rows="3"
-                class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm
-                focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                placeholder="Catatan admin terkait verifikasi akun...">{{ old('catatan_verifikasi') }}</textarea>
-        </div>
+            <!-- DIVIDER -->
+            <div class="border-t border-ui-border/50 my-6"></div>
 
-        <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
-            <a href="{{ route('admin.register.index') }}"
-                class="px-4 py-2 text-sm rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50">
-                Batal
-            </a>
-            <button type="submit"
-                class="px-5 py-2 text-sm rounded-lg bg-green-800 text-white hover:bg-green-900">
-                Simpan
-            </button>
-        </div>
+            <!-- SECTION: LAINNYA -->
+            <div>
+                <x-ui.input 
+                    type="textarea" 
+                    name="catatan_verifikasi" 
+                    label="Catatan Verifikasi Admin (Opsional)" 
+                    placeholder="Tuliskan catatan khusus atau rujukan terkait pembuatan akun jika diperlukan..."
+                    value="{{ old('catatan_verifikasi') }}" 
+                    :error="$errors->first('catatan_verifikasi')"
+                />
+            </div>
 
-    </form>
+            <!-- FOOTER ACTIONS -->
+            <x-slot name="footer">
+                <x-ui.button variant="ghost" size="sm" :href="route('admin.register.index')">
+                    Batal
+                </x-ui.button>
+                <x-ui.button type="submit" variant="primary" size="sm" leadingIcon="save">
+                    Simpan Akun Pengguna
+                </x-ui.button>
+            </x-slot>
+        </form>
+    </x-ui.card>
 </div>
-
 @endsection

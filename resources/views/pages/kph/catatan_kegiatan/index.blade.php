@@ -1,56 +1,74 @@
 @extends('layouts.master')
 
 @section('title', 'Catatan Kegiatan Pegawai')
-@section('page-title', 'Catatan Kegiatan Pegawai')
 
 @section('content')
+
 @if (session('success'))
-<div class="mb-4 px-4 py-3 rounded-lg bg-green-100 text-green-700 text-sm">{{ session('success') }}</div>
+    <x-ui.alert variant="success" class="mb-5" :description="session('success')" />
 @endif
 @if (session('error'))
-<div class="mb-4 px-4 py-3 rounded-lg bg-red-100 text-red-700 text-sm">{{ session('error') }}</div>
+    <x-ui.alert variant="danger" class="mb-5" :description="session('error')" />
 @endif
 
-<div class="bg-white rounded-xl shadow-sm border border-slate-100">
-    <div class="p-6 border-b border-slate-100 flex justify-between items-center">
-        <h3 class="font-bold text-slate-800">Catatan Kegiatan Pegawai</h3>
-        <form method="GET" class="flex items-center gap-2 text-sm">
-            <select name="status" class="border rounded px-3 py-2">
-                <option value="">Semua Status</option>
-                <option value="menunggu_verifikasi" @selected(request('status') === 'menunggu_verifikasi')>Menunggu Verifikasi</option>
-                <option value="disetujui" @selected(request('status') === 'disetujui')>Disetujui</option>
-                <option value="revisi" @selected(request('status') === 'revisi')>Revisi</option>
-                <option value="ditolak" @selected(request('status') === 'ditolak')>Ditolak</option>
-            </select>
-            <button class="px-3 py-2 bg-green-800 text-white rounded">Filter</button>
-        </form>
-    </div>
+<x-ui.page-header title="Catatan Kegiatan Pegawai" subtitle="Review dan verifikasi laporan catatan kegiatan harian pegawai.">
+    <x-slot name="breadcrumbs">
+        <x-ui.breadcrumb />
+    </x-slot>
+</x-ui.page-header>
 
-    <div class="p-6 overflow-x-auto">
-        <table class="w-full text-sm">
-            <thead>
-                <tr class="text-slate-500 uppercase text-xs">
-                    <th class="pb-3 text-left">Tanggal</th>
-                    <th class="pb-3 text-left">Pegawai</th>
-                    <th class="pb-3 text-left">Tugas</th>
-                    <th class="pb-3 text-left">Status</th>
-                    <th class="pb-3 text-right">Aksi</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100">
-                @forelse ($catatan as $item)
-                    <tr>
-                        <td class="py-3">{{ optional($item->tanggal_kegiatan)->format('d-m-Y') ?? '-' }}</td>
-                        <td class="py-3">{{ $item->pegawai->user->name ?? '-' }}</td>
-                        <td class="py-3">{{ $item->penugasan->tugas->judul ?? '-' }}</td>
-                        <td class="py-3">{{ $item->status_verifikasi_label }}</td>
-                        <td class="py-3 text-right"><a href="{{ route('kph.catatan_kegiatan.show', $item->id) }}" class="text-blue-700">Detail</a></td>
-                    </tr>
-                @empty
-                    <tr><td colspan="5" class="py-8 text-center text-slate-400">Catatan kegiatan belum tersedia</td></tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
-</div>
+<x-ui.card>
+    <x-ui.table :headers="['No', 'Tanggal', 'Pegawai', 'Tugas', 'Status', 'Aksi']" :empty="$catatan->isEmpty()">
+        <x-slot name="filter">
+            <form method="GET" class="flex items-center gap-2">
+                <x-ui.input 
+                    type="select"
+                    name="status"
+                    class="min-w-[180px]"
+                >
+                    <option value="">Semua Status</option>
+                    <option value="menunggu_verifikasi" @selected(request('status') === 'menunggu_verifikasi')>Menunggu Verifikasi</option>
+                    <option value="disetujui" @selected(request('status') === 'disetujui')>Disetujui</option>
+                    <option value="revisi" @selected(request('status') === 'revisi')>Revisi</option>
+                    <option value="ditolak" @selected(request('status') === 'ditolak')>Ditolak</option>
+                </x-ui.input>
+                <x-ui.button type="submit" variant="secondary" size="md" leadingIcon="filter">
+                    Filter
+                </x-ui.button>
+            </form>
+        </x-slot>
+
+        @foreach ($catatan as $i => $item)
+            <tr class="hover:bg-ui-primary-soft/30 transition-colors">
+                <td class="px-4 py-3 text-xs text-ui-text-secondary">{{ $i + 1 }}</td>
+                <td class="px-4 py-3 text-xs text-ui-text-secondary">
+                    {{ optional($item->tanggal_kegiatan)->format('d-m-Y') ?? '-' }}
+                </td>
+                <td class="px-4 py-3 text-xs">
+                    <div class="font-semibold text-ui-text-primary">{{ $item->pegawai->user->name ?? '-' }}</div>
+                </td>
+                <td class="px-4 py-3 text-xs text-ui-text-secondary truncate max-w-[200px]">
+                    {{ $item->penugasan->tugas->judul ?? '-' }}
+                </td>
+                <td class="px-4 py-3 text-xs">
+                    @if($item->status_verifikasi === 'disetujui')
+                        <x-ui.badge variant="success" size="sm">Disetujui</x-ui.badge>
+                    @elseif(in_array($item->status_verifikasi, ['revisi', 'menunggu_verifikasi']))
+                        <x-ui.badge variant="warning" size="sm">{{ $item->status_verifikasi_label }}</x-ui.badge>
+                    @elseif($item->status_verifikasi === 'ditolak')
+                        <x-ui.badge variant="danger" size="sm">Ditolak</x-ui.badge>
+                    @else
+                        <x-ui.badge variant="neutral" size="sm">{{ $item->status_verifikasi_label }}</x-ui.badge>
+                    @endif
+                </td>
+                <td class="px-4 py-3 text-xs text-right">
+                    <x-ui.button variant="outline" size="xs" :href="route('kph.catatan_kegiatan.show', $item->id)">
+                        Detail
+                    </x-ui.button>
+                </td>
+            </tr>
+        @endforeach
+    </x-ui.table>
+</x-ui.card>
+
 @endsection

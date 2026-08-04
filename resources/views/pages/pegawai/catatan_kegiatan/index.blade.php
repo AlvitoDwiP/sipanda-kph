@@ -1,52 +1,62 @@
 @extends('layouts.master')
 
-@section('title', 'Catatan Kegiatan')
-@section('page-title', 'Catatan Kegiatan')
+@section('title', 'Catatan Kegiatan Saya')
 
 @section('content')
+
 @if (session('success'))
-<div class="mb-4 px-4 py-3 rounded-lg bg-green-100 text-green-800 text-sm">{{ session('success') }}</div>
+    <x-ui.alert variant="success" class="mb-5" :description="session('success')" />
 @endif
 @if (session('error'))
-<div class="mb-4 px-4 py-3 rounded-lg bg-red-100 text-red-800 text-sm">{{ session('error') }}</div>
+    <x-ui.alert variant="danger" class="mb-5" :description="session('error')" />
 @endif
 
-<div class="bg-white rounded-xl shadow-sm border border-slate-100">
-    <div class="p-6 border-b border-slate-100">
-        <h3 class="font-bold text-slate-800">Daftar Catatan Kegiatan</h3>
-    </div>
+<x-ui.page-header title="Catatan Kegiatan" subtitle="Daftar laporan harian dan riwayat verifikasi catatan kegiatan Anda.">
+    <x-slot name="breadcrumbs">
+        <x-ui.breadcrumb />
+    </x-slot>
+</x-ui.page-header>
 
-    <div class="p-6 overflow-x-auto">
-        <table class="w-full text-sm">
-            <thead>
-                <tr class="text-slate-500 uppercase text-xs">
-                    <th class="pb-3 text-left">Tanggal</th>
-                    <th class="pb-3 text-left">Tugas</th>
-                    <th class="pb-3 text-left">Ringkasan</th>
-                    <th class="pb-3 text-left">Status</th>
-                    <th class="pb-3 text-right">Aksi</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100">
-                @forelse ($catatan as $item)
-                <tr>
-                    <td class="py-3">{{ optional($item->tanggal_kegiatan)->format('d-m-Y') ?? '-' }}</td>
-                    <td class="py-3">{{ $item->penugasan->tugas->judul ?? '-' }}</td>
-                    <td class="py-3">{{ \Illuminate\Support\Str::limit($item->hasil_kegiatan ?? $item->deskripsi, 90) }}</td>
-                    <td class="py-3">{{ $item->status_verifikasi_label }}</td>
-                    <td class="py-3 text-right">
-                        <a href="{{ route('pegawai.catatan_kegiatan.show', $item->id) }}" class="text-blue-700">Detail</a>
+<x-ui.card>
+    <x-ui.table :headers="['No', 'Tanggal', 'Tugas', 'Ringkasan', 'Status', 'Aksi']" :empty="$catatan->isEmpty()">
+        @foreach ($catatan as $i => $item)
+            <tr class="hover:bg-ui-primary-soft/30 transition-colors">
+                <td class="px-4 py-3 text-xs text-ui-text-secondary">{{ $i + 1 }}</td>
+                <td class="px-4 py-3 text-xs text-ui-text-secondary">
+                    {{ optional($item->tanggal_kegiatan)->format('d-m-Y') ?? '-' }}
+                </td>
+                <td class="px-4 py-3 text-xs font-semibold text-ui-text-primary min-w-[150px]">
+                    {{ $item->penugasan->tugas->judul ?? '-' }}
+                </td>
+                <td class="px-4 py-3 text-xs text-ui-text-secondary truncate max-w-[250px]">
+                    {{ \Illuminate\Support\Str::limit($item->hasil_kegiatan ?? $item->deskripsi, 100) }}
+                </td>
+                <td class="px-4 py-3 text-xs">
+                    @if($item->status_verifikasi === 'disetujui')
+                        <x-ui.badge variant="success" size="sm">Disetujui</x-ui.badge>
+                    @elseif(in_array($item->status_verifikasi, ['revisi', 'menunggu_verifikasi']))
+                        <x-ui.badge variant="warning" size="sm">{{ $item->status_verifikasi_label }}</x-ui.badge>
+                    @elseif($item->status_verifikasi === 'ditolak')
+                        <x-ui.badge variant="danger" size="sm">Ditolak</x-ui.badge>
+                    @else
+                        <x-ui.badge variant="neutral" size="sm">{{ $item->status_verifikasi_label }}</x-ui.badge>
+                    @endif
+                </td>
+                <td class="px-4 py-3 text-xs text-right whitespace-nowrap">
+                    <div class="flex items-center justify-end gap-1.5">
+                        <x-ui.button variant="outline" size="xs" :href="route('pegawai.catatan_kegiatan.show', $item->id)">
+                            Detail
+                        </x-ui.button>
                         @if($item->status_verifikasi === 'revisi')
-                            <span class="mx-2 text-slate-300">|</span>
-                            <a href="{{ route('pegawai.catatan_kegiatan.edit', $item->id) }}" class="text-amber-700">Edit</a>
+                            <x-ui.button variant="secondary" size="xs" leadingIcon="edit" class="text-ui-warning" :href="route('pegawai.catatan_kegiatan.edit', $item->id)">
+                                Edit
+                            </x-ui.button>
                         @endif
-                    </td>
-                </tr>
-                @empty
-                <tr><td colspan="5" class="py-8 text-center text-slate-400">Catatan kegiatan belum tersedia</td></tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
-</div>
+                    </div>
+                </td>
+            </tr>
+        @endforeach
+    </x-ui.table>
+</x-ui.card>
+
 @endsection

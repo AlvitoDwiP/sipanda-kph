@@ -1,59 +1,38 @@
 @extends('layouts.master')
 
-@section('title', 'Log Aktifitas')
-@section('page-title', 'Log Aktifitas')
+@section('title', 'Log Aktivitas')
 
 @section('content')
+<div class="space-y-6">
 
-<div class="bg-white rounded-xl shadow-sm border border-slate-100">
-    <div class="p-6 border-b border-slate-100 flex justify-between items-center">
-        <h3 class="font-bold text-slate-800">Log Aktifitas</h3>
-    </div>
+    <!-- PAGE HEADER -->
+    <x-ui.page-header title="Log Aktivitas Sistem" subtitle="Pantau log aksi dan riwayat kegiatan pengguna pada aplikasi SIPANDA.">
+        <x-slot name="breadcrumbs">
+            <x-ui.breadcrumb />
+        </x-slot>
+    </x-ui.page-header>
 
-    <div class="p-6">
-        <div class="overflow-x-auto">
-            <table class="w-full text-sm">
-                <thead>
-                    <tr class="text-slate-500 uppercase text-xs">
-                        <th class="pb-3 text-left">No</th>
-                        <th class="pb-3 text-left">Nama Pengguna</th>
-                        <th class="pb-3 text-left">Aktifitas</th>
-                        <th class="pb-3 text-left">Waktu</th>
-                    </tr>
-                </thead>
+    <!-- LOG ACTIVITY CARD & TABLE -->
+    <x-ui.card title="Riwayat Aktivitas" icon="history" class="overflow-hidden">
+        <x-ui.table 
+            :headers="['No', 'Nama Pengguna', 'Aktivitas / Aksi', 'Waktu Kejadian']"
+            :empty="count($logs) === 0"
+            :pagination="$logs->links()"
+        >
+            @foreach ($logs as $i => $log)
+                <tr class="border-b border-ui-border/50 hover:bg-ui-primary-soft/10">
+                    <td class="px-4 py-3 text-ui-text-secondary text-center">{{ $i + 1 }}</td>
+                    <td class="px-4 py-3 font-semibold text-ui-text-primary">
+                        {{ $log->user->name ?? 'Pengguna Tidak Ditemukan' }}
+                    </td>
+                    <td class="px-4 py-3 text-ui-text-primary">{{ $log->aksi }}</td>
+                    <td class="px-4 py-3 text-ui-text-secondary">
+                        {{ $log->created_at->translatedFormat('d M Y H:i:s') }} WIB
+                    </td>
+                </tr>
+            @endforeach
+        </x-ui.table>
+    </x-ui.card>
 
-                <tbody class="divide-y divide-slate-100">
-                    @forelse ($logs as $i => $log)
-                    <tr class="hover:bg-slate-50 transition">
-                        <td class="py-4">{{ $i + 1 }}</td>
-
-                        <td class="py-4 font-medium text-slate-800">
-                            {{ $log->user->name ?? 'User tidak ditemukan' }}
-                        </td>
-
-                        <td class="py-4">
-                            {{ $log->aksi }}
-                        </td>
-
-                        <td class="py-4">
-                            {{ $log->created_at->format('d M Y H:i:s') }}
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="4" class="py-8 text-center text-slate-400">
-                            Data log aktivitas belum tersedia
-                        </td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
-
-            <div class="mt-6">
-                {{ $logs->links() }}
-            </div>
-        </div>
-    </div>
 </div>
-
 @endsection

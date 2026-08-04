@@ -1,141 +1,103 @@
 @extends('layouts.master')
 
 @section('title', 'Registrasi & Verifikasi')
-@section('page-title', 'Registrasi & Verifikasi')
 
 @section('content')
+<div x-data="{ 
+    deleteId: null, 
+    deleteName: '',
+    deleteAction: '',
+    confirmDelete(id, name, action) {
+        this.deleteId = id;
+        this.deleteName = name;
+        this.deleteAction = action;
+        this.$dispatch('open-modal', 'delete-confirm');
+    }
+}" class="space-y-6">
 
-@if (session('success'))
-<div class="mb-4 px-4 py-3 rounded-lg bg-green-100 text-green-800 text-sm">
-    {{ session('success') }}
-</div>
-@endif
+    <!-- PAGE HEADER -->
+    <x-ui.page-header title="Registrasi & Verifikasi Pengguna" subtitle="Kelola registrasi, hak akses, dan verifikasi akun pegawai.">
+        <x-slot name="breadcrumbs">
+            <x-ui.breadcrumb />
+        </x-slot>
+        <x-slot name="actions">
+            <x-ui.button variant="primary" size="sm" leadingIcon="user-plus" :href="route('admin.register.create')">
+                Tambah Akun
+            </x-ui.button>
+        </x-slot>
+    </x-ui.page-header>
 
-<div class="bg-white rounded-xl shadow-sm border border-slate-100">
-
-    <div class="p-6 border-b border-slate-100 flex justify-between items-center">
-        <h3 class="font-bold text-slate-800">Register & Verifikasi</h3>
-        <a href="{{ route('admin.register.create') }}"
-            class="px-4 py-2 text-sm text-white bg-green-800 rounded-lg hover:bg-green-900 transition">
-            Tambah Data
-        </a>
-    </div>
-
-
-    <div class="p-6">
-        <div class="overflow-x-auto">
-            <table class="w-full text-sm">
-                <thead>
-                    <tr class="text-slate-500 uppercase text-xs">
-                        <th class="pb-3 text-left">No</th>
-                        <th class="pb-3 text-left">Nama</th>
-                        <th class="pb-3 text-left">NIP</th>
-                        <th class="pb-3 text-left">Email</th>
-                        <th class="pb-3 text-left">Role</th>
-                        <th class="pb-3 text-left">Status</th>
-                        <th class="pb-3 text-right">Aksi</th>
-                    </tr>
-                </thead>
-
-                <tbody class="divide-y divide-slate-100">
-                    @forelse ($user as $i => $user)
-                    <tr class="hover:bg-slate-50 transition">
-                        <td class="py-4">{{ $i + 1 }}</td>
-                        <td class="py-4 font-medium text-slate-800"> {{ $user->name }}</td>
-                        <td class="py-4">{{ $user->nip }}</td>
-                        <td class="py-4">{{ $user->email }}</td>
-                        <td class="py-4">{{ $user->role }}</td>
-                        <td class="py-4">
-                            @if ($user->status_akun == 'aktif')
-                            <span class="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Aktif</span>
-                            @else
-                            <span class="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">Non-Aktif</span>
-                            @endif
-                        </td>
-                        <td class="py-4 text-right">
-                            <a href="{{ route('admin.register.edit', $user->id) }}"
-                                class="text-slate-600 hover:text-green-800 font-medium transition">
+    <!-- MAIN CARD & TABLE -->
+    <x-ui.card title="Daftar Registrasi Pengguna" icon="users" class="overflow-hidden">
+        <x-ui.table 
+            :headers="['No', 'Nama Pengguna', 'NIP', 'Email', 'Role', 'Status Akun', 'Aksi']"
+            :empty="count($user) === 0"
+        >
+            @foreach ($user as $i => $row)
+                <tr class="border-b border-ui-border/50 hover:bg-ui-primary-soft/10">
+                    <td class="px-4 py-3 text-ui-text-secondary text-center">{{ $i + 1 }}</td>
+                    <td class="px-4 py-3 font-semibold text-ui-text-primary">{{ $row->name }}</td>
+                    <td class="px-4 py-3 text-ui-text-primary">{{ $row->nip ?? '-' }}</td>
+                    <td class="px-4 py-3 text-ui-text-secondary select-all">{{ $row->email }}</td>
+                    <td class="px-4 py-3 text-center">
+                        <x-ui.badge variant="neutral" styleType="outline">{{ $row->role }}</x-ui.badge>
+                    </td>
+                    <td class="px-4 py-3 text-center">
+                        @if ($row->status_akun === 'aktif')
+                            <x-ui.badge variant="success" styleType="soft">Aktif</x-ui.badge>
+                        @else
+                            <x-ui.badge variant="danger" styleType="soft">Non-Aktif</x-ui.badge>
+                        @endif
+                    </td>
+                    <td class="px-4 py-3 text-right">
+                        <div class="flex items-center justify-end gap-1.5">
+                            <x-ui.button variant="ghost" size="xs" leadingIcon="edit-2" :href="route('admin.register.edit', $row->id)">
                                 Edit
-                            </a>
-
-                            <span class="mx-2 text-slate-300">|</span>
-
-                            <button type="button"
-                                onclick="openDeleteModal({{ $user->id }}, '{{ $user->name }}')"
-                                class="text-slate-600 hover:text-red-600 font-medium transition">
+                            </x-ui.button>
+                            <x-ui.button 
+                                type="button"
+                                variant="ghost" 
+                                size="xs" 
+                                leadingIcon="trash-2"
+                                class="text-ui-danger hover:text-red-700 hover:bg-red-50"
+                                @click="confirmDelete({{ $row->id }}, '{{ addslashes($row->name) }}', '{{ route('admin.register.destroy', $row->id) }}')"
+                            >
                                 Hapus
-                            </button>
-                        </td>
+                            </x-ui.button>
+                        </div>
+                    </td>
+                </tr>
+            @endforeach
+        </x-ui.table>
+    </x-ui.card>
 
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="4" class="py-8 text-center text-slate-400">
-                            Data log aktivitas belum tersedia
-                        </td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
-
+    <!-- DELETE CONFIRMATION MODAL -->
+    <x-ui.modal name="delete-confirm" title="Konfirmasi Hapus Akun" maxWidth="sm">
+        <div class="flex items-start gap-3.5">
+            <div class="p-2.5 rounded-ui-lg bg-ui-danger-soft text-ui-danger shrink-0 border border-ui-danger/10">
+                <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+            </div>
+            <div class="min-w-0">
+                <h4 class="text-xs sm:text-sm font-bold text-ui-text-primary leading-tight">Yakin ingin menghapus?</h4>
+                <p class="text-[11px] sm:text-xs text-ui-text-secondary mt-1 leading-normal">
+                    Akun pengguna <span class="font-bold text-ui-text-primary" x-text="deleteName"></span> akan dihapus permanen dari sistem. Tindakan ini tidak dapat dibatalkan.
+                </p>
+            </div>
         </div>
-    </div>
-
-</div>
-
-<div id="modalDelete" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50">
-    <div class="bg-white w-full max-w-md rounded-xl shadow-lg">
-        <form method="POST" id="formDelete">
-            @csrf
-            @method('DELETE')
-
-            <div class="px-6 py-4 border-b flex justify-between">
-                <h3 class="font-semibold">Konfirmasi Hapus</h3>
-                <button type="button" onclick="closeDeleteModal()">✕</button>
-            </div>
-
-            <div class="px-6 py-6 text-sm">
-                Yakin ingin menghapus akun
-                <strong id="deleteNama"></strong>?
-            </div>
-
-            <div class="px-6 py-4 border-t flex justify-end gap-3">
-                <button type="button"
-                    onclick="closeDeleteModal()"
-                    class="px-4 py-2 border rounded-lg">
+        
+        <x-slot name="footer">
+            <form :action="deleteAction" method="POST" class="inline flex gap-2">
+                @csrf
+                @method('DELETE')
+                <x-ui.button type="button" variant="ghost" size="sm" @click="$dispatch('close-modal', 'delete-confirm')">
                     Batal
-                </button>
-                <button type="submit"
-                    class="px-4 py-2 bg-red-600 text-white rounded-lg">
+                </x-ui.button>
+                <x-ui.button type="submit" variant="danger" size="sm">
                     Hapus
-                </button>
-            </div>
-        </form>
-    </div>
+                </x-ui.button>
+            </form>
+        </x-slot>
+    </x-ui.modal>
+
 </div>
-
 @endsection
-
-@push('scripts')
-<script>
-    function openDeleteModal(id, nama) {
-        document.getElementById('deleteNama').innerText = nama;
-        document.getElementById('formDelete').action =
-            "{{ route('admin.register.destroy', ':id') }}".replace(':id', id);
-        modalToggle('modalDelete', true);
-    }
-    function closeDeleteModal() {
-        modalToggle('modalDelete', false);
-    } 
-    function modalToggle(id, show) {
-        const modal = document.getElementById(id);
-        if (show) {
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-        } else {
-            modal.classList.remove('flex');
-            modal.classList.add('hidden');
-        }
-    }
-</script>
-@endpush   

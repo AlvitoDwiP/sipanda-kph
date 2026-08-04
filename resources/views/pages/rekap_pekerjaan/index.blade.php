@@ -4,200 +4,313 @@
 
 @section('content')
 <div class="space-y-6">
-    <div class="bg-white border border-slate-200 rounded-xl p-6">
-        <h1 class="text-2xl font-bold text-slate-800">Rekap Pekerjaan</h1>
-        <p class="text-sm text-slate-600 mt-1">Rekap tugas dan catatan kegiatan berdasarkan periode.</p>
-        <p class="text-sm text-slate-500 mt-2">Periode aktif: <span class="font-semibold text-slate-700">{{ $periodeLabel }}</span></p>
-    </div>
+    <!-- PAGE HEADER -->
+    <x-ui.page-header :title="$pageTitle" subtitle="Rekap tugas dan catatan kegiatan berdasarkan periode aktif.">
+        <x-slot name="breadcrumbs">
+            <x-ui.breadcrumb />
+        </x-slot>
+        <x-slot name="actions">
+            <div class="flex items-center gap-2 flex-wrap">
+                <span class="inline-flex items-center px-3 py-1 rounded-ui-md text-xs font-bold bg-ui-success-soft text-ui-success border border-ui-success/15 mr-2">
+                    Periode: {{ $periodeLabel }}
+                </span>
+                <x-ui.button variant="secondary" size="sm" leadingIcon="file-text" :href="route($routePrefix . '.rekap-pekerjaan.export-pdf', request()->query())">
+                    Ekspor PDF Rekap
+                </x-ui.button>
+                <x-ui.button variant="secondary" size="sm" leadingIcon="clipboard-list" :href="route($routePrefix . '.laporan.tugas.export-pdf', request()->query())">
+                    Ekspor PDF Tugas
+                </x-ui.button>
+                <x-ui.button variant="secondary" size="sm" leadingIcon="file-edit" :href="route($routePrefix . '.laporan.catatan.export-pdf', request()->query())">
+                    Ekspor PDF Catatan
+                </x-ui.button>
+            </div>
+        </x-slot>
+    </x-ui.page-header>
 
-    <div class="bg-white border border-slate-200 rounded-xl p-6">
-        <form method="GET" action="{{ route($routePrefix . '.rekap-pekerjaan.index') }}" class="grid gap-4 md:grid-cols-4">
+    <!-- FILTER SECTION -->
+    <x-ui.card title="Filter Laporan Rekapitulasi" icon="filter" variant="default">
+        <form method="GET" action="{{ route($routePrefix . '.rekap-pekerjaan.index') }}" class="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">Periode</label>
-                <select name="periode" class="w-full rounded-lg border-slate-300 focus:border-emerald-500 focus:ring-emerald-500">
+                <x-ui.input 
+                    type="select" 
+                    name="periode" 
+                    label="Periode Laporan" 
+                    value="{{ $filters['periode'] ?? 'harian' }}"
+                >
                     <option value="harian" @selected(($filters['periode'] ?? 'harian') === 'harian')>Harian</option>
                     <option value="mingguan" @selected(($filters['periode'] ?? '') === 'mingguan')>Mingguan</option>
                     <option value="bulanan" @selected(($filters['periode'] ?? '') === 'bulanan')>Bulanan</option>
-                </select>
+                </x-ui.input>
             </div>
+
             <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">Tanggal Acuan</label>
-                <input type="date" name="tanggal" value="{{ $filters['tanggal'] ?? '' }}" class="w-full rounded-lg border-slate-300 focus:border-emerald-500 focus:ring-emerald-500">
+                <x-ui.input 
+                    type="date" 
+                    name="tanggal" 
+                    label="Tanggal Acuan" 
+                    value="{{ $filters['tanggal'] ?? '' }}"
+                />
             </div>
+
             <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">Bulan</label>
-                <input type="month" name="bulan" value="{{ $filters['bulan'] ?? '' }}" class="w-full rounded-lg border-slate-300 focus:border-emerald-500 focus:ring-emerald-500">
+                <x-ui.input 
+                    type="month" 
+                    name="bulan" 
+                    label="Bulan Acuan" 
+                    value="{{ $filters['bulan'] ?? '' }}"
+                />
             </div>
+
             <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">Pegawai</label>
-                <select name="pegawai_id" class="w-full rounded-lg border-slate-300 focus:border-emerald-500 focus:ring-emerald-500">
+                <x-ui.input 
+                    type="select" 
+                    name="pegawai_id" 
+                    label="Pegawai" 
+                    value="{{ $filters['pegawai_id'] ?? '' }}"
+                >
                     <option value="">Semua Pegawai</option>
                     @foreach($filterOptions['pegawai'] as $pegawai)
-                    <option value="{{ $pegawai->id }}" @selected((string) ($filters['pegawai_id'] ?? '') === (string) $pegawai->id)>
-                        {{ $pegawai->user->name ?? ('Pegawai #' . $pegawai->id) }}
-                    </option>
+                        <option value="{{ $pegawai->id }}" @selected((string) ($filters['pegawai_id'] ?? '') === (string) $pegawai->id)>
+                            {{ $pegawai->user->name ?? ('Pegawai #' . $pegawai->id) }}
+                        </option>
                     @endforeach
-                </select>
+                </x-ui.input>
             </div>
+
             <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">Unit Kerja</label>
-                <select name="unit_kerja_id" class="w-full rounded-lg border-slate-300 focus:border-emerald-500 focus:ring-emerald-500">
+                <x-ui.input 
+                    type="select" 
+                    name="unit_kerja_id" 
+                    label="Unit Kerja" 
+                    value="{{ $filters['unit_kerja_id'] ?? '' }}"
+                >
                     <option value="">Semua Unit Kerja</option>
                     @foreach($filterOptions['unitKerja'] as $unit)
-                    <option value="{{ $unit->id }}" @selected((string) ($filters['unit_kerja_id'] ?? '') === (string) $unit->id)>{{ $unit->nama_unitkerja }}</option>
+                        <option value="{{ $unit->id }}" @selected((string) ($filters['unit_kerja_id'] ?? '') === (string) $unit->id)>
+                            {{ $unit->nama_unitkerja }}
+                        </option>
                     @endforeach
-                </select>
+                </x-ui.input>
             </div>
+
             <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">Status Tugas</label>
-                <select name="status" class="w-full rounded-lg border-slate-300 focus:border-emerald-500 focus:ring-emerald-500">
+                <x-ui.input 
+                    type="select" 
+                    name="status" 
+                    label="Status Tugas" 
+                    value="{{ $filters['status'] ?? '' }}"
+                >
                     <option value="">Semua Status</option>
                     @foreach($filterOptions['statusTugas'] as $status)
-                    <option value="{{ $status }}" @selected(($filters['status'] ?? '') === $status)>{{ ucfirst(str_replace('_', ' ', $status)) }}</option>
+                        <option value="{{ $status }}" @selected(($filters['status'] ?? '') === $status)>
+                            {{ ucfirst(str_replace('_', ' ', $status)) }}
+                        </option>
                     @endforeach
-                </select>
+                </x-ui.input>
             </div>
+
             <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">Prioritas</label>
-                <select name="prioritas" class="w-full rounded-lg border-slate-300 focus:border-emerald-500 focus:ring-emerald-500">
+                <x-ui.input 
+                    type="select" 
+                    name="prioritas" 
+                    label="Prioritas Tugas" 
+                    value="{{ $filters['prioritas'] ?? '' }}"
+                >
                     <option value="">Semua Prioritas</option>
                     @foreach($filterOptions['prioritas'] as $prioritas)
-                    <option value="{{ $prioritas }}" @selected(($filters['prioritas'] ?? '') === $prioritas)>{{ ucfirst($prioritas) }}</option>
+                        <option value="{{ $prioritas }}" @selected(($filters['prioritas'] ?? '') === $prioritas)>
+                            {{ ucfirst($prioritas) }}
+                        </option>
                     @endforeach
-                </select>
+                </x-ui.input>
             </div>
+
             <div class="flex items-end gap-2">
-                <button class="px-4 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 text-sm font-medium">Terapkan Filter</button>
-                <a href="{{ route($routePrefix . '.rekap-pekerjaan.index') }}" class="px-4 py-2 rounded-lg bg-slate-200 text-slate-700 hover:bg-slate-300 text-sm font-medium">Reset</a>
+                <x-ui.button type="submit" variant="primary" size="md" leadingIcon="search" class="w-full">
+                    Cari
+                </x-ui.button>
+                <x-ui.button variant="outline" size="md" :href="route($routePrefix . '.rekap-pekerjaan.index')" class="px-5">
+                    Reset
+                </x-ui.button>
             </div>
         </form>
-        <div class="mt-3 flex flex-wrap gap-2">
-            <a href="{{ route($routePrefix . '.rekap-pekerjaan.export-pdf', request()->query()) }}" class="px-3 py-2 rounded-lg bg-slate-700 text-white hover:bg-slate-800 text-xs font-medium">Export PDF Rekap</a>
-            <a href="{{ route($routePrefix . '.laporan.tugas.export-pdf', request()->query()) }}" class="px-3 py-2 rounded-lg bg-slate-700 text-white hover:bg-slate-800 text-xs font-medium">Export PDF Tugas</a>
-            <a href="{{ route($routePrefix . '.laporan.catatan.export-pdf', request()->query()) }}" class="px-3 py-2 rounded-lg bg-slate-700 text-white hover:bg-slate-800 text-xs font-medium">Export PDF Catatan</a>
+    </x-ui.card>
+
+    <!-- STATISTICS CARDS -->
+    <div class="grid gap-6">
+        <div>
+            <x-ui.section-header title="Ringkasan Kinerja Tugas" subtitle="Statistik penugasan pegawai pada rentang waktu terpilih." />
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mt-3">
+                <x-ui.card variant="statistics" title="Total Tugas" value="{{ $summaryTugas['total_tugas'] }}" icon="clipboard-list" />
+                <x-ui.card variant="statistics" title="Selesai" value="{{ $summaryTugas['tugas_selesai'] }}" icon="check-circle" trend="Tercapai" trendType="up" />
+                <x-ui.card variant="statistics" title="Belum Selesai" value="{{ $summaryTugas['tugas_belum_dikerjakan'] + $summaryTugas['tugas_sedang_dikerjakan'] + $summaryTugas['tugas_menunggu_verifikasi'] + $summaryTugas['tugas_revisi'] }}" icon="clock" />
+                <x-ui.card variant="statistics" title="Menunggu Verifikasi" value="{{ $summaryTugas['tugas_menunggu_verifikasi'] }}" icon="alert-circle" />
+                <x-ui.card variant="statistics" title="Terlambat" value="{{ $summaryTugas['tugas_terlambat'] }}" icon="alert-triangle" trend="Perlu Tindakan" trendType="down" />
+            </div>
+        </div>
+
+        <div>
+            <x-ui.section-header title="Ringkasan Catatan Kegiatan" subtitle="Statistik rincian aktivitas dan laporan pekerjaan harian." />
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mt-3">
+                <x-ui.card variant="statistics" title="Total Catatan" value="{{ $summaryCatatan['total_catatan'] }}" icon="file-text" />
+                <x-ui.card variant="statistics" title="Menunggu Verifikasi" value="{{ $summaryCatatan['catatan_menunggu_verifikasi'] }}" icon="clock" />
+                <x-ui.card variant="statistics" title="Disetujui" value="{{ $summaryCatatan['catatan_disetujui'] }}" icon="check-circle" trend="Disetujui" trendType="up" />
+                <x-ui.card variant="statistics" title="Revisi" value="{{ $summaryCatatan['catatan_revisi'] }}" icon="edit-3" />
+                <x-ui.card variant="statistics" title="Ditolak" value="{{ $summaryCatatan['catatan_ditolak'] }}" icon="x-circle" trend="Ditolak" trendType="down" />
+            </div>
         </div>
     </div>
 
-    <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-        <div class="p-4 bg-white border rounded-lg"><p class="text-xs text-slate-500">Total Tugas</p><p class="text-2xl font-bold text-slate-800">{{ $summaryTugas['total_tugas'] }}</p></div>
-        <div class="p-4 bg-white border rounded-lg"><p class="text-xs text-slate-500">Selesai</p><p class="text-2xl font-bold text-emerald-700">{{ $summaryTugas['tugas_selesai'] }}</p></div>
-        <div class="p-4 bg-white border rounded-lg"><p class="text-xs text-slate-500">Belum Selesai</p><p class="text-2xl font-bold text-amber-700">{{ $summaryTugas['tugas_belum_dikerjakan'] + $summaryTugas['tugas_sedang_dikerjakan'] + $summaryTugas['tugas_menunggu_verifikasi'] + $summaryTugas['tugas_revisi'] }}</p></div>
-        <div class="p-4 bg-white border rounded-lg"><p class="text-xs text-slate-500">Menunggu Verifikasi</p><p class="text-2xl font-bold text-blue-700">{{ $summaryTugas['tugas_menunggu_verifikasi'] }}</p></div>
-        <div class="p-4 bg-red-50 border border-red-100 rounded-lg"><p class="text-xs text-red-600">Terlambat</p><p class="text-2xl font-bold text-red-700">{{ $summaryTugas['tugas_terlambat'] }}</p></div>
-    </div>
+    <!-- TABLE REKAP PER PEGAWAI -->
+    <x-ui.card title="Rekap Per Pegawai" icon="users" class="overflow-hidden">
+        <x-ui.table 
+            :headers="['Pegawai', 'Jabatan', 'Unit Kerja', 'Total Tugas', 'Selesai', 'Belum', 'Terlambat', 'Total Catatan', 'Disetujui', 'Revisi/Menunggu', '% Selesai']"
+            :empty="count($rekapPegawai) === 0"
+        >
+            @foreach($rekapPegawai as $row)
+                <tr class="border-b border-ui-border/50 hover:bg-ui-primary-soft/10">
+                    <td class="px-4 py-3 font-semibold text-ui-text-primary">{{ $row->nama_pegawai }}</td>
+                    <td class="px-4 py-3 text-ui-text-secondary">{{ $row->jabatan ?? '-' }}</td>
+                    <td class="px-4 py-3 text-ui-text-secondary">{{ $row->unit_kerja ?? '-' }}</td>
+                    <td class="px-4 py-3 text-center"><x-ui.badge variant="neutral" styleType="soft">{{ $row->total_tugas }}</x-ui.badge></td>
+                    <td class="px-4 py-3 text-center"><x-ui.badge variant="success" styleType="soft">{{ $row->tugas_selesai }}</x-ui.badge></td>
+                    <td class="px-4 py-3 text-center"><x-ui.badge variant="warning" styleType="soft">{{ $row->tugas_belum_selesai }}</x-ui.badge></td>
+                    <td class="px-4 py-3 text-center">
+                        <x-ui.badge :variant="$row->tugas_terlambat > 0 ? 'danger' : 'neutral'" styleType="soft">
+                            {{ $row->tugas_terlambat }}
+                        </x-ui.badge>
+                    </td>
+                    <td class="px-4 py-3 text-center"><x-ui.badge variant="neutral" styleType="soft">{{ $row->total_catatan }}</x-ui.badge></td>
+                    <td class="px-4 py-3 text-center"><x-ui.badge variant="success" styleType="soft">{{ $row->catatan_disetujui }}</x-ui.badge></td>
+                    <td class="px-4 py-3 text-center"><x-ui.badge variant="warning" styleType="soft">{{ $row->catatan_revisi_menunggu }}</x-ui.badge></td>
+                    <td class="px-4 py-3 text-right font-bold text-ui-primary">{{ $row->persentase_selesai }}%</td>
+                </tr>
+            @endforeach
+        </x-ui.table>
+    </x-ui.card>
 
-    <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-        <div class="p-4 bg-white border rounded-lg"><p class="text-xs text-slate-500">Total Catatan</p><p class="text-2xl font-bold text-slate-800">{{ $summaryCatatan['total_catatan'] }}</p></div>
-        <div class="p-4 bg-white border rounded-lg"><p class="text-xs text-slate-500">Menunggu Verifikasi</p><p class="text-2xl font-bold text-blue-700">{{ $summaryCatatan['catatan_menunggu_verifikasi'] }}</p></div>
-        <div class="p-4 bg-white border rounded-lg"><p class="text-xs text-slate-500">Disetujui</p><p class="text-2xl font-bold text-emerald-700">{{ $summaryCatatan['catatan_disetujui'] }}</p></div>
-        <div class="p-4 bg-white border rounded-lg"><p class="text-xs text-slate-500">Revisi</p><p class="text-2xl font-bold text-amber-700">{{ $summaryCatatan['catatan_revisi'] }}</p></div>
-        <div class="p-4 bg-white border rounded-lg"><p class="text-xs text-slate-500">Ditolak</p><p class="text-2xl font-bold text-red-700">{{ $summaryCatatan['catatan_ditolak'] }}</p></div>
-    </div>
+    <!-- TABLE REKAP PER UNIT KERJA -->
+    <x-ui.card title="Rekap Per Unit Kerja" icon="building" class="overflow-hidden">
+        <x-ui.table 
+            :headers="['Unit Kerja', 'Jumlah Pegawai', 'Total Tugas', 'Selesai', 'Belum', 'Terlambat', 'Total Catatan', 'Catatan Disetujui', '% Selesai']"
+            :empty="count($rekapUnitKerja) === 0"
+        >
+            @foreach($rekapUnitKerja as $row)
+                <tr class="border-b border-ui-border/50 hover:bg-ui-primary-soft/10">
+                    <td class="px-4 py-3 font-semibold text-ui-text-primary">{{ $row->nama_unitkerja }}</td>
+                    <td class="px-4 py-3 text-center"><x-ui.badge variant="neutral" styleType="soft">{{ $row->jumlah_pegawai }}</x-ui.badge></td>
+                    <td class="px-4 py-3 text-center"><x-ui.badge variant="neutral" styleType="soft">{{ $row->total_tugas }}</x-ui.badge></td>
+                    <td class="px-4 py-3 text-center"><x-ui.badge variant="success" styleType="soft">{{ $row->tugas_selesai }}</x-ui.badge></td>
+                    <td class="px-4 py-3 text-center"><x-ui.badge variant="warning" styleType="soft">{{ $row->tugas_belum_selesai }}</x-ui.badge></td>
+                    <td class="px-4 py-3 text-center">
+                        <x-ui.badge :variant="$row->tugas_terlambat > 0 ? 'danger' : 'neutral'" styleType="soft">
+                            {{ $row->tugas_terlambat }}
+                        </x-ui.badge>
+                    </td>
+                    <td class="px-4 py-3 text-center"><x-ui.badge variant="neutral" styleType="soft">{{ $row->total_catatan }}</x-ui.badge></td>
+                    <td class="px-4 py-3 text-center"><x-ui.badge variant="success" styleType="soft">{{ $row->catatan_disetujui }}</x-ui.badge></td>
+                    <td class="px-4 py-3 text-right font-bold text-ui-primary">{{ $row->persentase_selesai }}%</td>
+                </tr>
+            @endforeach
+        </x-ui.table>
+    </x-ui.card>
 
-    <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
-        <div class="px-4 py-3 border-b bg-slate-50"><h2 class="font-semibold text-slate-800">Rekap Per Pegawai</h2></div>
-        <div class="overflow-x-auto">
-            <table class="min-w-full text-sm">
-                <thead class="bg-slate-100 text-slate-700">
-                    <tr>
-                        <th class="text-left px-4 py-2">Pegawai</th><th class="text-left px-4 py-2">Jabatan</th><th class="text-left px-4 py-2">Unit</th><th class="text-left px-4 py-2">Total</th><th class="text-left px-4 py-2">Selesai</th><th class="text-left px-4 py-2">Belum</th><th class="text-left px-4 py-2">Terlambat</th><th class="text-left px-4 py-2">Catatan</th><th class="text-left px-4 py-2">Disetujui</th><th class="text-left px-4 py-2">Revisi/Menunggu</th><th class="text-left px-4 py-2">% Selesai</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($rekapPegawai as $row)
-                    <tr class="border-t">
-                        <td class="px-4 py-2">{{ $row->nama_pegawai }}</td><td class="px-4 py-2">{{ $row->jabatan ?? '-' }}</td><td class="px-4 py-2">{{ $row->unit_kerja ?? '-' }}</td><td class="px-4 py-2">{{ $row->total_tugas }}</td><td class="px-4 py-2">{{ $row->tugas_selesai }}</td><td class="px-4 py-2">{{ $row->tugas_belum_selesai }}</td><td class="px-4 py-2">{{ $row->tugas_terlambat }}</td><td class="px-4 py-2">{{ $row->total_catatan }}</td><td class="px-4 py-2">{{ $row->catatan_disetujui }}</td><td class="px-4 py-2">{{ $row->catatan_revisi_menunggu }}</td><td class="px-4 py-2">{{ $row->persentase_selesai }}%</td>
-                    </tr>
-                    @empty
-                    <tr><td colspan="11" class="px-4 py-6 text-center text-slate-500">Tidak ada data pegawai pada filter ini.</td></tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-    </div>
+    <!-- DETAIL TUGAS -->
+    <x-ui.card title="Detail Tugas" icon="clipboard-list" class="overflow-hidden">
+        @php
+            $statusVariants = [
+                'belum_mulai' => 'neutral',
+                'proses' => 'info',
+                'menunggu_verifikasi' => 'warning',
+                'revisi' => 'warning',
+                'selesai' => 'success',
+                'terlambat' => 'danger',
+            ];
+            
+            $prioritasVariants = [
+                'rendah' => 'neutral',
+                'sedang' => 'info',
+                'tinggi' => 'danger',
+            ];
+        @endphp
+        
+        <x-ui.table 
+            :headers="['Tanggal', 'Judul', 'Pegawai', 'Unit Kerja', 'Prioritas', 'Deadline', 'Status', 'Progres', 'Terlambat', 'Aksi']"
+            :empty="$daftarTugas->isEmpty()"
+            :pagination="$daftarTugas->links()"
+        >
+            @foreach($daftarTugas as $item)
+                <tr class="border-b border-ui-border/50 hover:bg-ui-primary-soft/10">
+                    <td class="px-4 py-3 text-ui-text-secondary">{{ optional($item->tugas->tanggal_tugas)->format('d-m-Y') ?? '-' }}</td>
+                    <td class="px-4 py-3 font-semibold text-ui-text-primary">{{ $item->tugas->judul ?? '-' }}</td>
+                    <td class="px-4 py-3 text-ui-text-primary">{{ $item->pegawai->user->name ?? '-' }}</td>
+                    <td class="px-4 py-3 text-ui-text-secondary">{{ $item->pegawai->unitkerja->nama_unitkerja ?? '-' }}</td>
+                    <td class="px-4 py-3 text-center">
+                        <x-ui.badge :variant="$prioritasVariants[$item->tugas->prioritas] ?? 'primary'" styleType="soft">
+                            {{ ucfirst($item->tugas->prioritas ?? '-') }}
+                        </x-ui.badge>
+                    </td>
+                    <td class="px-4 py-3 text-ui-text-secondary">{{ optional($item->tugas->deadline)->format('d-m-Y') ?? '-' }}</td>
+                    <td class="px-4 py-3 text-center">
+                        <x-ui.badge :variant="$statusVariants[$item->status] ?? 'primary'" styleType="soft">
+                            {{ ucfirst(str_replace('_', ' ', $item->status)) }}
+                        </x-ui.badge>
+                    </td>
+                    <td class="px-4 py-3 text-right font-bold text-ui-primary">{{ (int) ($item->progres_persen ?? 0) }}%</td>
+                    <td class="px-4 py-3 text-center">
+                        @if($item->is_terlambat)
+                            <x-ui.badge variant="danger" styleType="soft">Ya</x-ui.badge>
+                        @else
+                            <x-ui.badge variant="success" styleType="soft">Tidak</x-ui.badge>
+                        @endif
+                    </td>
+                    <td class="px-4 py-3">
+                        <x-ui.button variant="ghost" size="xs" leadingIcon="eye" :href="route($routePrefix . '.penugasan.show', $item->tugas_id)">
+                            Detail
+                        </x-ui.button>
+                    </td>
+                </tr>
+            @endforeach
+        </x-ui.table>
+    </x-ui.card>
 
-    <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
-        <div class="px-4 py-3 border-b bg-slate-50"><h2 class="font-semibold text-slate-800">Rekap Per Unit Kerja</h2></div>
-        <div class="overflow-x-auto">
-            <table class="min-w-full text-sm">
-                <thead class="bg-slate-100 text-slate-700">
-                    <tr>
-                        <th class="text-left px-4 py-2">Unit Kerja</th><th class="text-left px-4 py-2">Jumlah Pegawai</th><th class="text-left px-4 py-2">Total Tugas</th><th class="text-left px-4 py-2">Selesai</th><th class="text-left px-4 py-2">Belum</th><th class="text-left px-4 py-2">Terlambat</th><th class="text-left px-4 py-2">Total Catatan</th><th class="text-left px-4 py-2">Catatan Disetujui</th><th class="text-left px-4 py-2">% Selesai</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($rekapUnitKerja as $row)
-                    <tr class="border-t">
-                        <td class="px-4 py-2">{{ $row->nama_unitkerja }}</td><td class="px-4 py-2">{{ $row->jumlah_pegawai }}</td><td class="px-4 py-2">{{ $row->total_tugas }}</td><td class="px-4 py-2">{{ $row->tugas_selesai }}</td><td class="px-4 py-2">{{ $row->tugas_belum_selesai }}</td><td class="px-4 py-2">{{ $row->tugas_terlambat }}</td><td class="px-4 py-2">{{ $row->total_catatan }}</td><td class="px-4 py-2">{{ $row->catatan_disetujui }}</td><td class="px-4 py-2">{{ $row->persentase_selesai }}%</td>
-                    </tr>
-                    @empty
-                    <tr><td colspan="9" class="px-4 py-6 text-center text-slate-500">Tidak ada data unit kerja pada filter ini.</td></tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
-        <div class="px-4 py-3 border-b bg-slate-50"><h2 class="font-semibold text-slate-800">Detail Tugas</h2></div>
-        <div class="overflow-x-auto">
-            <table class="min-w-full text-sm">
-                <thead class="bg-slate-100 text-slate-700">
-                    <tr>
-                        <th class="text-left px-4 py-2">Tanggal</th><th class="text-left px-4 py-2">Judul</th><th class="text-left px-4 py-2">Pegawai</th><th class="text-left px-4 py-2">Unit</th><th class="text-left px-4 py-2">Prioritas</th><th class="text-left px-4 py-2">Deadline</th><th class="text-left px-4 py-2">Status</th><th class="text-left px-4 py-2">Progres</th><th class="text-left px-4 py-2">Terlambat</th><th class="text-left px-4 py-2">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($daftarTugas as $item)
-                    <tr class="border-t">
-                        <td class="px-4 py-2">{{ optional($item->tugas->tanggal_tugas)->format('d-m-Y') ?? '-' }}</td>
-                        <td class="px-4 py-2">{{ $item->tugas->judul ?? '-' }}</td>
-                        <td class="px-4 py-2">{{ $item->pegawai->user->name ?? '-' }}</td>
-                        <td class="px-4 py-2">{{ $item->pegawai->unitkerja->nama_unitkerja ?? '-' }}</td>
-                        <td class="px-4 py-2">{{ ucfirst($item->tugas->prioritas ?? '-') }}</td>
-                        <td class="px-4 py-2">{{ optional($item->tugas->deadline)->format('d-m-Y') ?? '-' }}</td>
-                        <td class="px-4 py-2">{{ ucfirst(str_replace('_', ' ', $item->status)) }}</td>
-                        <td class="px-4 py-2">{{ (int) ($item->progres_persen ?? 0) }}%</td>
-                        <td class="px-4 py-2">{{ $item->is_terlambat ? 'Ya' : 'Tidak' }}</td>
-                        <td class="px-4 py-2"><a class="text-blue-700" href="{{ route($routePrefix . '.penugasan.show', $item->tugas_id) }}">Detail</a></td>
-                    </tr>
-                    @empty
-                    <tr><td colspan="10" class="px-4 py-6 text-center text-slate-500">Tidak ada tugas pada periode ini.</td></tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-        <div class="px-4 py-3 border-t">{{ $daftarTugas->links() }}</div>
-    </div>
-
-    <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
-        <div class="px-4 py-3 border-b bg-slate-50"><h2 class="font-semibold text-slate-800">Detail Catatan Kegiatan</h2></div>
-        <div class="overflow-x-auto">
-            <table class="min-w-full text-sm">
-                <thead class="bg-slate-100 text-slate-700">
-                    <tr>
-                        <th class="text-left px-4 py-2">Tanggal</th><th class="text-left px-4 py-2">Pegawai</th><th class="text-left px-4 py-2">Tugas</th><th class="text-left px-4 py-2">Ringkasan Hasil</th><th class="text-left px-4 py-2">Status Verifikasi</th><th class="text-left px-4 py-2">Diverifikasi Oleh</th><th class="text-left px-4 py-2">Diverifikasi Pada</th><th class="text-left px-4 py-2">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($daftarCatatan as $item)
-                    <tr class="border-t">
-                        <td class="px-4 py-2">{{ optional($item->tanggal_kegiatan)->format('d-m-Y') ?? '-' }}</td>
-                        <td class="px-4 py-2">{{ $item->pegawai->user->name ?? '-' }}</td>
-                        <td class="px-4 py-2">{{ $item->penugasan->tugas->judul ?? '-' }}</td>
-                        <td class="px-4 py-2">{{ \Illuminate\Support\Str::limit($item->hasil_kegiatan ?? $item->deskripsi ?? '-', 100) }}</td>
-                        <td class="px-4 py-2">{{ $item->status_verifikasi_label }}</td>
-                        <td class="px-4 py-2">{{ $item->verifier->name ?? '-' }}</td>
-                        <td class="px-4 py-2">{{ optional($item->diverifikasi_at)->format('d-m-Y H:i') ?? '-' }}</td>
-                        <td class="px-4 py-2"><a class="text-blue-700" href="{{ route($routePrefix . '.catatan_kegiatan.show', $item->id) }}">Detail</a></td>
-                    </tr>
-                    @empty
-                    <tr><td colspan="8" class="px-4 py-6 text-center text-slate-500">Tidak ada catatan kegiatan pada periode ini.</td></tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-        <div class="px-4 py-3 border-t">{{ $daftarCatatan->links() }}</div>
-    </div>
+    <!-- DETAIL CATATAN KEGIATAN -->
+    <x-ui.card title="Detail Catatan Kegiatan" icon="file-text" class="overflow-hidden">
+        @php
+            $verifikasiVariants = [
+                'disetujui' => 'success',
+                'revisi' => 'warning',
+                'menunggu_verifikasi' => 'info',
+                'ditolak' => 'danger',
+            ];
+        @endphp
+        
+        <x-ui.table 
+            :headers="['Tanggal', 'Pegawai', 'Tugas', 'Ringkasan Hasil', 'Status Verifikasi', 'Diverifikasi Oleh', 'Diverifikasi Pada', 'Aksi']"
+            :empty="$daftarCatatan->isEmpty()"
+            :pagination="$daftarCatatan->links()"
+        >
+            @foreach($daftarCatatan as $item)
+                <tr class="border-b border-ui-border/50 hover:bg-ui-primary-soft/10">
+                    <td class="px-4 py-3 text-ui-text-secondary">{{ optional($item->tanggal_kegiatan)->format('d-m-Y') ?? '-' }}</td>
+                    <td class="px-4 py-3 font-semibold text-ui-text-primary">{{ $item->pegawai->user->name ?? '-' }}</td>
+                    <td class="px-4 py-3 text-ui-text-primary">{{ $item->penugasan->tugas->judul ?? '-' }}</td>
+                    <td class="px-4 py-3 text-ui-text-secondary">{{ \Illuminate\Support\Str::limit($item->hasil_kegiatan ?? $item->deskripsi ?? '-', 80) }}</td>
+                    <td class="px-4 py-3 text-center">
+                        <x-ui.badge :variant="$verifikasiVariants[$item->status_verifikasi] ?? 'primary'" styleType="soft">
+                            {{ $item->status_verifikasi_label }}
+                        </x-ui.badge>
+                    </td>
+                    <td class="px-4 py-3 text-ui-text-secondary">{{ $item->verifier->name ?? '-' }}</td>
+                    <td class="px-4 py-3 text-ui-text-secondary">{{ optional($item->diverifikasi_at)->format('d-m-Y H:i') ?? '-' }}</td>
+                    <td class="px-4 py-3">
+                        <x-ui.button variant="ghost" size="xs" leadingIcon="eye" :href="route($routePrefix . '.catatan_kegiatan.show', $item->id)">
+                            Detail
+                        </x-ui.button>
+                    </td>
+                </tr>
+            @endforeach
+        </x-ui.table>
+    </x-ui.card>
 </div>
 @endsection

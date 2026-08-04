@@ -4,349 +4,135 @@
 @endphp
 
 @section('title', 'Penugasan Pegawai')
-@section('page-title', 'Penugasan Pegawai')
 
 @section('content')
 
 @if (session('success'))
-<div class="mb-4 px-4 py-3 rounded-lg bg-green-100 text-green-800 text-sm">
-    {{ session('success') }}
-</div>
+    <x-ui.alert variant="success" class="mb-5" :description="session('success')" />
+@endif
+@if (session('error'))
+    <x-ui.alert variant="danger" class="mb-5" :description="session('error')" />
 @endif
 
-<div class="bg-white rounded-xl shadow-sm border border-slate-100">
+<x-ui.page-header title="Penugasan Pegawai" subtitle="Pantau dan kelola penugasan kerja bagi seluruh pegawai.">
+    <x-slot name="breadcrumbs">
+        <x-ui.breadcrumb />
+    </x-slot>
+    <x-slot name="actions">
+        <x-ui.button variant="primary" size="sm" leadingIcon="plus" :href="route($routePrefix . '.penugasan.create')">
+            Tambah Penugasan
+        </x-ui.button>
+    </x-slot>
+</x-ui.page-header>
 
-    <!-- Header -->
-    <div class="p-6 border-b border-slate-100 flex justify-between items-center">
-        <h3 class="font-bold text-slate-800">Penugasan Pegawai</h3>
-        <a href="{{ route($routePrefix . '.penugasan.create') }}"
-            class="px-4 py-2 text-sm text-white bg-green-800 rounded-lg hover:bg-green-900 transition">
-            Tambah Data
-        </a>
-    </div>
+<x-ui.card>
+    <x-ui.table :headers="['No', 'Tugas', 'Tanggal', 'Deadline', 'Prioritas', 'Dibuat Oleh', 'Status', 'Progres', 'Kondisi', 'Template', 'Aksi']" :empty="$tugas->isEmpty()">
+        @foreach ($tugas as $i => $item)
+            @php
+                $statusUnik = $item->penugasan->pluck('status')->unique()->values()->all();
+                $rataProgres = (int) round($item->penugasan->avg('progres_persen') ?? 0);
+                $isTerlambat = $item->penugasan->contains(fn($p) => $p->is_terlambat);
+            @endphp
+            <tr class="hover:bg-ui-primary-soft/30 transition-colors">
+                <td class="px-4 py-3 text-xs text-ui-text-secondary">{{ $i + 1 }}</td>
+                <td class="px-4 py-3 text-xs font-semibold text-ui-text-primary min-w-[150px]">{{ $item->judul }}</td>
+                <td class="px-4 py-3 text-xs text-ui-text-secondary">{{ optional($item->tanggal_tugas)->format('d-m-Y') ?? '-' }}</td>
+                <td class="px-4 py-3 text-xs text-ui-text-secondary">{{ \Carbon\Carbon::parse($item->deadline)->format('d-m-Y') }}</td>
+                <td class="px-4 py-3 text-xs">
+                    @if ($item->prioritas === 'rendah')
+                        <x-ui.badge variant="success" size="sm">Rendah</x-ui.badge>
+                    @elseif ($item->prioritas === 'sedang')
+                        <x-ui.badge variant="warning" size="sm">Sedang</x-ui.badge>
+                    @elseif ($item->prioritas === 'tinggi')
+                        <x-ui.badge variant="danger" size="sm">Tinggi</x-ui.badge>
+                    @else
+                        <x-ui.badge variant="neutral" size="sm">-</x-ui.badge>
+                    @endif
+                </td>
+                <td class="px-4 py-3 text-xs text-ui-text-primary">{{ $item->user->name ?? '-' }}</td>
+                <td class="px-4 py-3 text-xs text-ui-text-secondary capitalize">
+                    {{ implode(', ', $statusUnik) ?: '-' }}
+                </td>
+                <td class="px-4 py-3 text-xs">
+                    <div class="flex items-center gap-2">
+                        <span class="font-semibold text-ui-text-primary">{{ $rataProgres }}%</span>
+                        <div class="w-12 bg-ui-border rounded-full h-1.5 overflow-hidden hidden sm:block">
+                            <div class="bg-ui-primary h-1.5 rounded-full" style="width: {{ $rataProgres }}%"></div>
+                        </div>
+                    </div>
+                </td>
+                <td class="px-4 py-3 text-xs">
+                    @if($isTerlambat)
+                        <x-ui.badge variant="danger" size="sm">Terlambat</x-ui.badge>
+                    @else
+                        <span class="text-ui-muted">-</span>
+                    @endif
+                </td>
+                <td class="px-4 py-3 text-xs">
+                    @if ($item->template)
+                        <x-ui.button variant="outline" size="xs" leadingIcon="file-text" :href="asset('storage/' . $item->template)" target="_blank">
+                            Template
+                        </x-ui.button>
+                    @else
+                        <span class="text-ui-muted">-</span>
+                    @endif
+                </td>
+                <td class="px-4 py-3 text-xs text-right whitespace-nowrap">
+                    <div class="flex items-center justify-end gap-1.5">
+                        <x-ui.button variant="outline" size="xs" :href="route($routePrefix . '.penugasan.show', $item->id)">
+                            Detail
+                        </x-ui.button>
+                        <x-ui.button variant="outline" size="xs" :href="route($routePrefix . '.penugasan.edit', $item->id)">
+                            Edit
+                        </x-ui.button>
+                        <x-ui.button variant="ghost" size="xs" class="text-ui-danger hover:bg-ui-danger-soft active:bg-ui-danger-soft" onclick="openDeleteModal({{ $item->id }}, '{{ $item->judul }}')">
+                            Hapus
+                        </x-ui.button>
+                    </div>
+                </td>
+            </tr>
+        @endforeach
+    </x-ui.table>
+</x-ui.card>
 
-    <!-- Table -->
-    <div class="p-6">
-        <div class="overflow-x-auto">
-            <table class="w-full text-sm">
-                <thead>
-                    <tr class="text-slate-500 uppercase text-xs">
-                        <th class="pb-3 text-left">No</th>
-                        <th class="pb-3 text-left">Judul Tugas</th>
-                        <th class="pb-3 text-left">Tanggal Tugas</th>
-                        <th class="pb-3 text-left">Deadline</th>
-                        <th class="pb-3 text-left">Prioritas</th>
-                        <th class="pb-3 text-left">Dibuat Oleh</th>
-                        <th class="pb-3 text-left">Status</th>
-                        <th class="pb-3 text-left">Progres</th>
-                        <th class="pb-3 text-left">Kondisi</th>
-                        <th class="pb-3 text-left">Template</th>
-                        <th class="pb-3 text-right">Aksi</th>
-                    </tr>
-                </thead>
-
-                <tbody class="divide-y divide-slate-100">
-                    @forelse ($tugas as $i => $item)
-                    <tr>
-                        <td class="py-4">
-                            {{ $i + 1 }}
-                        </td>
-                        <td class="py-4 font-medium text-slate-800">
-                            {{ $item->judul }}
-                        </td>
-                        <td class="py-4">
-                            {{ optional($item->tanggal_tugas)->format('d-m-Y') ?? '-' }}
-                        </td>
-                        <td class="py-4">
-                            {{ \Carbon\Carbon::parse($item->deadline)->format('d-m-Y') }}
-                        </td>
-                        <td class="py-4">
-                            @if ($item->prioritas === 'rendah')
-                            <span class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-700">
-                                Rendah
-                            </span>
-                            @elseif ($item->prioritas === 'sedang')
-                            <span class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-700">
-                                Sedang
-                            </span>
-                            @elseif ($item->prioritas === 'tinggi')
-                            <span class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-700">
-                                Tinggi
-                            </span>
-                            @else
-                            <span class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-slate-100 text-slate-600">
-                                -
-                            </span>
-                            @endif
-                        </td>
-
-                        <td class="py-4">
-                            {{ $item->user->name ?? '-' }}
-                        </td>
-                        @php
-                            $statusUnik = $item->penugasan->pluck('status')->unique()->values()->all();
-                            $rataProgres = (int) round($item->penugasan->avg('progres_persen') ?? 0);
-                            $isTerlambat = $item->penugasan->contains(fn($p) => $p->is_terlambat);
-                        @endphp
-                        <td class="py-4 text-xs">
-                            {{ implode(', ', $statusUnik) ?: '-' }}
-                        </td>
-                        <td class="py-4">{{ $rataProgres }}%</td>
-                        <td class="py-4">
-                            @if($isTerlambat)
-                                <span class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-700">
-                                    Terlambat
-                                </span>
-                            @else
-                                <span class="text-slate-400">-</span>
-                            @endif
-                        </td>
-
-                        <td class="py-4">
-                            @if ($item->template)
-                            <a href="{{ asset('storage/' . $item->template) }}"
-                                target="_blank"
-                                class="text-blue-600 hover:underline text-sm">
-                                Lihat Template
-                            </a>
-                            @else
-                            <span class="text-slate-400 text-sm">-</span>
-                            @endif
-                        </td>
-
-                        <!-- Aksi -->
-                        <td class="py-4 text-right">
-                            <a href="{{ route($routePrefix . '.penugasan.show', $item->id) }}"
-                                class="text-slate-600 hover:text-green-800 font-medium transition">
-                                Detail
-                            </a>
-
-                            <span class="mx-2 text-slate-300">|</span>
-
-                            <a href="{{ route($routePrefix . '.penugasan.edit', $item->id) }}"
-                                class="text-slate-600 hover:text-green-800 font-medium transition">
-                                Edit
-                            </a>
-
-                            <span class="mx-2 text-slate-300">|</span>
-
-                            <button type="button"
-                                onclick="openDeleteModal({{ $item->id }}, '{{ $item->judul }}')"
-                                class="text-slate-600 hover:text-red-600 font-medium transition">
-                                Hapus
-                            </button>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="11" class="py-8 text-center text-slate-400">
-                            Data penugasan belum tersedia
-                        </td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
-
-<!-- Modal Detail -->
-<div id="modalDetail" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50">
-    <div class="bg-white w-full max-w-lg rounded-xl shadow-lg">
-        <div class="px-6 py-4 border-b flex justify-between items-center">
-            <h3 class="font-semibold" id="detailJudul">Detail Tugas</h3>
-            <button type="button" onclick="closeDetailModal()">✕</button>
-        </div>
-        <div class="px-6 py-6" id="detailBody">
-        </div>
-        <div class="px-6 py-4 border-t flex justify-end">
-            <button type="button"
-                onclick="closeDetailModal()"
-                class="px-4 py-2 border rounded-lg">
-                Tutup
-            </button>
-        </div>
-    </div>
-</div>
-
-<!-- Modal Delete -->
-<div id="modalDelete" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50">
-    <div class="bg-white w-full max-w-md rounded-xl shadow-lg">
-        <form method="POST" id="formDelete">
-            @csrf
-            @method('DELETE')
-
-            <div class="px-6 py-4 border-b flex justify-between items-center">
-                <h3 class="font-semibold">Konfirmasi Hapus</h3>
-                <button type="button" onclick="closeDeleteModal()">✕</button>
+{{-- MODAL DELETE --}}
+<x-ui.modal name="delete-penugasan" title="Konfirmasi Hapus" maxWidth="sm">
+    <form method="POST" id="formDelete">
+        @csrf
+        @method('DELETE')
+        
+        <div class="flex items-start gap-3.5">
+            <div class="p-2.5 rounded-ui-lg bg-ui-danger-soft text-ui-danger shrink-0 border border-ui-danger/10">
+                <i data-lucide="alert-triangle" class="w-5 h-5"></i>
             </div>
-
-            <div class="px-6 py-6 text-sm">
-                Yakin ingin menghapus tugas
-                <strong id="deleteNama"></strong>?
-                <br>
-                <span class="text-slate-500">
-                    Seluruh data penugasan pegawai akan ikut terhapus.
-                </span>
+            <div class="min-w-0">
+                <h4 class="text-xs sm:text-sm font-bold text-ui-text-primary leading-tight">Yakin ingin menghapus penugasan?</h4>
+                <p class="text-[11px] sm:text-xs text-ui-text-secondary mt-1 leading-normal">
+                    Tugas <span id="deleteNama" class="font-semibold text-ui-text-primary"></span> beserta laporan progres dari seluruh pegawai yang ditugaskan akan dihapus secara permanen.
+                </p>
             </div>
-
-            <div class="px-6 py-4 border-t flex justify-end gap-3">
-                <button type="button"
-                    onclick="closeDeleteModal()"
-                    class="px-4 py-2 border rounded-lg">
-                    Batal
-                </button>
-                <button type="submit"
-                    class="px-4 py-2 bg-red-600 text-white rounded-lg">
-                    Hapus
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
+        </div>
+        
+        <x-slot name="footer">
+            <x-ui.button variant="ghost" size="sm" type="button" onclick="window.dispatchEvent(new CustomEvent('close-modal', { detail: 'delete-penugasan' }))">
+                Batal
+            </x-ui.button>
+            <x-ui.button type="submit" variant="danger" size="sm">
+                Ya, Hapus
+            </x-ui.button>
+        </x-slot>
+    </form>
+</x-ui.modal>
 
 @endsection
 
 @push('scripts')
 <script>
-    const tugasData = @json($tugas);
-
     function openDeleteModal(id, nama) {
         document.getElementById('deleteNama').innerText = nama;
         document.getElementById('formDelete').action =
             "{{ route($routePrefix . '.penugasan.destroy', ':id') }}".replace(':id', id);
-        modalToggle('modalDelete', true);
-    }
-
-    function openDetailModal(id) {
-        const tugas = tugasData.find(t => t.id === id);
-        if (!tugas) return;
-
-        document.getElementById('detailJudul').innerText = tugas.judul;
-
-        let html = ``;
-
-        html += `
-            <div class="mb-5">
-                <strong class="text-sm text-slate-700 block mb-2">Template Tugas</strong>
-                ${
-                    tugas.template
-                        ? `<a href="/storage/${tugas.template}" target="_blank"
-                            class="inline-flex items-center gap-2 px-3 py-2 text-sm
-                                   text-blue-700 bg-blue-50 rounded-lg hover:bg-blue-100">
-                            Unduh Template
-                          </a>`
-                        : `<span class="text-slate-400 text-sm">Tidak ada template</span>`
-                }
-            </div>
-        `;
-
-        html += `
-            <h4 class="font-semibold text-slate-700 mb-3">Daftar Pegawai</h4>
-            <table class="w-full text-sm border rounded-lg overflow-hidden">
-                <thead class="bg-slate-50">
-                    <tr class="text-slate-500 text-xs uppercase">
-                        <th class="px-3 py-2 text-left">Nama</th>
-                        <th class="px-3 py-2 text-left">Status</th>
-                        <th class="px-3 py-2 text-left">Catatan</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y">
-        `;
-
-        if (tugas.penugasan.length > 0) {
-            tugas.penugasan.forEach(p => {
-
-                let badge =
-                    p.status === 'selesai' ?
-                    `<span class="px-2 py-1 text-xs bg-green-100 text-green-700 rounded-full">Selesai</span>` :
-                    p.status === 'proses' ?
-                    `<span class="px-2 py-1 text-xs bg-yellow-100 text-yellow-700 rounded-full">Proses</span>` :
-                    `<span class="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded-full">Baru</span>`;
-
-                html += `
-                    <tr>
-                        <td class="px-3 py-2">${p.pegawai?.user?.name ?? '-'}</td>
-                        <td class="px-3 py-2">${badge}</td>
-                        <td class="px-3 py-2">${p.catatan_kepegawaian ?? '-'}</td>
-                    </tr>
-                `;
-
-                html += `
-                    <tr>
-                        <td colspan="3" class="px-3 py-3 bg-slate-50">
-                            <strong class="text-sm block mb-2">Laporan</strong>
-                            ${
-                                p.laporan
-                                    ? `<a href="/storage/${p.laporan}" target="_blank"
-                                        class="inline-flex items-center gap-2 px-3 py-2 text-sm
-                                               text-blue-700 bg-blue-50 rounded-lg hover:bg-blue-100">
-                                        Lihat Laporan
-                                      </a>`
-                                    : `<span class="text-slate-400 text-sm">Belum ada laporan</span>`
-                            }
-                        </td>
-                    </tr>
-                `;
-
-                let fotoHtml = '';
-                if (p.foto_progres) {
-                    try {
-                        const fotos = Array.isArray(p.foto_progres) ? p.foto_progres : JSON.parse(p.foto_progres);
-                        fotos.forEach(f => {
-                            fotoHtml += `
-                                <img src="/storage/${f}"
-                                     class="w-full h-20 object-cover rounded border"
-                                     alt="Foto Progres">
-                            `;
-                        });
-                    } catch (e) {}
-                }
-
-                html += `
-                    <tr>
-                        <td colspan="3" class="px-3 py-3">
-                            <strong class="text-sm block mb-2">Foto Progres</strong>
-                            ${
-                                fotoHtml
-                                    ? `<div class="grid grid-cols-4 gap-2">${fotoHtml}</div>`
-                                    : `<span class="text-slate-400 text-sm">Belum ada foto progres</span>`
-                            }
-                        </td>
-                    </tr>
-                `;
-            });
-        } else {
-            html += `
-                <tr>
-                    <td colspan="3" class="px-3 py-4 text-center text-slate-500">
-                        Belum ada pegawai
-                    </td>
-                </tr>
-            `;
-        }
-
-        html += `
-                </tbody>
-            </table>
-        `;
-
-        document.getElementById('detailBody').innerHTML = html;
-        modalToggle('modalDetail', true);
-    }
-
-    function closeDetailModal() {
-        modalToggle('modalDetail', false);
-    }
-
-    function closeDeleteModal() {
-        modalToggle('modalDelete', false);
-    }
-
-    function modalToggle(id, show) {
-        const modal = document.getElementById(id);
-        modal.classList.toggle('hidden', !show);
-        modal.classList.toggle('flex', show);
+        window.dispatchEvent(new CustomEvent('open-modal', { detail: 'delete-penugasan' }));
     }
 </script>
 @endpush

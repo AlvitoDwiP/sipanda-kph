@@ -3,54 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cetak QR Pegawai</title>
+    <title>Cetak QR Pegawai - {{ $pegawai->user->name ?? '-' }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'ui-primary': '#15803d',
+                        'ui-primary-hover': '#166534',
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        body { font-family: Arial, sans-serif; background: #f5f7fa; margin: 0; padding: 20px; }
-        .actions { margin-bottom: 16px; }
-        .btn { display:inline-block; padding:8px 12px; border-radius:6px; text-decoration:none; margin-right:8px; font-size:14px; }
-        .btn-primary { background:#166534; color:#fff; }
-        .btn-secondary { background:#334155; color:#fff; }
-        .card { max-width:420px; margin:0 auto; background:#fff; border:1px solid #dbe3ea; border-radius:12px; padding:20px; }
-        .title { text-align:center; font-weight:700; margin-bottom:6px; }
-        .subtitle { text-align:center; color:#334155; font-size:14px; margin-bottom:16px; }
-        .meta { font-size:14px; margin-bottom:12px; }
-        .meta p { margin:4px 0; }
-        .qr-wrap { text-align:center; margin:14px 0; }
-        .token { text-align:center; font-family: monospace; font-size:13px; margin-top:6px; }
-        .note { font-size:12px; color:#475569; text-align:center; margin-top:14px; }
         @media print {
-            .actions { display:none; }
-            body { background:#fff; padding:0; }
-            .card { border:1px solid #000; box-shadow:none; }
+            .no-print { display: none !important; }
+            body { background: white; }
+            .print-card { border: 2px solid #166534 !important; box-shadow: none !important; }
         }
     </style>
 </head>
-<body>
-    <div class="actions">
-        <button class="btn btn-primary" onclick="window.print()">Print</button>
-        <a class="btn btn-secondary" href="{{ route($routePrefix . '.pegawai.index') }}">Kembali</a>
+<body class="bg-slate-100 min-h-screen flex flex-col items-center justify-center p-6 text-slate-800 font-sans">
+
+    <!-- ACTION BUTTONS -->
+    <div class="no-print mb-6 flex gap-3">
+        <button onclick="window.print()" class="px-5 py-2.5 rounded-lg bg-ui-primary hover:bg-ui-primary-hover text-white font-semibold shadow-sm transition-all flex items-center gap-2 text-sm">
+            <span>Cetak QR Code</span>
+        </button>
+        <a href="{{ route($routePrefix . '.pegawai.index') }}" class="px-5 py-2.5 rounded-lg bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold shadow-sm transition-all text-sm">
+            Kembali
+        </a>
     </div>
 
-    <div class="card">
-        <div class="title">SIPANDA-KPH</div>
-        <div class="subtitle">QR Display Job Desk Harian</div>
-
-        <div class="meta">
-            <p><strong>Nama:</strong> {{ $pegawai->user->name ?? '-' }}</p>
-            <p><strong>Jabatan:</strong> {{ $pegawai->jabatan->nama_jabatan ?? '-' }}</p>
-            <p><strong>Unit Kerja:</strong> {{ $pegawai->unitkerja->nama_unitkerja ?? '-' }}</p>
-            <p><strong>Status:</strong> {{ $pegawai->status_pegawai === 'aktif' ? 'Pegawai Aktif' : 'Pegawai Tidak Aktif' }}</p>
+    <!-- QR CARD -->
+    <div class="print-card bg-white w-full max-w-sm border border-slate-200 rounded-2xl p-6 shadow-md flex flex-col items-center text-center">
+        <!-- HEADER -->
+        <div class="mb-4">
+            <h1 class="text-lg font-extrabold text-ui-primary tracking-tight">SIPANDA-KPH</h1>
+            <p class="text-xs text-slate-500 font-medium">QR Display Job Desk Harian</p>
         </div>
 
-        <div class="qr-wrap">
-            {!! QrCode::size(240)->margin(1)->generate($pegawai->qr_token) !!}
+        <!-- META DETAILS -->
+        <div class="w-full text-left bg-slate-50 border border-slate-100 rounded-xl p-4 mb-5 space-y-2 text-xs">
+            <div class="flex justify-between">
+                <span class="text-slate-500">Nama:</span>
+                <span class="font-bold text-slate-900 text-right ml-2">{{ $pegawai->user->name ?? '-' }}</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-slate-500">Jabatan:</span>
+                <span class="font-semibold text-slate-800 text-right ml-2">{{ $pegawai->jabatan->nama_jabatan ?? '-' }}</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-slate-500">Unit Kerja:</span>
+                <span class="font-semibold text-slate-800 text-right ml-2">{{ $pegawai->unitkerja->nama_unitkerja ?? '-' }}</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-slate-500">Status:</span>
+                <span class="font-semibold text-green-700">{{ $pegawai->status_pegawai === 'aktif' ? 'Aktif' : 'Tidak Aktif' }}</span>
+            </div>
         </div>
 
-        <div class="token">{{ $pegawai->qr_token }}</div>
+        <!-- QR CODE IMAGE -->
+        <div class="bg-white p-3 border border-slate-100 rounded-2xl shadow-inner mb-4">
+            {!! QrCode::size(200)->margin(1)->generate($pegawai->qr_token) !!}
+        </div>
 
-        <div class="note">
-            QR ini digunakan untuk menampilkan job desk harian, bukan untuk absensi.
+        <!-- QR TOKEN -->
+        <div class="font-mono text-xs text-slate-400 select-all mb-4 break-all max-w-xs">
+            {{ $pegawai->qr_token }}
+        </div>
+
+        <!-- FOOTER / NOTE -->
+        <div class="text-[10px] text-slate-400 border-t border-slate-100 pt-3 w-full">
+            QR ini digunakan untuk menampilkan job desk harian pada display monitor.
         </div>
     </div>
+
 </body>
 </html>

@@ -1,186 +1,190 @@
 @extends('layouts.master')
 @php($routePrefix = $routePrefix ?? 'admin')
 
-@section('title', 'Penugasan')
-@section('page-title', 'Edit Penugasan')
+@section('title', 'Edit Penugasan')
 
 @section('content')
-<div class="bg-white rounded-xl shadow-sm border border-slate-100 mb-6">
 
-    <!-- Header -->
-    <div class="p-6 border-b border-slate-100 flex justify-between items-center">
-        <h3 class="font-bold text-slate-800">Edit Penugasan</h3>
-        <a href="{{ route($routePrefix . '.penugasan.index') }}"
-            class="text-sm text-slate-500 hover:text-slate-700">
-            ✕
-        </a>
-    </div>
+<x-ui.page-header title="Edit Penugasan" subtitle="Perbarui detail penugasan dan kelola pegawai pelaksana.">
+    <x-slot name="breadcrumbs">
+        <x-ui.breadcrumb />
+    </x-slot>
+    <x-slot name="actions">
+        <x-ui.button variant="ghost" size="sm" leadingIcon="arrow-left" :href="route($routePrefix . '.penugasan.index')">
+            Kembali
+        </x-ui.button>
+    </x-slot>
+</x-ui.page-header>
 
-    <!-- Form -->
-    <form method="POST" action="{{ route($routePrefix . '.penugasan.update', $penugasan->id) }}" enctype="multipart/form-data" class="p-6 space-y-6">
+<x-ui.card>
+    <form method="POST" action="{{ route($routePrefix . '.penugasan.update', $penugasan->id) }}" enctype="multipart/form-data" class="space-y-6">
         @csrf
         @method('PUT')
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
             <!-- Judul Tugas -->
             <div class="md:col-span-2">
-                <label class="block text-sm font-medium text-slate-700 mb-1">
-                    Judul Tugas
-                </label>
-                <input type="text" name="judul" required
+                <x-ui.input 
+                    type="text"
+                    name="judul"
+                    label="Judul Tugas"
+                    placeholder="Masukkan judul penugasan"
                     value="{{ old('judul', $penugasan->judul) }}"
-                    class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm">
-                <x-input-error :messages="$errors->get('judul')" class="mt-1" />
+                    required
+                    :error="$errors->first('judul')"
+                />
             </div>
 
             <!-- Deskripsi -->
             <div class="md:col-span-2">
-                <label class="block text-sm font-medium text-slate-700 mb-1">
-                    Deskripsi
-                </label>
-                <textarea name="deskripsi" rows="4" required
-                    class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm">{{ old('deskripsi', $penugasan->deskripsi) }}</textarea>
-                <x-input-error :messages="$errors->get('deskripsi')" class="mt-1" />
+                <x-ui.input 
+                    type="textarea"
+                    name="deskripsi"
+                    label="Deskripsi Tugas"
+                    placeholder="Berikan detail deskripsi atau instruksi pengerjaan tugas"
+                    required
+                    rows="4"
+                    :error="$errors->first('deskripsi')"
+                >{{ old('deskripsi', $penugasan->deskripsi) }}</x-ui.input>
             </div>
 
             <!-- Tanggal Tugas -->
             <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">
-                    Tanggal Tugas
-                </label>
-                <input type="date" name="tanggal_tugas" required
+                <x-ui.input 
+                    type="date"
+                    name="tanggal_tugas"
+                    label="Tanggal Mulai Tugas"
                     value="{{ old('tanggal_tugas', optional($penugasan->tanggal_tugas)->format('Y-m-d') ?? $penugasan->tanggal_tugas) }}"
-                    class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm">
-                <x-input-error :messages="$errors->get('tanggal_tugas')" class="mt-1" />
+                    required
+                    :error="$errors->first('tanggal_tugas')"
+                />
             </div>
 
             <!-- Deadline -->
             <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">
-                    Deadline
-                </label>
-                <input type="date" name="deadline" required
+                <x-ui.input 
+                    type="date"
+                    name="deadline"
+                    label="Batas Akhir (Deadline)"
                     value="{{ old('deadline', $penugasan->deadline) }}"
-                    class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm">
-                <x-input-error :messages="$errors->get('deadline')" class="mt-1" />
+                    required
+                    :error="$errors->first('deadline')"
+                />
             </div>
 
             <!-- Prioritas -->
             <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">
-                    Prioritas
-                </label>
-                <select name="prioritas" required
-                    class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm">
+                <x-ui.input 
+                    type="select"
+                    name="prioritas"
+                    label="Prioritas Tugas"
+                    required
+                    :error="$errors->first('prioritas')"
+                >
                     <option value="">-- Pilih Prioritas --</option>
                     <option value="rendah" @selected(old('prioritas', $penugasan->prioritas)=='rendah')>Rendah</option>
                     <option value="sedang" @selected(old('prioritas', $penugasan->prioritas)=='sedang')>Sedang</option>
                     <option value="tinggi" @selected(old('prioritas', $penugasan->prioritas)=='tinggi')>Tinggi</option>
-                </select>
-                <x-input-error :messages="$errors->get('prioritas')" class="mt-1" />
+                </x-ui.input>
             </div>
 
-            <!-- Template -->
+            <!-- Template Tugas -->
             <div class="md:col-span-2">
-                <label class="block text-sm font-medium text-slate-700 mb-1">
-                    Template Tugas
-                </label>
-
                 @if ($penugasan->template)
-                <div class="mb-2">
-                    <a href="{{ asset('storage/' . $penugasan->template) }}"
-                        target="_blank"
-                        class="text-blue-600 text-sm hover:underline">
-                        📄 Lihat Template Saat Ini
-                    </a>
-                </div>
+                    <div class="mb-2.5">
+                        <x-ui.button variant="outline" size="xs" leadingIcon="file-text" :href="asset('storage/' . $penugasan->template)" target="_blank">
+                            Lihat Dokumen Acuan Saat Ini
+                        </x-ui.button>
+                    </div>
                 @endif
-
-                <input type="file"
+                
+                <x-ui.input 
+                    type="file"
                     name="template"
+                    label="Unggah Template Baru (Kosongkan jika tidak ingin mengganti)"
                     accept=".pdf,.doc,.docx"
-                    class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm
-                    file:mr-4 file:py-2 file:px-4
-                    file:rounded-lg file:border-0
-                    file:text-sm file:font-semibold
-                    file:bg-blue-50 file:text-blue-700
-                    hover:file:bg-blue-100">
-
-                <p class="text-xs text-slate-500 mt-1">
-                    Kosongkan jika tidak ingin mengganti template
-                </p>
-
-                <x-input-error :messages="$errors->get('template')" class="mt-1" />
+                    :error="$errors->first('template')"
+                />
             </div>
 
-            <!-- Pegawai -->
-            <div class="md:col-span-2" id="pegawai-wrapper">
-                <label class="block text-sm font-medium text-slate-700 mb-1">
-                    Pegawai yang Ditugaskan
-                </label>
-
-                <button type="button" onclick="addPegawaiDropdown()"
-                    class="px-3 py-2 bg-green-800 text-white rounded-lg hover:bg-green-900">
-                    +
-                </button>
-
-                @foreach(old('pegawai_id', $penugasan->penugasan->pluck('pegawai_id')->toArray()) as $pegawaiId)
-                <div class="flex gap-2 mb-2">
-                    <select name="pegawai_id[]" required
-                        class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm">
-                        <option value="">-- Pilih Pegawai --</option>
-                        @foreach ($pegawai as $item)
-                        <option value="{{ $item->id }}"
-                            @selected($pegawaiId==$item->id)>
-                            {{ $item->user->name }}
-                        </option>
-                        @endforeach
-                    </select>
-                    <button type="button" onclick="this.parentNode.remove()"
-                        class="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
-                        -
-                    </button>
+            <!-- Pegawai yang Ditugaskan -->
+            <div class="md:col-span-2 space-y-3" id="pegawai-wrapper">
+                <div class="flex items-center justify-between">
+                    <label class="text-xs font-semibold text-ui-text-primary">
+                        Pegawai yang Ditugaskan <span class="text-ui-danger font-bold">*</span>
+                    </label>
+                    <x-ui.button type="button" variant="secondary" size="xs" leadingIcon="plus" onclick="addPegawaiDropdown()">
+                        Tambah Pegawai
+                    </x-ui.button>
                 </div>
+
+                @foreach(old('pegawai_id', $penugasan->penugasan->pluck('pegawai_id')->toArray()) as $index => $pegawaiId)
+                    <div class="flex gap-2">
+                        <div class="flex-1">
+                            <x-ui.input 
+                                type="select"
+                                name="pegawai_id[]"
+                                required
+                            >
+                                <option value="">-- Pilih Pegawai --</option>
+                                @foreach ($pegawai as $item)
+                                    <option value="{{ $item->id }}" @selected($pegawaiId==$item->id)>
+                                        {{ $item->user->name }}
+                                    </option>
+                                @endforeach
+                            </x-ui.input>
+                        </div>
+                        @if($index === 0)
+                            <div class="w-10"></div>
+                        @else
+                            <x-ui.button type="button" variant="ghost" size="md" class="w-10 px-0 text-ui-danger hover:bg-ui-danger-soft shrink-0 border border-ui-border" onclick="this.parentNode.remove()">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </x-ui.button>
+                        @endif
+                    </div>
                 @endforeach
 
                 <!-- Default dropdown kosong jika tidak ada -->
                 @if(count(old('pegawai_id', $penugasan->penugasan)) == 0)
-                <div class="flex gap-2 mb-2">
-                    <select name="pegawai_id[]" required
-                        class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm">
-                        <option value="">-- Pilih Pegawai --</option>
-                        @foreach ($pegawai as $item)
-                        <option value="{{ $item->id }}">
-                            {{ $item->user->name }}
-                        </option>
-                        @endforeach
-                    </select>
-                    <button type="button" onclick="this.parentNode.remove()"
-                        class="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
-                        -
-                    </button>
-                </div>
+                    <div class="flex gap-2">
+                        <div class="flex-1">
+                            <x-ui.input 
+                                type="select"
+                                name="pegawai_id[]"
+                                required
+                            >
+                                <option value="">-- Pilih Pegawai --</option>
+                                @foreach ($pegawai as $item)
+                                    <option value="{{ $item->id }}">
+                                        {{ $item->user->name }}
+                                    </option>
+                                @endforeach
+                            </x-ui.input>
+                        </div>
+                        <div class="w-10"></div>
+                    </div>
                 @endif
 
-                <x-input-error :messages="$errors->get('pegawai_id')" class="mt-1" />
+                @if($errors->has('pegawai_id'))
+                    <p class="text-[11px] font-semibold text-ui-danger mt-1">
+                        {{ $errors->first('pegawai_id') }}
+                    </p>
+                @endif
             </div>
         </div>
 
-        <!-- Action -->
-        <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
-            <a href="{{ route($routePrefix . '.penugasan.index') }}"
-                class="px-4 py-2 text-sm rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50">
+        <!-- Actions -->
+        <x-slot name="footer">
+            <x-ui.button variant="ghost" size="sm" :href="route($routePrefix . '.penugasan.index')">
                 Batal
-            </a>
-            <button type="submit"
-                class="px-5 py-2 text-sm rounded-lg bg-green-800 text-white hover:bg-green-900">
-                Simpan
-            </button>
-        </div>
-
+            </x-ui.button>
+            <x-ui.button type="submit" variant="primary" size="sm" leadingIcon="save">
+                Simpan Perubahan
+            </x-ui.button>
+        </x-slot>
     </form>
-</div>
+</x-ui.card>
+
 @endsection
 
 @push('scripts')
@@ -188,20 +192,30 @@
     function addPegawaiDropdown() {
         const wrapper = document.getElementById('pegawai-wrapper');
         const div = document.createElement('div');
-        div.classList.add('flex', 'gap-2', 'mb-2');
+        div.classList.add('flex', 'gap-2', 'mt-2');
 
         div.innerHTML = `
-        <select name="pegawai_id[]" required class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm">
-            <option value="">-- Pilih Pegawai --</option>
-            @foreach ($pegawai as $item)
-                <option value="{{ $item->id }}">{{ $item->user->name }}</option>
-            @endforeach
-        </select>
-        <button type="button" onclick="this.parentNode.remove()" class="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
-            -
-        </button>
-    `;
+            <div class="flex-1">
+                <x-ui.input 
+                    type="select"
+                    name="pegawai_id[]"
+                    required
+                >
+                    <option value="">-- Pilih Pegawai --</option>
+                    @foreach ($pegawai as $item)
+                        <option value="{{ $item->id }}">{{ $item->user->name }}</option>
+                    @endforeach
+                </x-ui.input>
+            </div>
+            <x-ui.button type="button" variant="ghost" size="md" class="w-10 px-0 text-ui-danger hover:bg-ui-danger-soft shrink-0 border border-ui-border" onclick="this.parentNode.remove()">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </x-ui.button>
+        `;
         wrapper.appendChild(div);
+        
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
     }
 </script>
 @endpush

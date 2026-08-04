@@ -9,7 +9,7 @@ use App\Http\Controllers\KPH\PenugasanController as KphPenugasanController;
 use App\Http\Controllers\KPH\RekapPekerjaanController as KphRekapPekerjaanController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth', 'role:super_admin,admin,kph'])->prefix('kph')->name('kph.')->group(function () {
+Route::middleware(['auth', 'role:super_admin,admin,kph', 'active'])->prefix('kph')->name('kph.')->group(function () {
     Route::get('/dashboard', [KphDashboard::class, 'index'])->name('dashboard');
     Route::get('/display-jobdesk', [KphDisplayJobdeskController::class, 'index'])->name('display-jobdesk.index');
     Route::get('/display-jobdesk/manage', [KphDisplayJobdeskController::class, 'manage'])->name('display-jobdesk.manage');
