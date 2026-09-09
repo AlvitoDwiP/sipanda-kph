@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Admin\DisplayJobdeskController;
+use App\Http\Controllers\OperatorDisplay\DisplayJobdeskController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'role:operator_display', 'active'])->prefix('operator-display')->name('operator-display.')->group(function () {

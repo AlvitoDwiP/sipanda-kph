@@ -65,7 +65,6 @@
         'rounded-ui-xl border border-ui-border shadow-ui-lg bg-ui-surface p-0 outline-none w-full max-h-[85vh]',
         $widthClass,
     ]) }}
-    style="display: none;"
 >
     <!-- Modal Container -->
     <div class="flex flex-col h-full max-h-[85vh] text-left">

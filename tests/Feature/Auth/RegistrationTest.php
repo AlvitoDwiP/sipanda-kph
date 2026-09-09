@@ -22,8 +22,8 @@ class RegistrationTest extends TestCase
             'name' => 'Test User',
             'nip' => '1234567890123456',
             'email' => 'test@example.com',
-            'password' => 'password',
-            'password_confirmation' => 'password',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
         ]);
 
         $this->assertGuest();

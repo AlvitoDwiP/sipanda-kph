@@ -8,6 +8,7 @@
     'trend' => null,
     'trendType' => 'up', // up, down, neutral
     'hoverable' => false,
+    'shortContext' => null,
 ])
 
 @php
@@ -48,37 +49,43 @@
 <div {{ $attributes->class([$baseClasses, $variantClass]) }}>
     @if ($variant === 'statistics')
         <!-- Statistics Layout -->
-        <div class="flex items-start justify-between gap-3 w-full">
-            <div class="flex flex-col min-w-0">
-                <span class="text-xs font-semibold text-ui-text-secondary truncate">{{ $title }}</span>
-                @if ($value !== null)
-                    <span class="text-xl sm:text-2xl font-bold text-ui-text-primary mt-1 tracking-tight">{{ $value }}</span>
+        <div class="flex flex-col h-full justify-between gap-1 text-left select-none">
+            <!-- Top Row: Title and Icon -->
+            <div class="flex items-start justify-between gap-2.5">
+                <span class="text-[10px] sm:text-[11px] font-bold text-ui-text-secondary uppercase tracking-wider truncate" title="{{ $title }}">{{ $title }}</span>
+                @if ($icon)
+                    <div class="w-8 h-8 rounded-ui-md bg-ui-primary-soft text-ui-primary flex items-center justify-center shrink-0 border border-ui-primary/10">
+                        <i data-lucide="{{ $icon }}" class="w-4 h-4"></i>
+                    </div>
                 @endif
             </div>
-            @if ($icon)
-                <div class="w-10 h-10 rounded-ui-md bg-ui-primary-soft text-ui-primary flex items-center justify-center shrink-0 border border-ui-primary/10">
-                    <i data-lucide="{{ $icon }}" class="w-5 h-5"></i>
-                </div>
-            @endif
-        </div>
 
-        @if ($subtitle || $trend || $description)
-            <div class="flex items-center gap-2 mt-3 flex-wrap">
+            <!-- Middle Row: Value and Trend Badge -->
+            <div class="flex items-baseline justify-between gap-2 flex-wrap mt-0.5">
+                @if ($value !== null)
+                    <span class="text-xl sm:text-2xl font-extrabold text-ui-text-primary tracking-tight leading-none">{{ $value }}</span>
+                @endif
                 @if ($trend)
-                    <span class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-ui-sm text-[10px] font-bold {{ $trendColor }}">
-                        <i data-lucide="{{ $trendIcon }}" class="w-3 h-3"></i>
+                    <span class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-ui-sm text-[9px] font-extrabold uppercase tracking-wider shrink-0 {{ $trendColor }}">
+                        <i data-lucide="{{ $trendIcon }}" class="w-2.5 h-2.5"></i>
                         <span>{{ $trend }}</span>
                     </span>
                 @endif
-                @if ($subtitle)
-                    <span class="text-[11px] text-ui-text-secondary truncate">{{ $subtitle }}</span>
-                @endif
-                @if ($description)
-                    <p class="text-[10px] sm:text-xs text-ui-muted mt-1 leading-normal w-full">{{ $description }}</p>
-                @endif
             </div>
-        @endif
-        
+
+            <!-- Bottom Row: Short Context -->
+            @if ($shortContext || $subtitle || $description)
+                <div class="text-[10.5px] text-ui-text-secondary mt-1 font-medium truncate">
+                    @if ($shortContext)
+                        {{ $shortContext }}
+                    @elseif ($subtitle)
+                        {{ $subtitle }}
+                    @else
+                        {{ $description }}
+                    @endif
+                </div>
+            @endif
+        </div>
         {{ $slot }}
     @else
         <!-- Standard Card Layout -->

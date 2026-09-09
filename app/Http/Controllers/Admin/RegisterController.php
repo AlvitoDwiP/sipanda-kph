@@ -9,9 +9,12 @@ use App\Models\Pegawai;
 use App\Models\UnitKerja;
 use App\Models\User;
 use App\Services\LogService;
+use App\Http\Requests\StoreUserRequest;
+use App\Http\Requests\UpdateUserRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
 
 class RegisterController extends Controller
 {
@@ -45,45 +48,28 @@ class RegisterController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(StoreUserRequest $request)
     {
-        $request->validate([
-            // users
-            'name'   => 'required|string|max:255',
-            'nip'    => 'required|string|max:30|unique:users,nip|regex:/^\d+$/',
-            'email'  => 'required|email|unique:users,email',
-            'password' => 'required|min:6',
-            'role'   => 'required|in:admin,pegawai,kph',
-            'status_akun' => 'required|in:aktif,nonaktif',
-            'catatan_verifikasi' => 'nullable|string',
-
-            // pegawai
-            'unitkerja_id' => 'required|exists:ref_unitkerja,id',
-            'golongan_id'  => 'required|exists:ref_golongan,id',
-            'jabatan_id'   => 'required|exists:ref_jabatan,id',
-            'status_pegawai' => 'required|string',
-        ]);
-
         DB::beginTransaction();
 
         try {
             $user = User::create([
-                'name' => $request->name,
-                'nip' => $request->nip,
-                'email' => $request->email,
-                'password' => Hash::make($request->password),
-                'role' => $request->role,
-                'status_akun' => $request->status_akun,
+                'name'               => $request->name,
+                'nip'                => $request->nip,
+                'email'              => $request->email,
+                'password'           => Hash::make($request->password),
+                'role'               => $request->role,
+                'status_akun'        => $request->status_akun,
                 'catatan_verifikasi' => $request->catatan_verifikasi,
             ]);
 
             Pegawai::create([
-                'user_id' => $user->id,
-                'unitkerja_id' => $request->unitkerja_id,
-                'golongan_id' => $request->golongan_id,
-                'jabatan_id' => $request->jabatan_id,
+                'user_id'        => $user->id,
+                'unitkerja_id'   => $request->unitkerja_id,
+                'golongan_id'    => $request->golongan_id,
+                'jabatan_id'     => $request->jabatan_id,
                 'status_pegawai' => $request->status_pegawai,
-                'data_diri_id' => null,
+                'data_diri_id'   => null,
             ]);
 
             DB::commit();
@@ -127,33 +113,17 @@ class RegisterController extends Controller
         ]);
     }
 
-    public function update(Request $request, User $user)
+    public function update(UpdateUserRequest $request, User $user)
     {
-        $request->validate([
-            // users
-            'name'   => 'required|string|max:255',
-            'nip'    => 'required|string|max:30|unique:users,nip,' . $user->id . '|regex:/^\d+$/',
-            'email'  => 'required|email|unique:users,email,' . $user->id,
-            'role'   => 'required|in:admin,pegawai,kph',
-            'status_akun' => 'required|in:aktif,nonaktif',
-            'catatan_verifikasi' => 'nullable|string',
-
-            // pegawai
-            'unitkerja_id' => 'required|exists:ref_unitkerja,id',
-            'golongan_id'  => 'required|exists:ref_golongan,id',
-            'jabatan_id'   => 'required|exists:ref_jabatan,id',
-            'status_pegawai' => 'required|string',
-        ]);
-
         DB::beginTransaction();
 
         try {
             $user->update([
-                'name' => $request->name,
-                'nip' => $request->nip,
-                'email' => $request->email,
-                'role' => $request->role,
-                'status_akun' => $request->status_akun,
+                'name'               => $request->name,
+                'nip'                => $request->nip,
+                'email'              => $request->email,
+                'role'               => $request->role,
+                'status_akun'        => $request->status_akun,
                 'catatan_verifikasi' => $request->catatan_verifikasi,
             ]);
 
@@ -171,9 +141,9 @@ class RegisterController extends Controller
             Pegawai::updateOrCreate(
                 ['user_id' => $user->id],
                 [
-                    'unitkerja_id' => $request->unitkerja_id,
-                    'golongan_id' => $request->golongan_id,
-                    'jabatan_id' => $request->jabatan_id,
+                    'unitkerja_id'   => $request->unitkerja_id,
+                    'golongan_id'    => $request->golongan_id,
+                    'jabatan_id'     => $request->jabatan_id,
                     'status_pegawai' => $request->status_pegawai,
                 ]
             );
