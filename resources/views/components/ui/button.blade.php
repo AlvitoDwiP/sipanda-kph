@@ -25,11 +25,11 @@
     ];
 
     $sizes = [
-        'xs' => 'h-7 px-2.5 text-[10px] sm:text-xs rounded-ui-sm gap-1',
-        'sm' => 'h-8.5 px-3 text-xs rounded-ui-md gap-1.5',
-        'md' => 'h-10 px-4 text-xs sm:text-sm rounded-ui-md gap-2',
-        'lg' => 'h-11 px-5 text-sm sm:text-base rounded-ui-lg gap-2.5',
-        'xl' => 'h-13 px-6 text-base rounded-ui-xl gap-3',
+        'xs' => 'h-7 px-2.5 py-1 text-[10px] sm:text-xs rounded-ui-sm gap-1',
+        'sm' => 'h-9 px-3 py-1.5 text-xs rounded-ui-md gap-1.5',
+        'md' => 'h-10 px-4 py-2 text-xs sm:text-sm rounded-ui-md gap-2',
+        'lg' => 'h-11 px-5 py-2.5 text-sm sm:text-base rounded-ui-lg gap-2.5',
+        'xl' => 'h-12 px-6 py-3 text-base rounded-ui-xl gap-3',
     ];
 
     $variantClass = $variants[$variant] ?? $variants['primary'];

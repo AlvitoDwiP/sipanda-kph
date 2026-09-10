@@ -16,7 +16,7 @@
         <x-ui.breadcrumb />
     </x-slot>
     <x-slot name="actions">
-        <x-ui.button variant="ghost" size="sm" leadingIcon="arrow-left" :href="route('admin.catatan_kegiatan.index')">
+        <x-ui.button variant="ghost" size="sm" leadingIcon="arrow-left" :href="route($routePrefix . '.catatan_kegiatan.index')">
             Kembali
         </x-ui.button>
     </x-slot>
@@ -101,7 +101,7 @@
                             Konfirmasi bahwa catatan kegiatan ini sudah sesuai dengan instruksi tugas dan layak disetujui.
                         </p>
                     </div>
-                    <form method="POST" action="{{ route('admin.catatan_kegiatan.setujui', $catatan->id) }}">
+                    <form method="POST" action="{{ route($routePrefix . '.catatan_kegiatan.setujui', $catatan->id) }}">
                         @csrf
                         <x-ui.button type="submit" variant="success" size="sm" leadingIcon="check" fullWidth>
                             Setujui Laporan
@@ -112,7 +112,7 @@
                 <!-- FORM REVISI -->
                 <div class="bg-ui-warning-soft/20 border border-ui-warning/10 p-4 rounded-xl">
                     <h4 class="font-bold text-xs uppercase tracking-wider text-ui-warning mb-2">Minta Revisi</h4>
-                    <form method="POST" action="{{ route('admin.catatan_kegiatan.revisi', $catatan->id) }}" class="space-y-3">
+                    <form method="POST" action="{{ route($routePrefix . '.catatan_kegiatan.revisi', $catatan->id) }}" class="space-y-3">
                         @csrf
                         <x-ui.input 
                             type="textarea"
@@ -130,7 +130,7 @@
                 <!-- FORM TOLAK -->
                 <div class="bg-ui-danger-soft/20 border border-ui-danger/10 p-4 rounded-xl">
                     <h4 class="font-bold text-xs uppercase tracking-wider text-ui-danger mb-2">Tolak Laporan</h4>
-                    <form method="POST" action="{{ route('admin.catatan_kegiatan.tolak', $catatan->id) }}" class="space-y-3">
+                    <form method="POST" action="{{ route($routePrefix . '.catatan_kegiatan.tolak', $catatan->id) }}" class="space-y-3">
                         @csrf
                         <x-ui.input 
                             type="textarea"

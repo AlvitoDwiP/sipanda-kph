@@ -21,7 +21,10 @@ class CatatanKegiatanTest extends TestCase
 
         $pegawai = Pegawai::factory()->create();
         $user = $pegawai->user;
-        $penugasan = Penugasan::factory()->create(['pegawai_id' => $pegawai->id]);
+        $penugasan = Penugasan::factory()->create([
+            'pegawai_id' => $pegawai->id,
+            'status' => 'sedang_dikerjakan'
+        ]);
 
         $response = $this->actingAs($user)->post(route('pegawai.tugas.catatan.store', $penugasan->id), [
             'tanggal_kegiatan' => now()->format('Y-m-d'),

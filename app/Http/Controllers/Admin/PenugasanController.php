@@ -15,8 +15,4 @@ class PenugasanController extends BasePenugasanController
         return 'admin';
     }
 
-    protected function viewPrefix(): string
-    {
-        return 'pages.admin';
-    }
 }

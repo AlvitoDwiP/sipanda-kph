@@ -13,9 +13,9 @@ use Barryvdh\DomPDF\Facade\Pdf;
  */
 class CatatanController extends BaseCatatanKegiatanController
 {
-    protected function viewPrefix(): string
+    protected function routePrefix(): string
     {
-        return 'pages.admin';
+        return 'admin';
     }
 
     public function downloadPdf($id)

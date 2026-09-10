@@ -7,13 +7,23 @@
     deleteId: null, 
     deleteName: '',
     deleteAction: '',
+    selected: [],
+    selectAll: false,
+    allIds: {{ json_encode($user->pluck('id')) }},
+    toggleAll() {
+        if (this.selectAll) {
+            this.selected = [...this.allIds];
+        } else {
+            this.selected = [];
+        }
+    },
     confirmDelete(id, name, action) {
         this.deleteId = id;
         this.deleteName = name;
         this.deleteAction = action;
         this.$dispatch('open-modal', 'delete-confirm');
     }
-}" class="space-y-6">
+}" x-init="$watch('selected', value => { selectAll = value.length === allIds.length && allIds.length > 0 })" class="space-y-6">
 
     <!-- PAGE HEADER -->
     <x-ui.page-header title="Registrasi & Verifikasi Pengguna" subtitle="Kelola registrasi, hak akses, dan verifikasi akun pegawai.">
@@ -21,6 +31,16 @@
             <x-ui.breadcrumb />
         </x-slot>
         <x-slot name="actions">
+            <form action="{{ route('admin.register.massDestroy') }}" method="POST" class="inline" onsubmit="if(selected.length === 0) return false; return confirm('Yakin ingin menghapus ' + selected.length + ' pengguna yang dipilih?')">
+                @csrf
+                @method('DELETE')
+                <template x-for="id in selected" :key="id">
+                    <input type="hidden" name="ids[]" :value="id">
+                </template>
+                <x-ui.button type="submit" variant="danger" size="sm" leadingIcon="trash-2" x-bind:disabled="selected.length === 0" x-bind:class="selected.length === 0 ? 'opacity-50 cursor-not-allowed' : ''">
+                    Hapus Terpilih <span x-show="selected.length > 0" x-text="'(' + selected.length + ')'"></span>
+                </x-ui.button>
+            </form>
             <x-ui.button variant="primary" size="sm" leadingIcon="user-plus" :href="route('admin.register.create')">
                 Tambah Akun
             </x-ui.button>
@@ -30,11 +50,26 @@
     <!-- MAIN CARD & TABLE -->
     <x-ui.card title="Daftar Registrasi Pengguna" icon="users" class="overflow-hidden">
         <x-ui.table 
-            :headers="['No', 'Nama Pengguna', 'NIP', 'Email', 'Role', 'Status Akun', 'Aksi']"
             :empty="count($user) === 0"
         >
+            <x-slot name="thead">
+                <th class="px-4 py-3 font-semibold text-ui-text-secondary uppercase tracking-wider text-[10px] sm:text-xs text-center w-12">
+                    <input type="checkbox" x-model="selectAll" @change="toggleAll" class="rounded border-gray-300 text-ui-primary shadow-sm focus:ring-ui-primary" />
+                </th>
+                <th class="px-4 py-3 font-semibold text-ui-text-secondary uppercase tracking-wider text-[10px] sm:text-xs text-center">No</th>
+                <th class="px-4 py-3 font-semibold text-ui-text-secondary uppercase tracking-wider text-[10px] sm:text-xs">Nama Pengguna</th>
+                <th class="px-4 py-3 font-semibold text-ui-text-secondary uppercase tracking-wider text-[10px] sm:text-xs">NIP</th>
+                <th class="px-4 py-3 font-semibold text-ui-text-secondary uppercase tracking-wider text-[10px] sm:text-xs">Email</th>
+                <th class="px-4 py-3 font-semibold text-ui-text-secondary uppercase tracking-wider text-[10px] sm:text-xs text-center">Role</th>
+                <th class="px-4 py-3 font-semibold text-ui-text-secondary uppercase tracking-wider text-[10px] sm:text-xs text-center">Status Akun</th>
+                <th class="px-4 py-3 font-semibold text-ui-text-secondary uppercase tracking-wider text-[10px] sm:text-xs text-right">Aksi</th>
+            </x-slot>
+
             @foreach ($user as $i => $row)
-                <tr class="border-b border-ui-border/50 hover:bg-ui-primary-soft/10">
+                <tr class="border-b border-ui-border/50 hover:bg-ui-primary-soft/10" :class="{'bg-ui-primary-soft/10': selected.includes({{ $row->id }})}">
+                    <td class="px-4 py-3 text-center">
+                        <input type="checkbox" value="{{ $row->id }}" x-model="selected" class="rounded border-gray-300 text-ui-primary shadow-sm focus:ring-ui-primary" />
+                    </td>
                     <td class="px-4 py-3 text-ui-text-secondary text-center">{{ $i + 1 }}</td>
                     <td class="px-4 py-3 font-semibold text-ui-text-primary">{{ $row->name }}</td>
                     <td class="px-4 py-3 text-ui-text-primary">{{ $row->nip ?? '-' }}</td>

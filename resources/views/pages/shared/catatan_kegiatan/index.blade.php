@@ -62,7 +62,7 @@
                     @endif
                 </td>
                 <td class="px-4 py-3 text-xs text-right">
-                    <x-ui.button variant="outline" size="xs" :href="route('admin.catatan_kegiatan.show', $item->id)">
+                    <x-ui.button variant="outline" size="xs" :href="route($routePrefix . '.catatan_kegiatan.show', $item->id)">
                         Detail
                     </x-ui.button>
                 </td>

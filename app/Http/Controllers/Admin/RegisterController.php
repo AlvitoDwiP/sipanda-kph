@@ -187,4 +187,34 @@ class RegisterController extends Controller
             ->route('admin.register.index')
             ->with('success', 'User berhasil dihapus');
     }
+
+    public function massDestroy(Request $request)
+    {
+        $request->validate([
+            'ids'   => 'required|array',
+            'ids.*' => 'exists:users,id',
+        ]);
+
+        $users = User::whereIn('id', $request->ids)->get();
+        $count = 0;
+
+        foreach ($users as $user) {
+            if ($user->id === auth()->id()) {
+                continue; // Jangan hapus diri sendiri
+            }
+
+            $userData = [
+                'name' => $user->name,
+                'role' => $user->role
+            ];
+
+            $user->delete();
+            $this->logService->logAction('Menghapus user massal', $userData);
+            $count++;
+        }
+
+        return redirect()
+            ->route('admin.register.index')
+            ->with('success', "{$count} User berhasil dihapus secara massal");
+    }
 }

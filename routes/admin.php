@@ -27,6 +27,7 @@ Route::middleware(['auth', 'role:super_admin,admin', 'active'])->prefix('admin')
         ->middleware('throttle:120,1')
         ->name('display-jobdesk.scan');
 
+    Route::delete('register/mass-destroy', [RegisterController::class, 'massDestroy'])->name('register.massDestroy');
     Route::resource('register', RegisterController::class)->only(['index', 'create', 'store', 'edit', 'update', 'destroy']);
 
     Route::get('/pegawai/{pegawai}/detail', [PegawaiController::class, 'show'])->name('pegawai.show');

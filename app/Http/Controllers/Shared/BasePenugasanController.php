@@ -34,7 +34,7 @@ abstract class BasePenugasanController extends Controller
      * Prefix view untuk role ini, mis. 'pages.admin' atau 'pages.kph'.
      * Digunakan untuk view("{$this->viewPrefix()}.penugasan.index").
      */
-    abstract protected function viewPrefix(): string;
+    
 
     public function index(Request $request)
     {
@@ -59,7 +59,10 @@ abstract class BasePenugasanController extends Controller
 
         $tugas = $tugasQuery->orderBy('created_at', 'desc')->get();
 
-        return view("{$this->viewPrefix()}.penugasan.index", compact('tugas'));
+        return view("pages.shared.penugasan.index", [
+            'tugas' => $tugas,
+            'routePrefix' => $this->routePrefix(),
+        ]);
     }
 
     public function create()
@@ -69,14 +72,17 @@ abstract class BasePenugasanController extends Controller
             ->sortBy('user.name')
             ->values();
 
-        return view("{$this->viewPrefix()}.penugasan.create", compact('pegawai'));
+        return view("pages.shared.penugasan.create", [
+            'pegawai' => $pegawai,
+            'routePrefix' => $this->routePrefix(),
+        ]);
     }
 
     public function show(Tugas $penugasan)
     {
         $penugasan->load(['user', 'penugasan.pegawai.user', 'penugasan.statusHistories.user']);
 
-        return view("{$this->viewPrefix()}.penugasan.show", [
+        return view("pages.shared.penugasan.show", [
             'penugasan'   => $penugasan,
             'routePrefix' => $this->routePrefix(),
         ]);
@@ -122,7 +128,12 @@ abstract class BasePenugasanController extends Controller
 
         $pegawaiTerpilih = $penugasan->penugasan->pluck('pegawai_id')->toArray();
 
-        return view("{$this->viewPrefix()}.penugasan.edit", compact('penugasan', 'pegawai', 'pegawaiTerpilih'));
+        return view("pages.shared.penugasan.edit", [
+            'penugasan' => $penugasan,
+            'pegawai' => $pegawai,
+            'pegawaiTerpilih' => $pegawaiTerpilih,
+            'routePrefix' => $this->routePrefix(),
+        ]);
     }
 
     public function update(UpdatePenugasanRequest $request, Tugas $penugasan)

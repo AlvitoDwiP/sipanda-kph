@@ -10,8 +10,8 @@ use App\Http\Controllers\Shared\BaseCatatanKegiatanController;
  */
 class CatatanKegiatanController extends BaseCatatanKegiatanController
 {
-    protected function viewPrefix(): string
+    protected function routePrefix(): string
     {
-        return 'pages.kph';
+        return 'kph';
     }
 }

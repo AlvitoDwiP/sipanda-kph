@@ -77,9 +77,7 @@ class TugasController extends Controller
 
     public function updateStatus(Request $request, Penugasan $penugasan)
     {
-        if (!$this->isOwnedByLoggedInPegawai($penugasan)) {
-            abort(403, 'Anda tidak memiliki akses ke tugas ini.');
-        }
+        $this->authorize('update', $penugasan);
 
         $request->validate([
             'status' => 'required|in:baru,proses,selesai,belum_dikerjakan,sedang_dikerjakan',
@@ -129,9 +127,7 @@ class TugasController extends Controller
 
     public function mulai(Penugasan $penugasan)
     {
-        if (!$this->isOwnedByLoggedInPegawai($penugasan)) {
-            return back()->with('error', 'Anda tidak memiliki akses ke tugas ini.');
-        }
+        $this->authorize('update', $penugasan);
 
         if (!in_array($penugasan->status, ['belum_dikerjakan', 'baru'])) {
             return back()->with('error', 'Status tugas tidak valid untuk mulai dikerjakan.');
@@ -144,9 +140,7 @@ class TugasController extends Controller
 
     public function updateProgres(Request $request, Penugasan $penugasan)
     {
-        if (!$this->isOwnedByLoggedInPegawai($penugasan)) {
-            return back()->with('error', 'Anda tidak memiliki akses ke tugas ini.');
-        }
+        $this->authorize('update', $penugasan);
 
         if (!in_array($penugasan->status, ['sedang_dikerjakan', 'revisi', 'proses'])) {
             return back()->with('error', 'Tugas belum dapat diperbarui progresnya.');
@@ -180,9 +174,7 @@ class TugasController extends Controller
 
     public function kirimVerifikasi(Penugasan $penugasan)
     {
-        if (!$this->isOwnedByLoggedInPegawai($penugasan)) {
-            return back()->with('error', 'Anda tidak memiliki akses ke tugas ini.');
-        }
+        $this->authorize('update', $penugasan);
 
         if (!in_array($penugasan->status, ['sedang_dikerjakan', 'revisi', 'proses'])) {
             return back()->with('error', 'Status tugas tidak valid untuk dikirim verifikasi.');
@@ -220,10 +212,6 @@ class TugasController extends Controller
         return back()->with('success', 'Tugas berhasil dikirim untuk verifikasi.');
     }
 
-    private function isOwnedByLoggedInPegawai(Penugasan $penugasan): bool
-    {
-        return $penugasan->pegawai->user_id === auth()->id();
-    }
 
     private function changeStatus(Penugasan $penugasan, string $nextStatus, ?string $catatan = null): void
     {

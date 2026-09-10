@@ -111,7 +111,7 @@
                 {{ $footer }}
             @else
                 <div class="flex-1 w-full">
-                    {{ $pagination }}
+                    {!! $pagination !!}
                 </div>
             @endif
         </div>

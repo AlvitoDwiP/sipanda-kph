@@ -15,8 +15,4 @@ class PenugasanController extends BasePenugasanController
         return 'kph';
     }
 
-    protected function viewPrefix(): string
-    {
-        return 'pages.kph';
-    }
 }

@@ -117,9 +117,7 @@ class CatatanKegiatanController extends Controller
     {
         $pegawai = Pegawai::where('user_id', auth()->id())->firstOrFail();
 
-        if ($catatan_kegiatan->pegawai_id !== $pegawai->id) {
-            abort(403);
-        }
+        $this->authorize('view', $catatan_kegiatan);
 
         return view('pages.pegawai.catatan_kegiatan.show', [
             'catatan' => $catatan_kegiatan->load(['penugasan.tugas', 'verifier']),
@@ -130,9 +128,7 @@ class CatatanKegiatanController extends Controller
     {
         $pegawai = Pegawai::where('user_id', auth()->id())->firstOrFail();
 
-        if ($catatan_kegiatan->pegawai_id !== $pegawai->id) {
-            abort(403);
-        }
+        $this->authorize('update', $catatan_kegiatan);
 
         if (!$catatan_kegiatan->canBeEditedByPegawai()) {
             return back()->with('error', 'Catatan yang sudah disetujui/ditolak tidak bisa diedit.');
@@ -145,9 +141,7 @@ class CatatanKegiatanController extends Controller
     {
         $pegawai = Pegawai::where('user_id', auth()->id())->firstOrFail();
 
-        if ($catatan_kegiatan->pegawai_id !== $pegawai->id) {
-            abort(403);
-        }
+        $this->authorize('update', $catatan_kegiatan);
 
         if (!$catatan_kegiatan->canBeEditedByPegawai()) {
             return back()->with('error', 'Catatan yang sudah disetujui/ditolak tidak bisa diedit.');
@@ -218,9 +212,8 @@ class CatatanKegiatanController extends Controller
     {
         $pegawai = Pegawai::where('user_id', auth()->id())->firstOrFail();
 
-        $catatan_kegiatan = CatatanKegiatan::where('id', $id)
-            ->where('pegawai_id', $pegawai->id)
-            ->firstOrFail();
+        $catatan_kegiatan = CatatanKegiatan::findOrFail($id);
+        $this->authorize('delete', $catatan_kegiatan);
 
         if (in_array($catatan_kegiatan->status_verifikasi, ['disetujui', 'ditolak'])) {
             abort(403, 'Catatan sudah diproses dan tidak dapat dihapus');
@@ -237,10 +230,12 @@ class CatatanKegiatanController extends Controller
             ->where('user_id', auth()->id())
             ->firstOrFail();
 
-        $catatan = CatatanKegiatan::where('id', $id)
-            ->where('pegawai_id', $pegawai->id)
-            ->where('status_verifikasi', 'disetujui')
-            ->firstOrFail();
+        $catatan = CatatanKegiatan::findOrFail($id);
+        $this->authorize('view', $catatan);
+
+        if ($catatan->status_verifikasi !== 'disetujui') {
+            abort(403, 'Catatan belum disetujui');
+        }
 
         $pdf = Pdf::loadView('pdf.pegawai.catatan_kegiatan', [
             'pegawai' => $pegawai,

@@ -18,9 +18,9 @@ use Illuminate\Http\Request;
 abstract class BaseCatatanKegiatanController extends Controller
 {
     /**
-     * Prefix view untuk role ini, mis. 'pages.admin' atau 'pages.kph'.
+     * Prefix route untuk role ini, mis. 'admin' atau 'kph'.
      */
-    abstract protected function viewPrefix(): string;
+    abstract protected function routePrefix(): string;
 
     public function index(Request $request)
     {
@@ -37,13 +37,17 @@ abstract class BaseCatatanKegiatanController extends Controller
 
         $catatan = $catatanQuery->orderByDesc('created_at')->get();
 
-        return view("{$this->viewPrefix()}.catatan_kegiatan.index", compact('catatan'));
+        return view("pages.shared.catatan_kegiatan.index", [
+            'catatan' => $catatan,
+            'routePrefix' => $this->routePrefix(),
+        ]);
     }
 
     public function show(CatatanKegiatan $catatan)
     {
-        return view("{$this->viewPrefix()}.catatan_kegiatan.show", [
+        return view("pages.shared.catatan_kegiatan.show", [
             'catatan' => $catatan->load(['pegawai.user', 'penugasan.tugas', 'verifier']),
+            'routePrefix' => $this->routePrefix(),
         ]);
     }
 
