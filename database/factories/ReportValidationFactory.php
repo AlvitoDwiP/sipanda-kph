@@ -27,7 +27,7 @@ class ReportValidationFactory extends Factory
         $periodStart = (clone $generatedAt)->startOfMonth();
         $periodEnd = (clone $generatedAt)->endOfMonth();
 
-        $code = 'REP-' . strtoupper(Str::random(8)) . '-' . $generatedAt->format('Ymd');
+        $code = 'REP-'.strtoupper(Str::random(8)).'-'.$generatedAt->format('Ymd');
         $token = Str::uuid()->toString();
 
         return [
@@ -39,7 +39,7 @@ class ReportValidationFactory extends Factory
             'period_end' => $periodEnd->format('Y-m-d'),
             'generated_by' => User::where('role', 'admin')->orWhere('role', 'kph')->inRandomOrder()->first()?->id ?? User::factory()->state(['role' => 'admin']),
             'generated_at' => $generatedAt,
-            'file_hash' => hash('sha256', $code . $token),
+            'file_hash' => hash('sha256', $code.$token),
             'status' => $this->faker->boolean(95) ? 'valid' : 'revoked',
             'revoked_at' => null,
             'metadata' => [

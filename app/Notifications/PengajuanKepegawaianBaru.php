@@ -3,8 +3,6 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 class PengajuanKepegawaianBaru extends Notification
@@ -39,11 +37,11 @@ class PengajuanKepegawaianBaru extends Notification
     public function toArray(object $notifiable): array
     {
         $namaPegawai = $this->pengajuan->pegawai->user->name ?? 'Pegawai';
-        
+
         return [
             'judul' => 'Perlu Review: Pengajuan Perubahan Data',
-            'message' => $namaPegawai . ' mengajukan perubahan data kepegawaian. Menunggu validasi.',
-            'url' => route('admin.validasi-kepegawaian.index')
+            'message' => $namaPegawai.' mengajukan perubahan data kepegawaian. Menunggu validasi.',
+            'url' => route('admin.validasi-kepegawaian.index'),
         ];
     }
 }

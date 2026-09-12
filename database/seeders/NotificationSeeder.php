@@ -23,7 +23,7 @@ class NotificationSeeder extends Seeder
         for ($i = 0; $i < 50; $i++) {
             $user = $users->random();
             $category = $categories[$i % count($categories)];
-            
+
             $monthsToSub = rand(0, 11);
             $createdAt = now()->subMonths($monthsToSub)->subDays(rand(1, 28));
 

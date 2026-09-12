@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Pegawai;
 
 use App\Http\Controllers\Controller;
-use App\Models\Pegawai;
 use App\Models\CatatanKegiatan;
+use App\Models\Pegawai;
 use App\Models\Penugasan;
 use App\Models\PenugasanStatusHistory;
 use App\Models\Tugas;
@@ -16,9 +16,9 @@ class TugasController extends Controller
 {
     public function index(Request $request)
     {
-        $pegawai = Pegawai::where('user_id', auth()->id())->first();
+        $pegawai = Pegawai::where('user_id', \Auth::id())->first();
 
-        if (!$pegawai) {
+        if (! $pegawai) {
             return view('pages.pegawai.tugas.index', [
                 'tugas' => collect(),
                 'pegawaiTidakTerhubung' => true,
@@ -26,7 +26,7 @@ class TugasController extends Controller
         }
 
         $tugasQuery = Tugas::with([
-            'penugasan.pegawai.user'
+            'penugasan.pegawai.user',
         ])
             ->whereHas('penugasan', function ($q) use ($pegawai) {
                 $q->where('pegawai_id', $pegawai->id); // filter tugas saya
@@ -49,9 +49,9 @@ class TugasController extends Controller
 
     public function show(Tugas $tugas)
     {
-        $pegawai = Pegawai::where('user_id', auth()->id())->first();
+        $pegawai = Pegawai::where('user_id', \Auth::id())->first();
 
-        if (!$pegawai) {
+        if (! $pegawai) {
             return redirect()
                 ->route('pegawai.tugas.index')
                 ->with('error', 'Akun Anda belum terhubung dengan data pegawai.');
@@ -62,7 +62,7 @@ class TugasController extends Controller
             ->where('pegawai_id', $pegawai->id)
             ->first();
 
-        if (!$penugasanSaya) {
+        if (! $penugasanSaya) {
             abort(403, 'Anda tidak memiliki akses ke tugas ini.');
         }
 
@@ -121,7 +121,7 @@ class TugasController extends Controller
 
         return response()->json([
             'success' => true,
-            'status'  => $penugasan->status,
+            'status' => $penugasan->status,
         ]);
     }
 
@@ -129,7 +129,7 @@ class TugasController extends Controller
     {
         $this->authorize('update', $penugasan);
 
-        if (!in_array($penugasan->status, ['belum_dikerjakan', 'baru'])) {
+        if (! in_array($penugasan->status, ['belum_dikerjakan', 'baru'])) {
             return back()->with('error', 'Status tugas tidak valid untuk mulai dikerjakan.');
         }
 
@@ -142,7 +142,7 @@ class TugasController extends Controller
     {
         $this->authorize('update', $penugasan);
 
-        if (!in_array($penugasan->status, ['sedang_dikerjakan', 'revisi', 'proses'])) {
+        if (! in_array($penugasan->status, ['sedang_dikerjakan', 'revisi', 'proses'])) {
             return back()->with('error', 'Tugas belum dapat diperbarui progresnya.');
         }
 
@@ -163,7 +163,7 @@ class TugasController extends Controller
 
         PenugasanStatusHistory::create([
             'penugasan_id' => $penugasan->id,
-            'user_id' => auth()->id(),
+            'user_id' => \Auth::id(),
             'status_sebelum' => $penugasan->status,
             'status_sesudah' => $penugasan->status,
             'catatan' => 'Progres diperbarui oleh pegawai.',
@@ -176,7 +176,7 @@ class TugasController extends Controller
     {
         $this->authorize('update', $penugasan);
 
-        if (!in_array($penugasan->status, ['sedang_dikerjakan', 'revisi', 'proses'])) {
+        if (! in_array($penugasan->status, ['sedang_dikerjakan', 'revisi', 'proses'])) {
             return back()->with('error', 'Status tugas tidak valid untuk dikirim verifikasi.');
         }
 
@@ -202,16 +202,15 @@ class TugasController extends Controller
                 $target,
                 'tugas_verifikasi',
                 'Tugas menunggu verifikasi',
-                $namaPegawai . ' mengirim progres tugas "' . $judulTugas . '" untuk verifikasi.',
-                route($prefix . '.penugasan.show', $penugasan->tugas_id),
+                $namaPegawai.' mengirim progres tugas "'.$judulTugas.'" untuk verifikasi.',
+                route($prefix.'.penugasan.show', $penugasan->tugas_id),
                 ['penugasan_id' => $penugasan->id, 'tugas_id' => $penugasan->tugas_id],
-                'wait_verify_task:' . $penugasan->id . ':' . now()->toDateString() . ':u' . $target->id
+                'wait_verify_task:'.$penugasan->id.':'.now()->toDateString().':u'.$target->id
             );
         }
 
         return back()->with('success', 'Tugas berhasil dikirim untuk verifikasi.');
     }
-
 
     private function changeStatus(Penugasan $penugasan, string $nextStatus, ?string $catatan = null): void
     {
@@ -227,7 +226,7 @@ class TugasController extends Controller
 
         PenugasanStatusHistory::create([
             'penugasan_id' => $penugasan->id,
-            'user_id' => auth()->id(),
+            'user_id' => \Auth::id(),
             'status_sebelum' => $statusSebelum,
             'status_sesudah' => $nextStatus,
             'catatan' => $catatan,

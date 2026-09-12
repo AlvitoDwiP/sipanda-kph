@@ -16,7 +16,7 @@
         <x-ui.breadcrumb />
     </x-slot>
     <x-slot name="actions">
-        <x-ui.button variant="primary" size="sm" leadingIcon="plus" onclick="openTambahModal()">
+        <x-ui.button variant="primary" size="sm" leadingIcon="plus" @click="$dispatch('open-modal', 'tambah-golongan')">
             Tambah Golongan
         </x-ui.button>
     </x-slot>
@@ -32,10 +32,10 @@
                 </td>
                 <td class="px-4 py-3 text-xs sm:text-sm text-right">
                     <div class="flex items-center justify-end gap-2">
-                        <x-ui.button variant="ghost" size="xs" leadingIcon="edit" onclick="openEditModal({{ $item->id }}, '{{ $item->nama_golongan }}')">
+                        <x-ui.button variant="ghost" size="xs" leadingIcon="edit" @click="$dispatch('set-edit-golongan', { id: {{ $item->id }}, nama: '{{ $item->nama_golongan }}' }); $dispatch('open-modal', 'edit-golongan')">
                             Edit
                         </x-ui.button>
-                        <x-ui.button variant="ghost" size="xs" leadingIcon="trash-2" class="text-ui-danger hover:bg-ui-danger-soft active:bg-ui-danger-soft" onclick="openDeleteModal({{ $item->id }}, '{{ $item->nama_golongan }}')">
+                        <x-ui.button variant="ghost" size="xs" leadingIcon="trash-2" class="text-ui-danger hover:bg-ui-danger-soft active:bg-ui-danger-soft" @click="$dispatch('set-delete-golongan', { id: {{ $item->id }}, nama: '{{ $item->nama_golongan }}' }); $dispatch('open-modal', 'delete-golongan')">
                             Hapus
                         </x-ui.button>
                     </div>
@@ -60,35 +60,37 @@
         />
         
         <x-slot name="footer">
-            <x-ui.button variant="ghost" size="sm" type="button" onclick="window.dispatchEvent(new CustomEvent('close-modal', { detail: 'tambah-golongan' }))">
+            <x-ui.button variant="ghost" size="sm" type="button" @click="$dispatch('close-modal', 'tambah-golongan')">
                 Batal
             </x-ui.button>
-            <x-ui.button type="submit" variant="primary" size="sm">
+            <x-ui.button type="submit" variant="primary" size="sm" form="tambahForm">
                 Simpan
             </x-ui.button>
         </x-slot>
     </form>
 </x-ui.modal>
+</div>
 
 {{-- MODAL EDIT --}}
 <x-ui.modal name="edit-golongan" :show="$errors->has('nama_golongan') && session('edit_id')" title="Edit Golongan" maxWidth="sm">
-    <form method="POST" id="formEdit" class="space-y-4">
+    <form method="POST" :action="`/admin/golongan/${editId}`" class="space-y-4"
+          x-data="{ editId: '{{ session('edit_id') }}', editNama: '{{ old('nama_golongan') }}' }"
+          @set-edit-golongan.window="editId = $event.detail.id; editNama = $event.detail.nama;">
         @csrf
         @method('PUT')
         
         <x-ui.input 
             type="text"
-            id="edit_nama"
             name="nama_golongan"
             label="Nama Golongan"
             placeholder="Contoh: IV/a, III/b"
-            value="{{ old('nama_golongan') }}"
+            x-model="editNama"
             :error="$errors->first('nama_golongan')"
             required
         />
         
         <x-slot name="footer">
-            <x-ui.button variant="ghost" size="sm" type="button" onclick="window.dispatchEvent(new CustomEvent('close-modal', { detail: 'edit-golongan' }))">
+            <x-ui.button variant="ghost" size="sm" type="button" @click="$dispatch('close-modal', 'edit-golongan')">
                 Batal
             </x-ui.button>
             <x-ui.button type="submit" variant="primary" size="sm">
@@ -99,8 +101,9 @@
 </x-ui.modal>
 
 {{-- MODAL DELETE --}}
+<div x-data="{ deleteId: '', deleteNama: '' }" @set-delete-golongan.window="deleteId = $event.detail.id; deleteNama = $event.detail.nama;">
 <x-ui.modal name="delete-golongan" title="Konfirmasi Hapus" maxWidth="sm">
-    <form method="POST" id="formDelete">
+    <form id="deleteForm" method="POST" :action="`/admin/golongan/${deleteId}`">
         @csrf
         @method('DELETE')
         
@@ -111,16 +114,16 @@
             <div class="min-w-0">
                 <h4 class="text-xs sm:text-sm font-bold text-ui-text-primary leading-tight">Yakin ingin menghapus golongan?</h4>
                 <p class="text-[11px] sm:text-xs text-ui-text-secondary mt-1 leading-normal">
-                    Golongan <span id="deleteNama" class="font-semibold text-ui-text-primary"></span> akan dihapus permanen. Data pegawai dengan golongan ini akan terdampak.
+                    Golongan <span x-text="deleteNama" class="font-semibold text-ui-text-primary"></span> akan dihapus permanen. Data pegawai dengan golongan ini akan terdampak.
                 </p>
             </div>
         </div>
         
         <x-slot name="footer">
-            <x-ui.button variant="ghost" size="sm" type="button" onclick="window.dispatchEvent(new CustomEvent('close-modal', { detail: 'delete-golongan' }))">
+            <x-ui.button variant="ghost" size="sm" type="button" @click="$dispatch('close-modal', 'delete-golongan')">
                 Batal
             </x-ui.button>
-            <x-ui.button type="submit" variant="danger" size="sm">
+            <x-ui.button type="submit" variant="danger" size="sm" form="deleteForm">
                 Ya, Hapus
             </x-ui.button>
         </x-slot>
@@ -128,23 +131,3 @@
 </x-ui.modal>
 
 @endsection
-
-@push('scripts')
-<script>
-    function openTambahModal() {
-        window.dispatchEvent(new CustomEvent('open-modal', { detail: 'tambah-golongan' }));
-    }
-
-    function openEditModal(id, nama) {
-        document.getElementById('edit_nama').value = nama;
-        document.getElementById('formEdit').action = `/admin/golongan/${id}`;
-        window.dispatchEvent(new CustomEvent('open-modal', { detail: 'edit-golongan' }));
-    }
-
-    function openDeleteModal(id, nama) {
-        document.getElementById('deleteNama').innerText = nama;
-        document.getElementById('formDelete').action = `/admin/golongan/${id}`;
-        window.dispatchEvent(new CustomEvent('open-modal', { detail: 'delete-golongan' }));
-    }
-</script>
-@endpush

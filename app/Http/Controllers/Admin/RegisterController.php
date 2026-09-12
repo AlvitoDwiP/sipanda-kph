@@ -3,18 +3,17 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreUserRequest;
+use App\Http\Requests\UpdateUserRequest;
 use App\Models\Golongan;
 use App\Models\Jabatan;
 use App\Models\Pegawai;
 use App\Models\UnitKerja;
 use App\Models\User;
 use App\Services\LogService;
-use App\Http\Requests\StoreUserRequest;
-use App\Http\Requests\UpdateUserRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules\Password;
 
 class RegisterController extends Controller
 {
@@ -24,6 +23,7 @@ class RegisterController extends Controller
     {
         $this->logService = $logService;
     }
+
     public function index(Request $request)
     {
         $user = User::when($request->filled('q'), function ($query) use ($request) {
@@ -43,8 +43,8 @@ class RegisterController extends Controller
     {
         return view('pages.admin.register.create', [
             'unitkerja' => UnitKerja::all(),
-            'golongan'  => Golongan::all(),
-            'jabatan'   => Jabatan::all(),
+            'golongan' => Golongan::all(),
+            'jabatan' => Jabatan::all(),
         ]);
     }
 
@@ -54,22 +54,22 @@ class RegisterController extends Controller
 
         try {
             $user = User::create([
-                'name'               => $request->name,
-                'nip'                => $request->nip,
-                'email'              => $request->email,
-                'password'           => Hash::make($request->password),
-                'role'               => $request->role,
-                'status_akun'        => $request->status_akun,
+                'name' => $request->name,
+                'nip' => $request->nip,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'role' => $request->role,
+                'status_akun' => $request->status_akun,
                 'catatan_verifikasi' => $request->catatan_verifikasi,
             ]);
 
             Pegawai::create([
-                'user_id'        => $user->id,
-                'unitkerja_id'   => $request->unitkerja_id,
-                'golongan_id'    => $request->golongan_id,
-                'jabatan_id'     => $request->jabatan_id,
+                'user_id' => $user->id,
+                'unitkerja_id' => $request->unitkerja_id,
+                'golongan_id' => $request->golongan_id,
+                'jabatan_id' => $request->jabatan_id,
                 'status_pegawai' => $request->status_pegawai,
-                'data_diri_id'   => null,
+                'data_diri_id' => null,
             ]);
 
             DB::commit();
@@ -91,12 +91,13 @@ class RegisterController extends Controller
 
             return back()
                 ->withInput()
-                ->with('error', 'Gagal menyimpan data: ' . $e->getMessage());
+                ->with('error', 'Gagal menyimpan data: '.$e->getMessage());
         }
     }
 
-    public function edit(User $user)
+    public function edit(User $register)
     {
+        $user = $register;
         $pegawai = Pegawai::where('user_id', $user->id)->first();
 
         // Ensure these queries return collections
@@ -105,25 +106,26 @@ class RegisterController extends Controller
         $jabatan = Jabatan::all();
 
         return view('pages.admin.register.edit', [
-            'user'      => $user,
-            'pegawai'   => $pegawai,
+            'user' => $user,
+            'pegawai' => $pegawai,
             'unitkerja' => $unitkerja,
-            'golongan'  => $golongan,
-            'jabatan'   => $jabatan,
+            'golongan' => $golongan,
+            'jabatan' => $jabatan,
         ]);
     }
 
-    public function update(UpdateUserRequest $request, User $user)
+    public function update(UpdateUserRequest $request, User $register)
     {
+        $user = $register;
         DB::beginTransaction();
 
         try {
             $user->update([
-                'name'               => $request->name,
-                'nip'                => $request->nip,
-                'email'              => $request->email,
-                'role'               => $request->role,
-                'status_akun'        => $request->status_akun,
+                'name' => $request->name,
+                'nip' => $request->nip,
+                'email' => $request->email,
+                'role' => $request->role,
+                'status_akun' => $request->status_akun,
                 'catatan_verifikasi' => $request->catatan_verifikasi,
             ]);
 
@@ -134,16 +136,16 @@ class RegisterController extends Controller
             if ($pegawai) {
                 $isMutasi =
                     $pegawai->unitkerja_id != $request->unitkerja_id ||
-                    $pegawai->golongan_id  != $request->golongan_id ||
-                    $pegawai->jabatan_id   != $request->jabatan_id;
+                    $pegawai->golongan_id != $request->golongan_id ||
+                    $pegawai->jabatan_id != $request->jabatan_id;
             }
 
             Pegawai::updateOrCreate(
                 ['user_id' => $user->id],
                 [
-                    'unitkerja_id'   => $request->unitkerja_id,
-                    'golongan_id'    => $request->golongan_id,
-                    'jabatan_id'     => $request->jabatan_id,
+                    'unitkerja_id' => $request->unitkerja_id,
+                    'golongan_id' => $request->golongan_id,
+                    'jabatan_id' => $request->jabatan_id,
                     'status_pegawai' => $request->status_pegawai,
                 ]
             );
@@ -166,16 +168,17 @@ class RegisterController extends Controller
 
             return back()
                 ->withInput()
-                ->with('error', 'Gagal memperbarui data: ' . $e->getMessage());
+                ->with('error', 'Gagal memperbarui data: '.$e->getMessage());
         }
     }
 
-    public function destroy(User $user)
+    public function destroy(User $register)
     {
+        $user = $register;
         // Simpan informasi user sebelum dihapus untuk keperluan logging
         $userData = [
             'name' => $user->name,
-            'role' => $user->role
+            'role' => $user->role,
         ];
 
         $user->delete();
@@ -191,7 +194,7 @@ class RegisterController extends Controller
     public function massDestroy(Request $request)
     {
         $request->validate([
-            'ids'   => 'required|array',
+            'ids' => 'required|array',
             'ids.*' => 'exists:users,id',
         ]);
 
@@ -199,13 +202,13 @@ class RegisterController extends Controller
         $count = 0;
 
         foreach ($users as $user) {
-            if ($user->id === auth()->id()) {
+            if ($user->id === \Auth::id()) {
                 continue; // Jangan hapus diri sendiri
             }
 
             $userData = [
                 'name' => $user->name,
-                'role' => $user->role
+                'role' => $user->role,
             ];
 
             $user->delete();

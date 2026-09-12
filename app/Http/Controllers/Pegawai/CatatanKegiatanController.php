@@ -16,7 +16,7 @@ class CatatanKegiatanController extends Controller
 {
     public function index()
     {
-        $pegawai = Pegawai::where('user_id', auth()->id())->firstOrFail();
+        $pegawai = Pegawai::where('user_id', \Auth::id())->firstOrFail();
 
         $catatan = CatatanKegiatan::with(['penugasan.tugas', 'verifier'])
             ->where('pegawai_id', $pegawai->id)
@@ -28,7 +28,7 @@ class CatatanKegiatanController extends Controller
 
     public function createFromTugas(Penugasan $penugasan)
     {
-        $pegawai = Pegawai::where('user_id', auth()->id())->firstOrFail();
+        $pegawai = Pegawai::where('user_id', \Auth::id())->firstOrFail();
 
         if ($penugasan->pegawai_id !== $pegawai->id) {
             abort(403, 'Anda tidak memiliki akses ke tugas ini.');
@@ -38,7 +38,7 @@ class CatatanKegiatanController extends Controller
             return back()->with('error', 'Tugas ini tidak bisa ditambahkan catatan.');
         }
 
-        if (!in_array($penugasan->status, ['sedang_dikerjakan', 'revisi', 'menunggu_verifikasi', 'proses'])) {
+        if (! in_array($penugasan->status, ['sedang_dikerjakan', 'revisi', 'menunggu_verifikasi', 'proses'])) {
             return back()->with('error', 'Status tugas belum memungkinkan pembuatan catatan kegiatan.');
         }
 
@@ -49,7 +49,7 @@ class CatatanKegiatanController extends Controller
 
     public function storeFromTugas(Request $request, Penugasan $penugasan)
     {
-        $pegawai = Pegawai::where('user_id', auth()->id())->firstOrFail();
+        $pegawai = Pegawai::where('user_id', \Auth::id())->firstOrFail();
 
         if ($penugasan->pegawai_id !== $pegawai->id) {
             abort(403, 'Anda tidak memiliki akses ke tugas ini.');
@@ -81,7 +81,7 @@ class CatatanKegiatanController extends Controller
             'periode_bulan' => now()->month,
             'periode_tahun' => now()->year,
             'tanggal_kegiatan' => $request->tanggal_kegiatan,
-            'judul' => 'Laporan: ' . ($penugasan->tugas->judul ?? 'Tugas'),
+            'judul' => 'Laporan: '.($penugasan->tugas->judul ?? 'Tugas'),
             'deskripsi' => $request->deskripsi,
             'hasil_kegiatan' => $request->hasil_kegiatan,
             'kendala' => $request->kendala,
@@ -102,10 +102,10 @@ class CatatanKegiatanController extends Controller
                 $target,
                 'catatan_baru',
                 'Catatan kegiatan baru',
-                ($pegawai->user->name ?? 'Pegawai') . ' mengirim catatan kegiatan untuk verifikasi.',
-                route($prefix . '.catatan_kegiatan.show', $catatan->id),
+                ($pegawai->user->name ?? 'Pegawai').' mengirim catatan kegiatan untuk verifikasi.',
+                route($prefix.'.catatan_kegiatan.show', $catatan->id),
                 ['catatan_id' => $catatan->id, 'penugasan_id' => $penugasan->id],
-                'new_catatan:' . $catatan->id . ':u' . $target->id
+                'new_catatan:'.$catatan->id.':u'.$target->id
             );
         }
 
@@ -115,7 +115,7 @@ class CatatanKegiatanController extends Controller
 
     public function show(CatatanKegiatan $catatan_kegiatan)
     {
-        $pegawai = Pegawai::where('user_id', auth()->id())->firstOrFail();
+        $pegawai = Pegawai::where('user_id', \Auth::id())->firstOrFail();
 
         $this->authorize('view', $catatan_kegiatan);
 
@@ -126,11 +126,11 @@ class CatatanKegiatanController extends Controller
 
     public function edit(CatatanKegiatan $catatan_kegiatan)
     {
-        $pegawai = Pegawai::where('user_id', auth()->id())->firstOrFail();
+        $pegawai = Pegawai::where('user_id', \Auth::id())->firstOrFail();
 
         $this->authorize('update', $catatan_kegiatan);
 
-        if (!$catatan_kegiatan->canBeEditedByPegawai()) {
+        if (! $catatan_kegiatan->canBeEditedByPegawai()) {
             return back()->with('error', 'Catatan yang sudah disetujui/ditolak tidak bisa diedit.');
         }
 
@@ -139,11 +139,11 @@ class CatatanKegiatanController extends Controller
 
     public function update(Request $request, CatatanKegiatan $catatan_kegiatan)
     {
-        $pegawai = Pegawai::where('user_id', auth()->id())->firstOrFail();
+        $pegawai = Pegawai::where('user_id', \Auth::id())->firstOrFail();
 
         $this->authorize('update', $catatan_kegiatan);
 
-        if (!$catatan_kegiatan->canBeEditedByPegawai()) {
+        if (! $catatan_kegiatan->canBeEditedByPegawai()) {
             return back()->with('error', 'Catatan yang sudah disetujui/ditolak tidak bisa diedit.');
         }
 
@@ -197,10 +197,10 @@ class CatatanKegiatanController extends Controller
                 $target,
                 'catatan_baru',
                 'Catatan kegiatan dikirim ulang',
-                ($pegawai->user->name ?? 'Pegawai') . ' mengirim ulang catatan kegiatan untuk verifikasi.',
-                route($prefix . '.catatan_kegiatan.show', $catatan_kegiatan->id),
+                ($pegawai->user->name ?? 'Pegawai').' mengirim ulang catatan kegiatan untuk verifikasi.',
+                route($prefix.'.catatan_kegiatan.show', $catatan_kegiatan->id),
                 ['catatan_id' => $catatan_kegiatan->id],
-                'resubmit_catatan:' . $catatan_kegiatan->id . ':u' . $target->id . ':' . now()->toDateString()
+                'resubmit_catatan:'.$catatan_kegiatan->id.':u'.$target->id.':'.now()->toDateString()
             );
         }
 
@@ -210,7 +210,7 @@ class CatatanKegiatanController extends Controller
 
     public function destroy($id)
     {
-        $pegawai = Pegawai::where('user_id', auth()->id())->firstOrFail();
+        $pegawai = Pegawai::where('user_id', \Auth::id())->firstOrFail();
 
         $catatan_kegiatan = CatatanKegiatan::findOrFail($id);
         $this->authorize('delete', $catatan_kegiatan);
@@ -227,7 +227,7 @@ class CatatanKegiatanController extends Controller
     public function downloadPdf($id)
     {
         $pegawai = Pegawai::with('user')
-            ->where('user_id', auth()->id())
+            ->where('user_id', \Auth::id())
             ->firstOrFail();
 
         $catatan = CatatanKegiatan::findOrFail($id);
@@ -243,6 +243,6 @@ class CatatanKegiatanController extends Controller
             'catatan' => $catatan,
         ])->setPaper('A4', 'portrait');
 
-        return $pdf->download('Catatan-Kegiatan-' . $pegawai->user->name . '.pdf');
+        return $pdf->download('Catatan-Kegiatan-'.$pegawai->user->name.'.pdf');
     }
 }

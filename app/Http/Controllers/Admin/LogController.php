@@ -17,11 +17,11 @@ class LogController extends Controller
             $q = $request->q;
             $logsQuery->where(function ($query) use ($q) {
                 $query->where('aksi', 'like', "%{$q}%")
-                      ->orWhereHas('user', function ($userQuery) use ($q) {
-                          $userQuery->where('name', 'like', "%{$q}%")
-                                   ->orWhere('email', 'like', "%{$q}%")
-                                   ->orWhere('nip', 'like', "%{$q}%");
-                      });
+                    ->orWhereHas('user', function ($userQuery) use ($q) {
+                        $userQuery->where('name', 'like', "%{$q}%")
+                            ->orWhere('email', 'like', "%{$q}%")
+                            ->orWhere('nip', 'like', "%{$q}%");
+                    });
             });
         }
 

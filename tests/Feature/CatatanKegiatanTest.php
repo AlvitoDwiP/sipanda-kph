@@ -23,7 +23,7 @@ class CatatanKegiatanTest extends TestCase
         $user = $pegawai->user;
         $penugasan = Penugasan::factory()->create([
             'pegawai_id' => $pegawai->id,
-            'status' => 'sedang_dikerjakan'
+            'status' => 'sedang_dikerjakan',
         ]);
 
         $response = $this->actingAs($user)->post(route('pegawai.tugas.catatan.store', $penugasan->id), [
@@ -53,7 +53,7 @@ class CatatanKegiatanTest extends TestCase
 
         $response->assertRedirect();
         $response->assertSessionHas('success');
-        
+
         $this->assertDatabaseHas('catatan_kegiatan', [
             'id' => $catatan->id,
             'status_verifikasi' => 'disetujui',
@@ -74,7 +74,7 @@ class CatatanKegiatanTest extends TestCase
 
         $response->assertRedirect();
         $response->assertSessionHas('success');
-        
+
         $this->assertDatabaseHas('catatan_kegiatan', [
             'id' => $catatan->id,
             'status_verifikasi' => 'ditolak',

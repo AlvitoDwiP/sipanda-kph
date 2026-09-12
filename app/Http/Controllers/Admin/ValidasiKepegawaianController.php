@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\PengajuanDataKepegawaian;
 use App\Models\Pegawai;
+use App\Models\PengajuanDataKepegawaian;
 use Illuminate\Http\Request;
 
 class ValidasiKepegawaianController extends Controller
@@ -21,10 +21,10 @@ class ValidasiKepegawaianController extends Controller
     public function process(Request $request, $id)
     {
         $pengajuan = PengajuanDataKepegawaian::findOrFail($id);
-        
+
         $request->validate([
             'action' => 'required|in:approve,reject',
-            'catatan_admin' => 'nullable|string'
+            'catatan_admin' => 'nullable|string',
         ]);
 
         if ($request->action === 'approve') {
@@ -39,14 +39,14 @@ class ValidasiKepegawaianController extends Controller
 
             $pengajuan->update([
                 'status' => 'disetujui',
-                'catatan_admin' => $request->catatan_admin
+                'catatan_admin' => $request->catatan_admin,
             ]);
 
             return redirect()->route('admin.validasi-kepegawaian.index')->with('success', 'Pengajuan berhasil disetujui.');
         } else {
             $pengajuan->update([
                 'status' => 'ditolak',
-                'catatan_admin' => $request->catatan_admin
+                'catatan_admin' => $request->catatan_admin,
             ]);
 
             return redirect()->route('admin.validasi-kepegawaian.index')->with('success', 'Pengajuan berhasil ditolak.');

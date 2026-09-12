@@ -18,8 +18,8 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->string('role')->default('pegawai')->values(['admin', 'pegawai','kph']);
-            $table->string('status_akun')->default('nonaktif')->values(['aktif','nonaktif']);
+            $table->string('role')->default('pegawai')->values(['admin', 'pegawai', 'kph']);
+            $table->string('status_akun')->default('nonaktif')->values(['aktif', 'nonaktif']);
             $table->string('catatan_verifikasi')->nullable();
             $table->rememberToken();
             $table->timestamps();

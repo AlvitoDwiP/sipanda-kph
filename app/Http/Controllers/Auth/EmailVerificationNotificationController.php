@@ -22,6 +22,7 @@ class EmailVerificationNotificationController extends Controller
                 'pegawai' => 'pegawai.dashboard',
                 default => 'login',
             };
+
             return redirect()->intended(route($dashboardRoute, absolute: false));
         }
 

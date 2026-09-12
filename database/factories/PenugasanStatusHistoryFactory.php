@@ -23,7 +23,7 @@ class PenugasanStatusHistoryFactory extends Factory
     {
         $statusBefore = $this->faker->randomElement(['belum_dikerjakan', 'sedang_dikerjakan', 'menunggu_verifikasi', 'revisi']);
         $statusAfter = $this->faker->randomElement(['sedang_dikerjakan', 'menunggu_verifikasi', 'selesai', 'revisi', 'dibatalkan']);
-        
+
         $monthsToSub = $this->faker->randomElement([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
         $date = now()->subMonths($monthsToSub)->subDays(rand(1, 28));
 

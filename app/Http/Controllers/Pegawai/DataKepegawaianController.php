@@ -6,8 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Golongan;
 use App\Models\Jabatan;
 use App\Models\Pegawai;
-use App\Models\UnitKerja;
 use App\Models\PengajuanDataKepegawaian;
+use App\Models\UnitKerja;
 use Illuminate\Http\Request;
 
 class DataKepegawaianController extends Controller
@@ -20,14 +20,14 @@ class DataKepegawaianController extends Controller
             ->where('user_id', $userId)
             ->first();
 
-        if (!$pegawai) {
+        if (! $pegawai) {
             abort(404, 'Data pegawai tidak ditemukan untuk akun ini.');
         }
 
         // DATA DROPDOWN
         $unitkerjaList = UnitKerja::orderBy('nama_unitkerja')->get();
-        $golonganList  = Golongan::orderBy('nama_golongan')->get();
-        $jabatanList   = Jabatan::orderBy('nama_jabatan')->get();
+        $golonganList = Golongan::orderBy('nama_golongan')->get();
+        $jabatanList = Jabatan::orderBy('nama_jabatan')->get();
 
         $pengajuanAktif = PengajuanDataKepegawaian::where('pegawai_id', $pegawai->id)
             ->where('status', 'menunggu_verifikasi')

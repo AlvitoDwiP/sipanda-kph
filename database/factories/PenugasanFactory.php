@@ -99,9 +99,9 @@ class PenugasanFactory extends Factory
     {
         return $this->afterCreating(function (Penugasan $penugasan) {
             $imageSource = public_path('assets/images/avatar.png');
-            
+
             if ($penugasan->laporan) {
-                $this->ensurePdfExists($penugasan->laporan, 'Laporan: Tugas #' . $penugasan->tgl_lahir);
+                $this->ensurePdfExists($penugasan->laporan, 'Laporan: Tugas #'.$penugasan->tgl_lahir);
             }
             if ($penugasan->foto_progres) {
                 foreach ($penugasan->foto_progres as $path) {
@@ -128,13 +128,13 @@ class PenugasanFactory extends Factory
             return;
         }
 
-        $stream = "BT /F1 14 Tf 36 96 Td (" . str_replace(['\\', '(', ')'], ['\\\\', '\\(', '\\)'], $title) . ") Tj ET";
+        $stream = 'BT /F1 14 Tf 36 96 Td ('.str_replace(['\\', '(', ')'], ['\\\\', '\\(', '\\)'], $title).') Tj ET';
         $pdf = "%PDF-1.4\n";
         $objects = [
             "1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj\n",
             "2 0 obj << /Type /Pages /Kids [3 0 R] /Count 1 >> endobj\n",
             "3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 300 144] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >> endobj\n",
-            "4 0 obj << /Length " . strlen($stream) . " >> stream\n" . $stream . "\nendstream endobj\n",
+            '4 0 obj << /Length '.strlen($stream)." >> stream\n".$stream."\nendstream endobj\n",
             "5 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj\n",
         ];
 
@@ -152,8 +152,8 @@ class PenugasanFactory extends Factory
             $xref .= sprintf("%010d 00000 n \n", $offsets[$i]);
         }
 
-        $trailer = "trailer << /Size 6 /Root 1 0 R >>\nstartxref\n" . strlen($pdf) . "\n%%EOF";
-        Storage::disk('public')->put($path, $pdf . $xref . $trailer);
+        $trailer = "trailer << /Size 6 /Root 1 0 R >>\nstartxref\n".strlen($pdf)."\n%%EOF";
+        Storage::disk('public')->put($path, $pdf.$xref.$trailer);
     }
 
     private function ensureImageExists(string $path, string $source): void

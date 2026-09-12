@@ -23,14 +23,14 @@ class NotifAdminController extends Controller
         if ($search) {
             $userBaruQuery->where(function ($query) use ($search) {
                 $query->where('name', 'LIKE', "%{$search}%")
-                      ->orWhere('email', 'LIKE', "%{$search}%")
-                      ->orWhere('nip', 'LIKE', "%{$search}%");
+                    ->orWhere('email', 'LIKE', "%{$search}%")
+                    ->orWhere('nip', 'LIKE', "%{$search}%");
             });
 
             $perubahanDataDiriQuery->whereHas('pegawai.user', function ($query) use ($search) {
                 $query->where('name', 'LIKE', "%{$search}%")
-                      ->orWhere('email', 'LIKE', "%{$search}%")
-                      ->orWhere('nip', 'LIKE', "%{$search}%");
+                    ->orWhere('email', 'LIKE', "%{$search}%")
+                    ->orWhere('nip', 'LIKE', "%{$search}%");
             });
         }
 

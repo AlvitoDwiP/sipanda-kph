@@ -27,15 +27,15 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 text-xs sm:text-sm">
             <div class="flex flex-col gap-0.5">
                 <span class="text-[10px] sm:text-xs text-ui-text-secondary">Nama Pegawai</span>
-                <span class="font-bold text-ui-text-primary">{{ $catatan->pegawai->user->name ?? '-' }}</span>
+                <span class="font-bold text-ui-text-primary">{{ $catatan->pegawai?->user?->name ?? '-' }}</span>
             </div>
             <div class="flex flex-col gap-0.5">
                 <span class="text-[10px] sm:text-xs text-ui-text-secondary">Tugas Utama</span>
-                <span class="font-medium text-ui-text-primary">{{ $catatan->penugasan->tugas->judul ?? '-' }}</span>
+                <span class="font-medium text-ui-text-primary">{{ $catatan->penugasan?->tugas?->judul ?? '-' }}</span>
             </div>
             <div class="flex flex-col gap-0.5">
                 <span class="text-[10px] sm:text-xs text-ui-text-secondary">Batas Akhir Tugas</span>
-                <span class="font-medium text-ui-text-secondary">{{ optional($catatan->penugasan->tugas->deadline)->format('d-m-Y') ?? '-' }}</span>
+                <span class="font-medium text-ui-text-secondary">{{ $catatan->penugasan?->tugas?->deadline?->format('d-m-Y') ?? '-' }}</span>
             </div>
             <div class="flex flex-col gap-0.5">
                 <span class="text-[10px] sm:text-xs text-ui-text-secondary">Status Verifikasi</span>

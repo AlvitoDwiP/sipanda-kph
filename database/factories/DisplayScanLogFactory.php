@@ -25,7 +25,7 @@ class DisplayScanLogFactory extends Factory
         $scannedAt = now()->subMonths($monthsToSub)->subDays(rand(1, 28));
 
         $status = $this->faker->randomElement(['success', 'invalid_token', 'inactive_employee', 'empty_task']);
-        
+
         $message = match ($status) {
             'success' => 'Scan QR Code pegawai berhasil.',
             'invalid_token' => 'Token QR Code tidak valid atau kedaluwarsa.',

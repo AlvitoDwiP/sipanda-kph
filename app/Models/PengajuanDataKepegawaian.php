@@ -8,6 +8,7 @@ class PengajuanDataKepegawaian extends Model
 {
     //
     protected $table = 'pengajuan_data_kepegawaians';
+
     protected $guarded = ['id'];
 
     public function pegawai()

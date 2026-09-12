@@ -15,7 +15,7 @@ class PenugasanSeeder extends Seeder
     {
         $pegawais = Pegawai::all();
         $tugasList = Tugas::all();
-        
+
         $adminOrKph = User::whereIn('role', ['admin', 'kph'])->get();
 
         // Create 50 unique Penugasan
@@ -30,6 +30,7 @@ class PenugasanSeeder extends Seeder
 
             if ($exists) {
                 $i--;
+
                 continue;
             }
 

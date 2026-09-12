@@ -51,11 +51,11 @@ class ReportValidation extends Model
 
     public function periodLabel(): string
     {
-        if (!$this->period_start || !$this->period_end) {
+        if (! $this->period_start || ! $this->period_end) {
             return '-';
         }
 
-        return $this->period_start->format('d-m-Y') . ' s/d ' . $this->period_end->format('d-m-Y');
+        return $this->period_start->format('d-m-Y').' s/d '.$this->period_end->format('d-m-Y');
     }
 
     public function validationUrl(): string

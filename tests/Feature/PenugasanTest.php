@@ -45,7 +45,7 @@ class PenugasanTest extends TestCase
     public function test_kph_can_approve_penugasan()
     {
         $kph = User::factory()->create(['role' => 'kph']);
-        
+
         $tugas = Tugas::factory()->create();
         $penugasan = Penugasan::factory()->create([
             'tugas_id' => $tugas->id,
@@ -56,7 +56,7 @@ class PenugasanTest extends TestCase
 
         $response->assertRedirect();
         $response->assertSessionHas('success');
-        
+
         $this->assertDatabaseHas('penugasan', [
             'id' => $penugasan->id,
             'status' => 'selesai',

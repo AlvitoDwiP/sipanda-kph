@@ -13,7 +13,7 @@ class LogServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(LogService::class, function ($app) {
-            return new LogService();
+            return new LogService;
         });
     }
 

@@ -70,11 +70,11 @@ class DashboardMonitoringService
         ];
 
         $tugasMendesak = (clone $penugasanQuery)
-            ->whereHas('tugas', fn(Builder $q) => $q->where('prioritas', 'tinggi'))
+            ->whereHas('tugas', fn (Builder $q) => $q->where('prioritas', 'tinggi'))
             ->whereNotIn('status', ['selesai', 'dibatalkan'])
             ->orderByRaw("CASE status WHEN 'menunggu_verifikasi' THEN 1 WHEN 'revisi' THEN 2 WHEN 'sedang_dikerjakan' THEN 3 ELSE 4 END")
             ->get()
-            ->sortBy(fn($p) => optional($p->tugas->deadline)->timestamp ?? PHP_INT_MAX)
+            ->sortBy(fn ($p) => optional($p->tugas->deadline)->timestamp ?? PHP_INT_MAX)
             ->take(8)
             ->values();
 
@@ -85,7 +85,7 @@ class DashboardMonitoringService
             ->whereNotIn('status', ['selesai', 'dibatalkan'])
             ->orderBy('status')
             ->get()
-            ->sortBy(fn($p) => optional($p->tugas->deadline)->timestamp ?? PHP_INT_MAX)
+            ->sortBy(fn ($p) => optional($p->tugas->deadline)->timestamp ?? PHP_INT_MAX)
             ->take(8)
             ->values();
 
@@ -106,11 +106,12 @@ class DashboardMonitoringService
             ->groupBy('pegawai_id')
             ->map(function (Collection $items) {
                 $first = $items->first();
+
                 return [
                     'pegawai' => $first->pegawai,
                     'jumlah_tugas_hari_ini' => $items->count(),
                     'jumlah_belum_update' => $items->filter(function ($row) {
-                        return $row->status === 'belum_dikerjakan' || (int) $row->progres_persen === 0 || !$row->progres_updated_at;
+                        return $row->status === 'belum_dikerjakan' || (int) $row->progres_persen === 0 || ! $row->progres_updated_at;
                     })->count(),
                 ];
             })
@@ -145,7 +146,7 @@ class DashboardMonitoringService
             ->leftJoin('penugasan', 'penugasan.pegawai_id', '=', 'pegawai.id')
             ->leftJoin('tugas', function ($join) use ($tanggal, $dateColumn) {
                 $join->on('tugas.id', '=', 'penugasan.tugas_id')
-                    ->whereDate('tugas.' . $dateColumn, '=', $tanggal->toDateString());
+                    ->whereDate('tugas.'.$dateColumn, '=', $tanggal->toDateString());
             })
             ->whereNotNull('tugas.id')
             ->groupBy('ref_unitkerja.id', 'ref_unitkerja.nama_unitkerja');

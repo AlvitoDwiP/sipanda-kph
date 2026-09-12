@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Schema;
 
 class NotificationController extends Controller
@@ -13,7 +12,7 @@ class NotificationController extends Controller
         $user = $request->user();
         $filter = $request->query('filter', 'all');
 
-        if (!Schema::hasTable('notifications')) {
+        if (! Schema::hasTable('notifications')) {
             return view('pages.notifications.index', [
                 'notifications' => new \Illuminate\Pagination\LengthAwarePaginator([], 0, 20),
                 'filter' => $filter,

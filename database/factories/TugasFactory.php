@@ -33,8 +33,8 @@ class TugasFactory extends Factory
         return [
             'user_id' => User::where('role', 'admin')->orWhere('role', 'kph')->inRandomOrder()->first()?->id ?? User::factory()->state(['role' => 'admin']),
             'judul' => $this->faker->randomElement([
-                'Patroli Perlindungan Hutan RPH ' . $this->faker->firstName(),
-                'Inventarisasi Tegakan Pohon Blok ' . $this->faker->randomLetter(),
+                'Patroli Perlindungan Hutan RPH '.$this->faker->firstName(),
+                'Inventarisasi Tegakan Pohon Blok '.$this->faker->randomLetter(),
                 'Sosialisasi Pencegahan Karhutla Terpadu',
                 'Monitoring Batas Kawasan Hutan Lindung',
                 'Penyusunan Rencana Kerja Tahunan (RKT)',
@@ -43,7 +43,7 @@ class TugasFactory extends Factory
                 'Penyuluhan Kelompok Tani Hutan (KTH)',
                 'Pemeriksaan Laporan Produksi Kayu Sengon',
                 'Patroli Pengamanan Satwa Liar',
-            ]) . ' ' . $this->faker->year(),
+            ]).' '.$this->faker->year(),
             'deskripsi' => $this->faker->paragraph(2),
             'tanggal_tugas' => $tanggalTugas->format('Y-m-d'),
             'deadline' => $deadline->format('Y-m-d'),
@@ -58,7 +58,7 @@ class TugasFactory extends Factory
     public function configure(): static
     {
         return $this->afterCreating(function (Tugas $tugas) {
-            $this->ensurePdfExists($tugas->template, 'Template: ' . $tugas->judul);
+            $this->ensurePdfExists($tugas->template, 'Template: '.$tugas->judul);
         });
     }
 
@@ -68,13 +68,13 @@ class TugasFactory extends Factory
             return;
         }
 
-        $stream = "BT /F1 14 Tf 36 96 Td (" . str_replace(['\\', '(', ')'], ['\\\\', '\\(', '\\)'], $title) . ") Tj ET";
+        $stream = 'BT /F1 14 Tf 36 96 Td ('.str_replace(['\\', '(', ')'], ['\\\\', '\\(', '\\)'], $title).') Tj ET';
         $pdf = "%PDF-1.4\n";
         $objects = [
             "1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj\n",
             "2 0 obj << /Type /Pages /Kids [3 0 R] /Count 1 >> endobj\n",
             "3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 300 144] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >> endobj\n",
-            "4 0 obj << /Length " . strlen($stream) . " >> stream\n" . $stream . "\nendstream endobj\n",
+            '4 0 obj << /Length '.strlen($stream)." >> stream\n".$stream."\nendstream endobj\n",
             "5 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj\n",
         ];
 
@@ -92,7 +92,7 @@ class TugasFactory extends Factory
             $xref .= sprintf("%010d 00000 n \n", $offsets[$i]);
         }
 
-        $trailer = "trailer << /Size 6 /Root 1 0 R >>\nstartxref\n" . strlen($pdf) . "\n%%EOF";
-        Storage::disk('public')->put($path, $pdf . $xref . $trailer);
+        $trailer = "trailer << /Size 6 /Root 1 0 R >>\nstartxref\n".strlen($pdf)."\n%%EOF";
+        Storage::disk('public')->put($path, $pdf.$xref.$trailer);
     }
 }

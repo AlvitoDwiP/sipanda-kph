@@ -19,6 +19,7 @@ class UnitKerjaController extends Controller
         }
 
         $unitkerja = $unitkerjaQuery->get();
+
         return view('pages.admin.unitkerja.index', compact('unitkerja'));
     }
 

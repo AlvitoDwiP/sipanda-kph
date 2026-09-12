@@ -38,7 +38,7 @@ class ReportValidationService
     private function generateReportCode(): string
     {
         do {
-            $code = 'LAP-SIPANDA-' . now()->format('YmdHis') . '-' . Str::upper(Str::random(6));
+            $code = 'LAP-SIPANDA-'.now()->format('YmdHis').'-'.Str::upper(Str::random(6));
         } while (ReportValidation::query()->where('report_code', $code)->exists());
 
         return $code;
@@ -47,7 +47,7 @@ class ReportValidationService
     private function generateValidationToken(): string
     {
         do {
-            $token = 'RPT-' . Str::upper(Str::random(20));
+            $token = 'RPT-'.Str::upper(Str::random(20));
         } while (ReportValidation::query()->where('validation_token', $token)->exists());
 
         return $token;

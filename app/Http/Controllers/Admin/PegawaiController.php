@@ -25,30 +25,7 @@ class PegawaiController extends BasePegawaiQrController
     public function index(Request $request)
     {
         $pegawai = Pegawai::with(['user', 'unitkerja', 'golongan', 'jabatan'])
-            ->when($request->filled('q'), function ($query) use ($request) {
-                $q = $request->q;
-
-                $query->where(function ($sub) use ($q) {
-                    // Cari dari tabel users
-                    $sub->whereHas('user', function ($u) use ($q) {
-                        $u->where('name', 'like', "%{$q}%")
-                            ->orWhere('nip', 'like', "%{$q}%")
-                            ->orWhere('email', 'like', "%{$q}%");
-                    })
-                    // Unit Kerja
-                    ->orWhereHas('unitkerja', function ($u) use ($q) {
-                        $u->where('nama_unitkerja', 'like', "%{$q}%");
-                    })
-                    // Golongan
-                    ->orWhereHas('golongan', function ($g) use ($q) {
-                        $g->where('nama_golongan', 'like', "%{$q}%");
-                    })
-                    // Jabatan
-                    ->orWhereHas('jabatan', function ($j) use ($q) {
-                        $j->where('nama_jabatan', 'like', "%{$q}%");
-                    });
-                });
-            })
+            ->search($request->q)
             ->get();
 
         return view('pages.admin.pegawai.index', compact('pegawai'));
@@ -58,32 +35,32 @@ class PegawaiController extends BasePegawaiQrController
     {
         return view('pages.admin.pegawai.create', [
             'unitkerja' => UnitKerja::all(),
-            'golongan'  => Golongan::all(),
-            'jabatan'   => Jabatan::all(),
-            'users'     => User::orderBy('name')->get(),
+            'golongan' => Golongan::all(),
+            'jabatan' => Jabatan::all(),
+            'users' => User::orderBy('name')->get(),
         ]);
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'user_id'        => 'required|exists:users,id|unique:pegawai,user_id',
-            'unitkerja_id'   => 'required|exists:ref_unitkerja,id',
-            'golongan_id'    => 'required|exists:ref_golongan,id',
-            'jabatan_id'     => 'required|exists:ref_jabatan,id',
+            'user_id' => 'required|exists:users,id|unique:pegawai,user_id',
+            'unitkerja_id' => 'required|exists:ref_unitkerja,id',
+            'golongan_id' => 'required|exists:ref_golongan,id',
+            'jabatan_id' => 'required|exists:ref_jabatan,id',
             'status_pegawai' => 'required|in:aktif,nonaktif',
         ]);
 
         try {
-            $user   = User::findOrFail($request->user_id);
+            $user = User::findOrFail($request->user_id);
 
             $pegawai = Pegawai::create([
-                'user_id'        => $user->id,
-                'unitkerja_id'   => $request->unitkerja_id,
-                'golongan_id'    => $request->golongan_id,
-                'jabatan_id'     => $request->jabatan_id,
+                'user_id' => $user->id,
+                'unitkerja_id' => $request->unitkerja_id,
+                'golongan_id' => $request->golongan_id,
+                'jabatan_id' => $request->jabatan_id,
                 'status_pegawai' => $request->status_pegawai,
-                'data_diri_id'   => null,
+                'data_diri_id' => null,
             ]);
 
             if ($pegawai->isAktif()) {
@@ -96,42 +73,42 @@ class PegawaiController extends BasePegawaiQrController
         } catch (\Throwable $e) {
             return back()
                 ->withInput()
-                ->with('error', 'Gagal menyimpan data: ' . $e->getMessage());
+                ->with('error', 'Gagal menyimpan data: '.$e->getMessage());
         }
     }
 
     public function edit(Pegawai $pegawai)
     {
         return view('pages.admin.pegawai.edit', [
-            'pegawai'   => $pegawai,
+            'pegawai' => $pegawai,
             'unitkerja' => UnitKerja::all(),
-            'golongan'  => Golongan::all(),
-            'jabatan'   => Jabatan::all(),
-            'users'     => User::orderBy('name')->get(),
+            'golongan' => Golongan::all(),
+            'jabatan' => Jabatan::all(),
+            'users' => User::orderBy('name')->get(),
         ]);
     }
 
     public function update(Request $request, Pegawai $pegawai)
     {
         $request->validate([
-            'user_id'        => 'required|exists:users,id|unique:pegawai,user_id,' . $pegawai->id,
-            'unitkerja_id'   => 'required|exists:ref_unitkerja,id',
-            'golongan_id'    => 'required|exists:ref_golongan,id',
-            'jabatan_id'     => 'required|exists:ref_jabatan,id',
+            'user_id' => 'required|exists:users,id|unique:pegawai,user_id,'.$pegawai->id,
+            'unitkerja_id' => 'required|exists:ref_unitkerja,id',
+            'golongan_id' => 'required|exists:ref_golongan,id',
+            'jabatan_id' => 'required|exists:ref_jabatan,id',
             'status_pegawai' => 'required|in:aktif,nonaktif',
         ]);
 
         try {
             $isMutasi =
                 $pegawai->unitkerja_id != $request->unitkerja_id ||
-                $pegawai->golongan_id  != $request->golongan_id ||
-                $pegawai->jabatan_id   != $request->jabatan_id;
+                $pegawai->golongan_id != $request->golongan_id ||
+                $pegawai->jabatan_id != $request->jabatan_id;
 
             $pegawai->update([
-                'user_id'        => $request->user_id,
-                'unitkerja_id'   => $request->unitkerja_id,
-                'golongan_id'    => $request->golongan_id,
-                'jabatan_id'     => $request->jabatan_id,
+                'user_id' => $request->user_id,
+                'unitkerja_id' => $request->unitkerja_id,
+                'golongan_id' => $request->golongan_id,
+                'jabatan_id' => $request->jabatan_id,
                 'status_pegawai' => $request->status_pegawai,
             ]);
 
@@ -141,7 +118,7 @@ class PegawaiController extends BasePegawaiQrController
         } catch (\Throwable $e) {
             return back()
                 ->withInput()
-                ->with('error', 'Gagal memperbarui data: ' . $e->getMessage());
+                ->with('error', 'Gagal memperbarui data: '.$e->getMessage());
         }
     }
 

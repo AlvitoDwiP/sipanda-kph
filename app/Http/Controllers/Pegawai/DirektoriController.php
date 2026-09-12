@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Pegawai;
 
 use App\Http\Controllers\Controller;
 use App\Models\Pegawai;
-use App\Models\User;
 use Illuminate\Http\Request;
 
 class DirektoriController extends Controller
@@ -15,7 +14,7 @@ class DirektoriController extends Controller
             'user',
             'unitkerja',
             'golongan',
-            'jabatan'
+            'jabatan',
         ])
             ->whereHas('user', function ($query) {
                 $query->where('role', 'pegawai')
@@ -55,7 +54,7 @@ class DirektoriController extends Controller
             'unitkerja',
             'golongan',
             'jabatan',
-            'dataDiri'
+            'dataDiri',
         ])
             ->whereHas('user', function ($query) {
                 $query->where('role', 'pegawai')
@@ -63,7 +62,7 @@ class DirektoriController extends Controller
             })
             ->find($id);
 
-        if (!$pegawai) {
+        if (! $pegawai) {
             return response()->json(['error' => 'Pegawai not found'], 404);
         }
 

@@ -19,6 +19,7 @@ class JabatanController extends Controller
         }
 
         $jabatan = $jabatanQuery->get();
+
         return view('pages.admin.jabatan.index', compact('jabatan'));
     }
 

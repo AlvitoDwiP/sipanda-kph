@@ -24,7 +24,7 @@ abstract class BasePegawaiQrController extends Controller
 
     public function generateQr(Pegawai $pegawai)
     {
-        if (!$pegawai->isAktif()) {
+        if (! $pegawai->isAktif()) {
             return back()->with('error', 'QR tidak bisa dibuat karena pegawai tidak aktif.');
         }
 
@@ -39,11 +39,11 @@ abstract class BasePegawaiQrController extends Controller
 
     public function regenerateQr(Pegawai $pegawai)
     {
-        if (!$pegawai->isAktif()) {
+        if (! $pegawai->isAktif()) {
             return back()->with('error', 'QR tidak bisa dibuat karena pegawai tidak aktif.');
         }
 
-        if (!$pegawai->hasQrToken()) {
+        if (! $pegawai->hasQrToken()) {
             return back()->with('error', 'QR pegawai belum tersedia.');
         }
 
@@ -54,30 +54,30 @@ abstract class BasePegawaiQrController extends Controller
 
     public function cetakQr(Pegawai $pegawai)
     {
-        if (!$pegawai->hasQrToken()) {
+        if (! $pegawai->hasQrToken()) {
             return back()->with('error', 'QR pegawai belum tersedia.');
         }
 
         $pegawai->load(['user', 'unitkerja', 'jabatan']);
 
         return view('pages.admin.pegawai.qr_cetak', [
-            'pegawai'     => $pegawai,
+            'pegawai' => $pegawai,
             'routePrefix' => $this->routePrefix(),
         ]);
     }
 
     public function downloadQr(Pegawai $pegawai)
     {
-        if (!$pegawai->hasQrToken()) {
+        if (! $pegawai->hasQrToken()) {
             return back()->with('error', 'QR pegawai belum tersedia.');
         }
 
-        $svg      = QrCode::format('svg')->size(500)->margin(1)->generate($pegawai->qr_token);
-        $filename = 'qr-pegawai-' . $pegawai->id . '.svg';
+        $svg = QrCode::format('svg')->size(500)->margin(1)->generate($pegawai->qr_token);
+        $filename = 'qr-pegawai-'.$pegawai->id.'.svg';
 
         return response($svg, 200, [
-            'Content-Type'        => 'image/svg+xml',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Content-Type' => 'image/svg+xml',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
         ]);
     }
 }

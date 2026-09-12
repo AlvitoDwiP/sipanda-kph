@@ -20,7 +20,7 @@ class DataDiriFactory extends Factory
     public function definition(): array
     {
         $fakerId = \Faker\Factory::create('id_ID');
-        
+
         $cities = [
             'Surabaya',
             'Sidoarjo',
@@ -38,7 +38,7 @@ class DataDiriFactory extends Factory
         $gender = $this->faker->randomElement(['L', 'P']);
 
         return [
-            'no_hp' => '0812' . $this->faker->numerify('########'),
+            'no_hp' => '0812'.$this->faker->numerify('########'),
             'alamat' => sprintf(
                 'Jl. %s No. %d, RT %02d/RW %02d, %s',
                 $fakerId->streetName(),

@@ -10,7 +10,7 @@ class LaporanValidasiController extends Controller
     {
         $report = $validationService->findByToken($token);
 
-        if (!$report) {
+        if (! $report) {
             return response()->view('pages.laporan.validasi.show', [
                 'status' => 'invalid',
                 'message' => 'Dokumen tidak valid atau tidak ditemukan.',

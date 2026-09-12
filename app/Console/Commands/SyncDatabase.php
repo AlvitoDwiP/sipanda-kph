@@ -4,7 +4,6 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 
 class SyncDatabase extends Command
 {
@@ -40,12 +39,12 @@ class SyncDatabase extends Command
 
         // Get all tables from SQLite
         $tables = DB::connection('sqlite')->select("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'");
-        
+
         DB::connection('mysql')->statement('SET FOREIGN_KEY_CHECKS=0;');
 
         foreach ($tables as $tableInfo) {
             $table = $tableInfo->name;
-            
+
             if ($table === 'migrations') {
                 continue; // Skip migrations table to avoid confusion
             }
@@ -65,7 +64,7 @@ class SyncDatabase extends Command
                 $data = $chunk->map(function ($item) {
                     return (array) $item;
                 })->toArray();
-                
+
                 DB::connection('mysql')->table($table)->insert($data);
             }
         }

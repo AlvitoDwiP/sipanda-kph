@@ -27,7 +27,7 @@ abstract class BaseLaporanPdfController extends Controller
             'period_type' => $range['periode'],
             'period_start' => $range['start']->toDateString(),
             'period_end' => $range['end']->toDateString(),
-            'generated_by' => auth()->id(),
+            'generated_by' => \Auth::id(),
             'metadata' => ['filters' => $filters, 'periode_label' => $range['label']],
         ]);
 
@@ -44,7 +44,7 @@ abstract class BaseLaporanPdfController extends Controller
             'validationQrSvg' => $validationService->generateValidationQrSvg($validation),
         ])->setPaper('a4', 'portrait');
 
-        return $pdf->download('rekap-pekerjaan-' . now()->format('Ymd-His') . '.pdf');
+        return $pdf->download('rekap-pekerjaan-'.now()->format('Ymd-His').'.pdf');
     }
 
     public function exportTugas(Request $request, RekapPekerjaanService $rekapService, ReportValidationService $validationService)
@@ -58,7 +58,7 @@ abstract class BaseLaporanPdfController extends Controller
             'period_type' => $range['periode'],
             'period_start' => $range['start']->toDateString(),
             'period_end' => $range['end']->toDateString(),
-            'generated_by' => auth()->id(),
+            'generated_by' => \Auth::id(),
             'metadata' => ['filters' => $filters, 'periode_label' => $range['label']],
         ]);
 
@@ -71,7 +71,7 @@ abstract class BaseLaporanPdfController extends Controller
             'validationQrSvg' => $validationService->generateValidationQrSvg($validation),
         ])->setPaper('a4', 'portrait');
 
-        return $pdf->download('laporan-tugas-' . now()->format('Ymd-His') . '.pdf');
+        return $pdf->download('laporan-tugas-'.now()->format('Ymd-His').'.pdf');
     }
 
     public function exportCatatan(Request $request, RekapPekerjaanService $rekapService, ReportValidationService $validationService)
@@ -85,7 +85,7 @@ abstract class BaseLaporanPdfController extends Controller
             'period_type' => $range['periode'],
             'period_start' => $range['start']->toDateString(),
             'period_end' => $range['end']->toDateString(),
-            'generated_by' => auth()->id(),
+            'generated_by' => \Auth::id(),
             'metadata' => ['filters' => $filters, 'periode_label' => $range['label']],
         ]);
 
@@ -98,7 +98,7 @@ abstract class BaseLaporanPdfController extends Controller
             'validationQrSvg' => $validationService->generateValidationQrSvg($validation),
         ])->setPaper('a4', 'portrait');
 
-        return $pdf->download('laporan-catatan-' . now()->format('Ymd-His') . '.pdf');
+        return $pdf->download('laporan-catatan-'.now()->format('Ymd-His').'.pdf');
     }
 
     private function validatedFilters(Request $request, RekapPekerjaanService $rekapService): array

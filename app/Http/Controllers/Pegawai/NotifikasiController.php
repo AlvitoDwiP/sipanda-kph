@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Pegawai;
 use App\Http\Controllers\Controller;
 use App\Models\CatatanKegiatan;
 use App\Models\Pegawai;
-use App\Models\Penugasan;
 use App\Models\Tugas;
 use Illuminate\Http\Request;
 
@@ -14,14 +13,14 @@ class NotifikasiController extends Controller
     public function index(Request $request)
     {
         // Pegawai login
-        $pegawai = Pegawai::where('user_id', auth()->id())->firstOrFail();
+        $pegawai = Pegawai::where('user_id', \Auth::id())->firstOrFail();
 
         $search = $request->input('q');
 
         $tugasQuery = Tugas::with([
             'penugasan' => function ($q) use ($pegawai) {
                 $q->where('pegawai_id', $pegawai->id);
-            }
+            },
         ])
             ->whereHas('penugasan', function ($q) use ($pegawai) {
                 $q->where('pegawai_id', $pegawai->id);
@@ -36,12 +35,12 @@ class NotifikasiController extends Controller
         if ($search) {
             $tugasQuery->where(function ($query) use ($search) {
                 $query->where('judul', 'LIKE', "%{$search}%")
-                      ->orWhere('deskripsi', 'LIKE', "%{$search}%");
+                    ->orWhere('deskripsi', 'LIKE', "%{$search}%");
             });
 
             $catatanKegiatanQuery->where(function ($query) use ($search) {
                 $query->where('judul', 'LIKE', "%{$search}%")
-                      ->orWhere('deskripsi', 'LIKE', "%{$search}%");
+                    ->orWhere('deskripsi', 'LIKE', "%{$search}%");
             });
         }
 

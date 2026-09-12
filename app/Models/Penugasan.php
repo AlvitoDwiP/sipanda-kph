@@ -54,12 +54,12 @@ class Penugasan extends Model
 
     public function getIsTerlambatAttribute()
     {
-        if (!$this->tugas || !$this->tugas->deadline) {
+        if (! $this->tugas || ! $this->tugas->deadline) {
             return false;
         }
 
         return now()->toDateString() > $this->tugas->deadline->toDateString()
-            && !in_array($this->status, ['selesai', 'dibatalkan']);
+            && ! in_array($this->status, ['selesai', 'dibatalkan']);
     }
 
     public function hasCatatanKegiatan(): bool

@@ -77,7 +77,7 @@ class Pegawai extends Model
 
     public function hasQrToken(): bool
     {
-        return !empty($this->qr_token);
+        return ! empty($this->qr_token);
     }
 
     public function hasValidQrToken(): bool
@@ -93,7 +93,7 @@ class Pegawai extends Model
             for ($i = 0; $i < 16; $i++) {
                 $randomPart .= $characters[random_int(0, strlen($characters) - 1)];
             }
-            $token = 'PGW-' . $randomPart;
+            $token = 'PGW-'.$randomPart;
         } while (self::where('qr_token', $token)->exists());
 
         return $token;
@@ -123,5 +123,27 @@ class Pegawai extends Model
             'qr_regenerated_at' => now(),
             'qr_generated_at' => $this->qr_generated_at ?? now(),
         ]);
+    }
+
+    public function scopeSearch($query, $keyword)
+    {
+        return $query->when($keyword, function ($query, $q) {
+            $query->where(function ($sub) use ($q) {
+                $sub->whereHas('user', function ($u) use ($q) {
+                    $u->where('name', 'like', "%{$q}%")
+                      ->orWhere('nip', 'like', "%{$q}%")
+                      ->orWhere('email', 'like', "%{$q}%");
+                })
+                ->orWhereHas('unitkerja', function ($u) use ($q) {
+                    $u->where('nama_unitkerja', 'like', "%{$q}%");
+                })
+                ->orWhereHas('golongan', function ($g) use ($q) {
+                    $g->where('nama_golongan', 'like', "%{$q}%");
+                })
+                ->orWhereHas('jabatan', function ($j) use ($q) {
+                    $j->where('nama_jabatan', 'like', "%{$q}%");
+                });
+            });
+        });
     }
 }

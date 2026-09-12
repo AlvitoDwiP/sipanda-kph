@@ -14,5 +14,4 @@ class PenugasanController extends BasePenugasanController
     {
         return 'kph';
     }
-
 }

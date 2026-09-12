@@ -29,10 +29,10 @@ class CheckDeadlineNotifications extends Command
                     $task->pegawai->user,
                     'tugas_deadline',
                     'Deadline tugas mendekat',
-                    'Tugas "' . ($task->tugas->judul ?? '-') . '" akan jatuh tempo besok.',
+                    'Tugas "'.($task->tugas->judul ?? '-').'" akan jatuh tempo besok.',
                     route('pegawai.tugas.show', $task->tugas_id),
                     ['penugasan_id' => $task->id, 'tugas_id' => $task->tugas_id],
-                    'deadline_soon:' . $task->id . ':' . $tomorrow
+                    'deadline_soon:'.$task->id.':'.$tomorrow
                 );
             }
         }
@@ -48,10 +48,10 @@ class CheckDeadlineNotifications extends Command
                     $task->pegawai->user,
                     'tugas_terlambat',
                     'Tugas terlambat',
-                    'Tugas "' . ($task->tugas->judul ?? '-') . '" sudah melewati deadline.',
+                    'Tugas "'.($task->tugas->judul ?? '-').'" sudah melewati deadline.',
                     route('pegawai.tugas.show', $task->tugas_id),
                     ['penugasan_id' => $task->id, 'tugas_id' => $task->tugas_id],
-                    'deadline_late:' . $task->id . ':' . $today
+                    'deadline_late:'.$task->id.':'.$today
                 );
             }
         }
@@ -75,10 +75,10 @@ class CheckDeadlineNotifications extends Command
                     $user,
                     'progres_belum_update',
                     'Ada pegawai belum update progres',
-                    'Ditemukan ' . $countNeedUpdate . ' penugasan hari ini yang belum diperbarui progresnya.',
-                    route($prefix . '.dashboard'),
+                    'Ditemukan '.$countNeedUpdate.' penugasan hari ini yang belum diperbarui progresnya.',
+                    route($prefix.'.dashboard'),
                     ['jumlah' => $countNeedUpdate],
-                    'progress_missing:' . $user->id . ':' . $today
+                    'progress_missing:'.$user->id.':'.$today
                 );
             }
         }

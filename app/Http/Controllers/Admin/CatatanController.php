@@ -34,6 +34,6 @@ class CatatanController extends BaseCatatanKegiatanController
         $pdf = Pdf::loadView('pdf.admin.catatan_kegiatan', compact('catatan'))
             ->setPaper('A4', 'portrait');
 
-        return $pdf->download('Catatan-Kegiatan-' . $catatan->pegawai->user->name . '.pdf');
+        return $pdf->download('Catatan-Kegiatan-'.$catatan->pegawai->user->name.'.pdf');
     }
 }

@@ -19,6 +19,7 @@ class GolonganController extends Controller
         }
 
         $golongan = $golonganQuery->get();
+
         return view('pages.admin.golongan.index', compact('golongan'));
     }
 

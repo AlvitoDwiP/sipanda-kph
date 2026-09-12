@@ -29,7 +29,7 @@ class RekapPekerjaanService
                 'periode' => $periode,
                 'start' => $monthBase->copy()->startOfMonth(),
                 'end' => $monthBase->copy()->endOfMonth(),
-                'label' => 'Bulan ' . $monthBase->translatedFormat('F Y'),
+                'label' => 'Bulan '.$monthBase->translatedFormat('F Y'),
                 'tanggal' => $monthBase->toDateString(),
                 'bulan' => $monthBase->format('Y-m'),
             ];
@@ -47,7 +47,7 @@ class RekapPekerjaanService
                 'periode' => $periode,
                 'start' => $start,
                 'end' => $end,
-                'label' => 'Minggu ' . $start->format('d-m-Y') . ' s/d ' . $end->format('d-m-Y'),
+                'label' => 'Minggu '.$start->format('d-m-Y').' s/d '.$end->format('d-m-Y'),
                 'tanggal' => $dateBase->toDateString(),
                 'bulan' => $dateBase->format('Y-m'),
             ];
@@ -57,7 +57,7 @@ class RekapPekerjaanService
             'periode' => 'harian',
             'start' => $dateBase->copy()->startOfDay(),
             'end' => $dateBase->copy()->endOfDay(),
-            'label' => 'Harian - ' . $dateBase->format('d-m-Y'),
+            'label' => 'Harian - '.$dateBase->format('d-m-Y'),
             'tanggal' => $dateBase->toDateString(),
             'bulan' => $dateBase->format('Y-m'),
         ];

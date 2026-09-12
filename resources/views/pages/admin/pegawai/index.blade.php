@@ -70,7 +70,7 @@
                             Edit
                         </x-ui.button>
 
-                        <x-ui.button variant="ghost" size="xs" class="text-ui-danger hover:bg-ui-danger-soft active:bg-ui-danger-soft" onclick="openDeleteModal({{ $item->id }}, '{{ $item->user->name ?? 'Pegawai ini' }}')">
+                        <x-ui.button variant="ghost" size="xs" class="text-ui-danger hover:bg-ui-danger-soft active:bg-ui-danger-soft" @click="$dispatch('set-delete-pegawai', { id: {{ $item->id }}, nama: '{{ $item->user->name ?? 'Pegawai ini' }}' }); $dispatch('open-modal', 'delete-pegawai')">
                             Hapus
                         </x-ui.button>
 
@@ -107,8 +107,9 @@
 </x-ui.card>
 
 {{-- MODAL DELETE --}}
-<x-ui.modal name="delete-pegawai" title="Konfirmasi Hapus" maxWidth="sm">
-    <form method="POST" id="formDelete">
+<div x-data="{ deleteId: '', deleteNama: '' }" @set-delete-pegawai.window="deleteId = $event.detail.id; deleteNama = $event.detail.nama;">
+    <x-ui.modal name="delete-pegawai" title="Konfirmasi Hapus" maxWidth="sm">
+        <form method="POST" :action="`/admin/pegawai/${deleteId}`" id="deletePegawaiForm">
         @csrf
         @method('DELETE')
         
@@ -119,21 +120,21 @@
             <div class="min-w-0">
                 <h4 class="text-xs sm:text-sm font-bold text-ui-text-primary leading-tight">Yakin ingin menghapus pegawai?</h4>
                 <p class="text-[11px] sm:text-xs text-ui-text-secondary mt-1 leading-normal">
-                    Pegawai <span id="deleteNama" class="font-semibold text-ui-text-primary"></span> akan dihapus permanen beserta data riwayat dan penugasannya.
+                    Pegawai <span x-text="deleteNama" class="font-semibold text-ui-text-primary"></span> akan dihapus permanen beserta data riwayat dan penugasannya.
                 </p>
             </div>
         </div>
         
         <x-slot name="footer">
-            <x-ui.button variant="ghost" size="sm" type="button" onclick="window.dispatchEvent(new CustomEvent('close-modal', { detail: 'delete-pegawai' }))">
+            <x-ui.button variant="ghost" size="sm" type="button" @click="$dispatch('close-modal', 'delete-pegawai')">
                 Batal
             </x-ui.button>
-            <x-ui.button type="submit" variant="danger" size="sm">
+            <x-ui.button type="submit" variant="danger" size="sm" form="deletePegawaiForm">
                 Ya, Hapus
             </x-ui.button>
         </x-slot>
-    </form>
-</x-ui.modal>
+    </x-ui.modal>
+</div>
 
 {{-- MODAL DETAIL --}}
 <x-ui.modal name="detail-pegawai" title="Detail Pegawai" maxWidth="4xl">
@@ -262,12 +263,6 @@
 
 @push('scripts')
 <script>
-    function openDeleteModal(id, nama) {
-        document.getElementById('deleteNama').innerText = nama;
-        document.getElementById('formDelete').action = `/admin/pegawai/${id}`;
-        window.dispatchEvent(new CustomEvent('open-modal', { detail: 'delete-pegawai' }));
-    }
-
     document.addEventListener('DOMContentLoaded', function() {
         const baseUrl = "{{ url('/admin/pegawai') }}";
         const storageUrl = "{{ asset('storage') }}";

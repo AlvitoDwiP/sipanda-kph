@@ -42,17 +42,17 @@ class DataDiriController extends Controller
             }
 
             $dataDiri = DataDiri::create([
-                'no_hp'           => $request->no_hp,
-                'alamat'          => $request->alamat,
-                'tempat_lahir'    => $request->tempat_lahir,
-                'tgl_lahir'       => $request->tgl_lahir,
-                'jenis_kelamin'   => $request->jenis_kelamin,
-                'foto'            => $fotoPath,
+                'no_hp' => $request->no_hp,
+                'alamat' => $request->alamat,
+                'tempat_lahir' => $request->tempat_lahir,
+                'tgl_lahir' => $request->tgl_lahir,
+                'jenis_kelamin' => $request->jenis_kelamin,
+                'foto' => $fotoPath,
                 'kartu_identitas' => $kartuIdentitasPath,
             ]);
 
             $pegawai->update([
-                'data_diri_id' => $dataDiri->id
+                'data_diri_id' => $dataDiri->id,
             ]);
         });
 
@@ -69,7 +69,7 @@ class DataDiriController extends Controller
 
             $pegawai = $this->pegawaiLogin();
 
-            if (!$pegawai->dataDiri) {
+            if (! $pegawai->dataDiri) {
                 abort(404, 'Data Diri tidak ditemukan.');
             }
 
@@ -98,10 +98,10 @@ class DataDiriController extends Controller
             }
 
             $dataDiri->update([
-                'no_hp'         => $request->no_hp,
-                'alamat'        => $request->alamat,
-                'tempat_lahir'  => $request->tempat_lahir,
-                'tgl_lahir'     => $request->tgl_lahir,
+                'no_hp' => $request->no_hp,
+                'alamat' => $request->alamat,
+                'tempat_lahir' => $request->tempat_lahir,
+                'tgl_lahir' => $request->tgl_lahir,
                 'jenis_kelamin' => $request->jenis_kelamin,
             ]);
         });
@@ -114,19 +114,19 @@ class DataDiriController extends Controller
     private function pegawaiLogin(): Pegawai
     {
         return Pegawai::with('dataDiri')
-            ->where('user_id', auth()->id())
+            ->where('user_id', \Auth::id())
             ->firstOrFail();
     }
 
     private function validateRequest(Request $request): void
     {
         $request->validate([
-            'no_hp'         => ['required', 'string', 'max:15', 'regex:/^\d+$/'],
-            'alamat'        => ['required', 'string', 'max:500'],
-            'tempat_lahir'  => ['required', 'string', 'max:100'],
-            'tgl_lahir'     => ['required', 'date'],
+            'no_hp' => ['required', 'string', 'max:15', 'regex:/^\d+$/'],
+            'alamat' => ['required', 'string', 'max:500'],
+            'tempat_lahir' => ['required', 'string', 'max:100'],
+            'tgl_lahir' => ['required', 'date'],
             'jenis_kelamin' => ['required', 'in:L,P'],
-            'foto'          => ['nullable', 'image', 'max:2048'],
+            'foto' => ['nullable', 'image', 'max:2048'],
             'kartu_identitas' => ['required', 'image', 'max:2048'],
         ], [
             'no_hp.regex' => 'No HP harus berupa angka saja.',

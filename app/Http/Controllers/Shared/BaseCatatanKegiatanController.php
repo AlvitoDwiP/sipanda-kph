@@ -37,7 +37,7 @@ abstract class BaseCatatanKegiatanController extends Controller
 
         $catatan = $catatanQuery->orderByDesc('created_at')->get();
 
-        return view("pages.shared.catatan_kegiatan.index", [
+        return view('pages.shared.catatan_kegiatan.index', [
             'catatan' => $catatan,
             'routePrefix' => $this->routePrefix(),
         ]);
@@ -45,7 +45,7 @@ abstract class BaseCatatanKegiatanController extends Controller
 
     public function show(CatatanKegiatan $catatan)
     {
-        return view("pages.shared.catatan_kegiatan.show", [
+        return view('pages.shared.catatan_kegiatan.show', [
             'catatan' => $catatan->load(['pegawai.user', 'penugasan.tugas', 'verifier']),
             'routePrefix' => $this->routePrefix(),
         ]);
@@ -58,17 +58,17 @@ abstract class BaseCatatanKegiatanController extends Controller
         }
 
         $catatan->update([
-            'status_verifikasi'  => 'disetujui',
-            'status'             => 'setuju',
-            'diverifikasi_oleh'  => auth()->id(),
-            'diverifikasi_at'    => now(),
+            'status_verifikasi' => 'disetujui',
+            'status' => 'setuju',
+            'diverifikasi_oleh' => \Auth::id(),
+            'diverifikasi_at' => now(),
             'catatan_verifikasi' => null,
-            'catatan_status'     => null,
+            'catatan_status' => null,
         ]);
 
         if ($catatan->penugasan) {
             $catatan->penugasan->update([
-                'status'     => 'selesai',
+                'status' => 'selesai',
                 'selesai_at' => now(),
             ]);
         }
@@ -101,17 +101,17 @@ abstract class BaseCatatanKegiatanController extends Controller
         ]);
 
         $catatan->update([
-            'status_verifikasi'  => 'revisi',
-            'status'             => 'tolak',
+            'status_verifikasi' => 'revisi',
+            'status' => 'tolak',
             'catatan_verifikasi' => $request->catatan_verifikasi,
-            'catatan_status'     => $request->catatan_verifikasi,
-            'diverifikasi_oleh'  => auth()->id(),
-            'diverifikasi_at'    => now(),
+            'catatan_status' => $request->catatan_verifikasi,
+            'diverifikasi_oleh' => \Auth::id(),
+            'diverifikasi_at' => now(),
         ]);
 
         if ($catatan->penugasan) {
             $catatan->penugasan->update([
-                'status'         => 'revisi',
+                'status' => 'revisi',
                 'catatan_revisi' => $request->catatan_verifikasi,
             ]);
         }
@@ -142,17 +142,17 @@ abstract class BaseCatatanKegiatanController extends Controller
         ]);
 
         $catatan->update([
-            'status_verifikasi'  => 'ditolak',
-            'status'             => 'tolak',
+            'status_verifikasi' => 'ditolak',
+            'status' => 'tolak',
             'catatan_verifikasi' => $request->catatan_verifikasi,
-            'catatan_status'     => $request->catatan_verifikasi,
-            'diverifikasi_oleh'  => auth()->id(),
-            'diverifikasi_at'    => now(),
+            'catatan_status' => $request->catatan_verifikasi,
+            'diverifikasi_oleh' => \Auth::id(),
+            'diverifikasi_at' => now(),
         ]);
 
         if ($catatan->penugasan) {
             $catatan->penugasan->update([
-                'status'         => 'revisi',
+                'status' => 'revisi',
                 'catatan_revisi' => $request->catatan_verifikasi,
             ]);
         }

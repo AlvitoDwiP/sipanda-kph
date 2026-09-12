@@ -276,17 +276,6 @@
                     </div>
                 </div>
 
-                <!-- Menu Links -->
-                <div class="py-1">
-                    <a 
-                        href="{{ route('profile.edit') }}" 
-                        class="flex items-center gap-2.5 px-4 py-2 hover:bg-ui-primary-soft hover:text-ui-primary transition-colors text-ui-text-primary font-medium"
-                    >
-                        <i data-lucide="settings" class="w-4 h-4 text-ui-text-secondary"></i>
-                        <span>Pengaturan Akun</span>
-                    </a>
-                </div>
-
                 <!-- Logout Trigger -->
                 <div class="py-1">
                     <button 

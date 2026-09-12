@@ -14,7 +14,7 @@ class DisplayJobdeskService
     {
         $token = $this->normalizeToken($token);
 
-        if (!$this->isValidTokenFormat($token)) {
+        if (! $this->isValidTokenFormat($token)) {
             return [
                 'status' => 'invalid_format',
                 'message' => 'QR tidak terbaca dengan benar. Silakan scan ulang.',
@@ -27,7 +27,7 @@ class DisplayJobdeskService
             ->where('qr_token', $token)
             ->first();
 
-        if (!$pegawai) {
+        if (! $pegawai) {
             return [
                 'status' => 'invalid_token',
                 'message' => 'QR tidak valid.',
@@ -36,7 +36,7 @@ class DisplayJobdeskService
             ];
         }
 
-        if (!$pegawai->isAktif()) {
+        if (! $pegawai->isAktif()) {
             return [
                 'status' => 'inactive_employee',
                 'message' => 'Pegawai tidak aktif. Silakan hubungi admin/KPH.',
@@ -54,13 +54,13 @@ class DisplayJobdeskService
             })
             ->get()
             ->sort(function ($a, $b) {
-                $prioWeight = fn($p) => match ($p) {
+                $prioWeight = fn ($p) => match ($p) {
                     'tinggi' => 1,
                     'sedang' => 2,
                     default => 3,
                 };
 
-                $statusWeight = fn($s) => match ($s) {
+                $statusWeight = fn ($s) => match ($s) {
                     'menunggu_verifikasi' => 1,
                     'revisi' => 2,
                     'sedang_dikerjakan' => 3,
@@ -99,15 +99,15 @@ class DisplayJobdeskService
         $summary = [
             'total_tugas' => $rows->count(),
             'selesai' => $rows->where('status', 'selesai')->count(),
-            'belum_selesai' => $rows->filter(fn($r) => !in_array($r->status, ['selesai', 'dibatalkan']))->count(),
-            'terlambat' => $rows->filter(fn($r) => $r->is_terlambat)->count(),
+            'belum_selesai' => $rows->filter(fn ($r) => ! in_array($r->status, ['selesai', 'dibatalkan']))->count(),
+            'terlambat' => $rows->filter(fn ($r) => $r->is_terlambat)->count(),
         ];
 
         $pegawaiPayload = [
             'nama' => $pegawai->user->name ?? '-',
             'jabatan' => $pegawai->jabatan->nama_jabatan ?? '-',
             'unit_kerja' => $pegawai->unitkerja->nama_unitkerja ?? '-',
-            'foto_url' => $pegawai->dataDiri?->foto ? asset('storage/' . $pegawai->dataDiri->foto) : null,
+            'foto_url' => $pegawai->dataDiri?->foto ? asset('storage/'.$pegawai->dataDiri->foto) : null,
         ];
 
         if (empty($tasks)) {

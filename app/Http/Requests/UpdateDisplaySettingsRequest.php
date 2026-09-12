@@ -15,7 +15,7 @@ class UpdateDisplaySettingsRequest extends FormRequest
     {
         return [
             'display_duration_seconds' => 'required|integer|min:5|max:60',
-            'show_employee_photo'      => 'nullable|boolean',
+            'show_employee_photo' => 'nullable|boolean',
         ];
     }
 }

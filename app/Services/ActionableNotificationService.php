@@ -31,7 +31,7 @@ class ActionableNotificationService
             ->get();
 
         foreach ($users as $user) {
-            $this->notifyUser($user, $category, $title, $message, $actionUrl, $extra, $uniqueKey ? $uniqueKey . ':user:' . $user->id : null);
+            $this->notifyUser($user, $category, $title, $message, $actionUrl, $extra, $uniqueKey ? $uniqueKey.':user:'.$user->id : null);
         }
     }
 
@@ -39,7 +39,7 @@ class ActionableNotificationService
     {
         $penugasan->loadMissing('tugas', 'pegawai.user');
         $user = $penugasan->pegawai?->user;
-        if (!$user) {
+        if (! $user) {
             return;
         }
 
@@ -47,14 +47,14 @@ class ActionableNotificationService
             $user,
             'tugas_baru',
             'Tugas baru ditugaskan',
-            'Anda menerima tugas baru: ' . ($penugasan->tugas->judul ?? '-'),
+            'Anda menerima tugas baru: '.($penugasan->tugas->judul ?? '-'),
             route('pegawai.tugas.show', $penugasan->tugas_id),
             [
                 'penugasan_id' => $penugasan->id,
                 'tugas_id' => $penugasan->tugas_id,
                 'route_prefix' => $routePrefix,
             ],
-            'task_assigned:' . $penugasan->id
+            'task_assigned:'.$penugasan->id
         );
     }
 
