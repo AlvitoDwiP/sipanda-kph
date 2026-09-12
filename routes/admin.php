@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\PenugasanController;
 use App\Http\Controllers\Admin\RekapPekerjaanController;
 use App\Http\Controllers\Admin\RegisterController;
 use App\Http\Controllers\Admin\UnitKerjaController;
+use App\Http\Controllers\Admin\ValidasiKepegawaianController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'role:super_admin,admin', 'active'])->prefix('admin')->name('admin.')->group(function () {
@@ -60,4 +61,7 @@ Route::middleware(['auth', 'role:super_admin,admin', 'active'])->prefix('admin')
     Route::get('/logs', [LogController::class, 'index'])->name('logs.index');
 
     Route::get('/notifikasi', [NotifAdminController::class, 'index'])->name('notifikasi.index');
+
+    Route::get('/validasi-kepegawaian', [ValidasiKepegawaianController::class, 'index'])->name('validasi-kepegawaian.index');
+    Route::post('/validasi-kepegawaian/{id}/process', [ValidasiKepegawaianController::class, 'process'])->name('validasi-kepegawaian.process');
 });

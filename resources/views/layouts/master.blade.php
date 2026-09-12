@@ -4,10 +4,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="@yield('meta_description', 'Sistem Informasi Kepegawaian KPH Perhutani (SIPANDA-KPH)')">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:title" content="SIPANDA-KPH | @yield('title', 'Dashboard')">
+    <meta property="og:description" content="@yield('meta_description', 'Sistem Informasi Kepegawaian KPH Perhutani (SIPANDA-KPH)')">
+    <meta property="og:image" content="{{ asset('assets/images/avatar.png') }}">
     <style>html{visibility:hidden}</style>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{{ asset('assets/images/avatar.png') }}">
+    
     <title>@yield('title', 'Dashboard | Web Kepegawaian')</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -97,13 +109,13 @@
         ></div>
 
         <!-- MAIN CONTENT AREA WRAPPER -->
-        <div id="app-main" class="flex flex-col flex-1 w-full overflow-hidden min-w-0">
+        <div id="app-main" class="flex flex-col flex-1 w-full overflow-x-hidden overflow-y-auto min-w-0 custom-scrollbar">
 
             {{-- NAVBAR TOPBAR --}}
             @include('layouts.partials.header')
             
             <!-- MAIN CONTENT AREA -->
-            <main id="app-content" class="flex-1 overflow-x-hidden overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-6 focus:outline-none custom-scrollbar">
+            <main id="app-content" class="flex-1 p-4 sm:p-6 lg:p-8 space-y-6 focus:outline-none">
                 @yield('content')
                 @stack('scripts')
             </main>

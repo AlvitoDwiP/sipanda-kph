@@ -4,6 +4,7 @@
     // Dynamic sidebar badges
     $waitingUsersCount = 0;
     $pendingTasksCount = 0;
+    $pendingKepegawaianCount = 0;
     
     try {
         if (auth()->check()) {
@@ -12,6 +13,8 @@
                 $waitingUsersCount = \App\Models\User::where('status_akun', 'waiting')->count();
                 // Tasks waiting verification
                 $pendingTasksCount = \App\Models\Penugasan::where('status', 'menunggu_verifikasi')->count();
+                // Pengajuan Kepegawaian waiting verification
+                $pendingKepegawaianCount = \App\Models\PengajuanDataKepegawaian::where('status', 'menunggu_verifikasi')->count();
             } elseif ($role === 'kph') {
                 // KPH tasks waiting verification
                 $pendingTasksCount = \App\Models\Penugasan::where('status', 'menunggu_verifikasi')
@@ -42,8 +45,8 @@
     <!-- Brand Header -->
     <div class="h-16 px-4 flex items-center justify-between border-b border-white/10 shrink-0">
         <div class="flex items-center gap-3 min-w-0">
-            <div class="w-8 h-8 rounded-ui-md bg-white/15 text-white flex items-center justify-center shrink-0 border border-white/20 font-bold text-sm">
-                S
+            <div class="w-8 h-8 rounded-ui-md bg-white/15 text-white flex items-center justify-center shrink-0 border border-white/20 overflow-hidden">
+                <img src="{{ asset('assets/images/avatar.png') }}" alt="Logo Perhutani" class="w-full h-full object-contain p-1">
             </div>
             <div class="min-w-0 flex flex-col leading-none" x-show="!sidebarCollapsed" x-transition:enter="transition-all duration-200" style="display: block;">
                 <span class="text-xs font-bold tracking-wider text-white">SIPANDA-KPH</span>
@@ -110,15 +113,53 @@
                         @endif
                     </a>
 
-                    <!-- Data Kepegawaian -->
-                    <a href="{{ route('admin.pegawai.index') }}"
-                       class="flex items-center justify-between px-3 py-2.5 rounded-ui-md text-xs font-semibold tracking-wide transition-all group duration-150
-                              {{ request()->routeIs('admin.pegawai.*') ? 'bg-white/15 text-white shadow-sm' : 'text-white/70 hover:bg-white/5 hover:text-white' }}">
-                        <div class="flex items-center gap-3 min-w-0">
-                            <i data-lucide="users" class="w-4 h-4 shrink-0 transition-transform group-hover:scale-105"></i>
-                            <span x-show="!sidebarCollapsed" class="truncate">Kepegawaian</span>
+                    <!-- Kepegawaian Group -->
+                    <div class="space-y-1" x-data="{ open: {{ request()->routeIs('admin.pegawai.*', 'admin.validasi-kepegawaian.*') ? 'true' : 'false' }} }">
+                        <button 
+                            type="button" 
+                            @click="if(sidebarCollapsed) { sidebarCollapsed = false; open = true; } else { open = !open; }"
+                            class="w-full flex items-center justify-between px-3 py-2.5 rounded-ui-md text-xs font-semibold tracking-wide transition-all group duration-150 {{ request()->routeIs('admin.pegawai.*', 'admin.validasi-kepegawaian.*') ? 'bg-white/5 text-white' : 'text-white/70 hover:bg-white/5 hover:text-white' }} focus:outline-none"
+                        >
+                            <div class="flex items-center gap-3 min-w-0">
+                                <i data-lucide="users" class="w-4 h-4 shrink-0 transition-transform group-hover:scale-105"></i>
+                                <span x-show="!sidebarCollapsed" class="truncate">Kepegawaian</span>
+                            </div>
+                            <div class="flex items-center gap-1.5 shrink-0" x-show="!sidebarCollapsed">
+                                @if($pendingKepegawaianCount > 0)
+                                    <span class="bg-ui-warning text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded-full shrink-0 shadow-sm">
+                                        {{ $pendingKepegawaianCount }}
+                                    </span>
+                                @endif
+                                <i data-lucide="chevron-down" x-bind:class="open ? 'rotate-180' : ''" class="w-3.5 h-3.5 transition-transform duration-200 text-white/50 shrink-0"></i>
+                            </div>
+                        </button>
+
+                        <!-- Dropdown Content -->
+                        <div 
+                            x-show="open && !sidebarCollapsed" 
+                            x-transition:enter="transition-all ease-out duration-200"
+                            x-transition:enter-start="max-h-0 opacity-0"
+                            x-transition:enter-end="max-h-40 opacity-100"
+                            class="pl-7 pr-1 py-1 space-y-1 border-l border-white/10 ml-5"
+                            style="display: none;"
+                        >
+                            <a href="{{ route('admin.pegawai.index') }}"
+                               class="flex items-center justify-between px-3 py-2 rounded-ui-md text-[11px] font-semibold transition-all
+                                      {{ request()->routeIs('admin.pegawai.*') ? 'bg-white/10 text-white shadow-sm' : 'text-white/60 hover:bg-white/5 hover:text-white' }}">
+                                <span class="truncate">Data Pegawai</span>
+                            </a>
+                            <a href="{{ route('admin.validasi-kepegawaian.index') }}"
+                               class="flex items-center justify-between px-3 py-2 rounded-ui-md text-[11px] font-semibold transition-all
+                                      {{ request()->routeIs('admin.validasi-kepegawaian.*') ? 'bg-white/10 text-white shadow-sm' : 'text-white/60 hover:bg-white/5 hover:text-white' }}">
+                                <span class="truncate">Validasi Data</span>
+                                @if($pendingKepegawaianCount > 0)
+                                    <span class="bg-ui-warning text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded-full shrink-0 shadow-sm">
+                                        {{ $pendingKepegawaianCount }}
+                                    </span>
+                                @endif
+                            </a>
                         </div>
-                    </a>
+                    </div>
 
                     <!-- Penugasan -->
                     <a href="{{ route('admin.penugasan.index') }}"

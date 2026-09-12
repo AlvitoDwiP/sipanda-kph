@@ -37,6 +37,7 @@
             <div class="flex items-center justify-between text-sm">
                 <label class="flex items-center gap-2 text-slate-600">
                     <input type="checkbox" name="remember"
+                        style="width: 16px !important; height: 16px !important; padding: 0 !important; margin: 0 !important; flex-shrink: 0;"
                         class="rounded border-slate-300 text-green-800 focus:ring-green-800">
                     Remember me
                 </label>

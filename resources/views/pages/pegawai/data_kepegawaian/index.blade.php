@@ -11,12 +11,16 @@
     <x-ui.alert variant="danger" class="mb-5" :description="session('error')" />
 @endif
 
+@if (isset($pengajuanAktif))
+    <x-ui.alert variant="warning" class="mb-5" title="Menunggu Verifikasi" description="Anda memiliki pengajuan perubahan data kepegawaian yang sedang menunggu verifikasi oleh Admin/KPH." />
+@endif
+
 <x-ui.page-header title="Kepegawaian Saya" subtitle="Lihat dan kelola detail status kepegawaian Anda.">
     <x-slot name="breadcrumbs">
         <x-ui.breadcrumb />
     </x-slot>
     <x-slot name="actions">
-        @if($pegawai)
+        @if($pegawai && !isset($pengajuanAktif))
             <x-ui.button id="btnEditKepegawaian" type="button" variant="primary" size="sm" leadingIcon="edit">
                 Edit Data
             </x-ui.button>
@@ -203,6 +207,13 @@
                 </x-ui.card>
             </div>
         </div>
+
+        <!-- ACTION BUTTONS -->
+        <div class="flex justify-end pt-2 edit-mode hidden">
+            <x-ui.button id="btnSaveKepegawaian" type="button" variant="primary" leadingIcon="save">
+                Simpan Perubahan
+            </x-ui.button>
+        </div>
     </div>
 @else
     <x-ui.card>
@@ -219,31 +230,27 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const btn = document.getElementById('btnEditKepegawaian');
-        if (!btn) return;
+        const btnEdit = document.getElementById('btnEditKepegawaian');
+        const btnSave = document.getElementById('btnSaveKepegawaian');
+        
+        if (!btnEdit) return;
         
         const form = document.getElementById('formKepegawaian');
         const viewEls = document.querySelectorAll('.view-mode');
         const editEls = document.querySelectorAll('.edit-mode');
 
-        let editMode = false;
-
-        btn.addEventListener('click', () => {
-            if (!editMode) {
-                // TOGGLE TO EDIT MODE
-                viewEls.forEach(el => el.classList.add('hidden'));
-                editEls.forEach(el => el.classList.remove('hidden'));
-
-                btn.innerHTML = `<i data-lucide="save" class="w-4 h-4 shrink-0"></i><span>Simpan Perubahan</span>`;
-                if (typeof lucide !== 'undefined') {
-                    lucide.createIcons();
-                }
-                
-                editMode = true;
-            } else {
-                form.submit();
-            }
+        btnEdit.addEventListener('click', () => {
+            // TOGGLE TO EDIT MODE
+            viewEls.forEach(el => el.classList.add('hidden'));
+            editEls.forEach(el => el.classList.remove('hidden'));
+            btnEdit.classList.add('hidden'); // Sembunyikan tombol Edit Data
         });
+
+        if (btnSave) {
+            btnSave.addEventListener('click', () => {
+                form.submit();
+            });
+        }
     });
 </script>
 @endpush

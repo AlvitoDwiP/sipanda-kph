@@ -58,6 +58,7 @@
                 'penugasan' => 'Penugasan',
                 'catatan-kegiatan' => 'Catatan Kegiatan',
                 'catatan_kegiatan' => 'Catatan Kegiatan',
+                'validasi-kepegawaian' => 'Validasi Kepegawaian',
                 'display-jobdesk' => 'Display Job Desk',
                 'rekap-pekerjaan' => 'Rekap Pekerjaan',
                 'register' => 'Registrasi & Verifikasi',

@@ -91,8 +91,8 @@
         </div>
         
         <!-- Mobile Simple Brand Title (Hidden on Desktop) -->
-        <div class="md:hidden truncate text-sm font-bold text-ui-primary">
-            SIPANDA
+        <div class="md:hidden flex items-center h-8">
+            <img src="{{ asset('assets/images/avatar.png') }}" alt="Logo Perhutani" class="h-full w-auto object-contain">
         </div>
     </div>
 

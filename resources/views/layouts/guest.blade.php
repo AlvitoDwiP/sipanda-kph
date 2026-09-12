@@ -5,6 +5,14 @@
     <meta charset="UTF-8">
     <title>SIPANDA-KPH</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="@yield('meta_description', 'Portal Login Sistem Informasi Kepegawaian KPH Perhutani')">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:title" content="SIPANDA-KPH | @yield('title', 'Login')">
+    <meta property="og:description" content="@yield('meta_description', 'Portal Login Sistem Informasi Kepegawaian KPH Perhutani')">
+    <meta property="og:image" content="{{ asset('assets/images/avatar.png') }}">
 
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="{{ asset('assets/images/avatar.png') }}">

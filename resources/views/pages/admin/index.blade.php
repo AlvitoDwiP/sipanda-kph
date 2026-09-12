@@ -77,7 +77,7 @@
 <div class="mb-4">
     <x-ui.section-header title="Statistik Penugasan Pegawai" description="Ringkasan tugas per tanggal {{ \Carbon\Carbon::parse($tanggalFilter)->format('d-m-Y') }} untuk unit kerja terpilih." class="mb-2" />
     
-    <div class="grid gap-3 grid-cols-2 md:grid-cols-4 lg:grid-cols-7 select-none">
+    <div class="grid gap-3 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 select-none">
         <x-ui.card variant="statistics" title="Total Tugas" :value="$summaryTugas['total_tugas']" icon="clipboard-list" trend="Semua" trendType="neutral" shortContext="Tugas terdaftar" />
         <x-ui.card variant="statistics" title="Belum Mulai" :value="$summaryTugas['tugas_belum_dikerjakan']" icon="clock" trend="Pending" trendType="neutral" shortContext="Belum diproses" />
         <x-ui.card variant="statistics" title="Dikerjakan" :value="$summaryTugas['tugas_sedang_dikerjakan']" icon="play" trend="Proses" trendType="neutral" shortContext="Sedang berjalan" />
@@ -103,7 +103,7 @@
 {{-- Chart and Activity Row --}}
 <div class="grid gap-4 lg:grid-cols-3 items-stretch mb-4">
     <!-- Chart Overview -->
-    <div class="lg:col-span-2 bg-ui-surface rounded-ui-xl border border-ui-border p-4 shadow-ui-sm flex flex-col justify-between">
+    <div class="lg:col-span-2 bg-ui-surface rounded-ui-xl border border-ui-border p-4 shadow-ui-sm flex flex-col justify-between min-w-0">
         <div class="flex items-center justify-between border-b border-ui-border pb-2.5 mb-3 select-none">
             <div>
                 <h3 class="text-xs sm:text-sm font-bold text-ui-text-primary">Progres per Unit Kerja</h3>
@@ -113,13 +113,13 @@
                 <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
             </span>
         </div>
-        <div class="flex-1 min-h-[220px] relative">
+        <div class="flex-1 min-h-[220px] relative w-full min-w-0">
             <canvas id="unitkerja-chart"></canvas>
         </div>
     </div>
     
     <!-- Timeline Section -->
-    <div class="bg-ui-surface rounded-ui-xl border border-ui-border p-4 shadow-ui-sm flex flex-col justify-between">
+    <div class="bg-ui-surface rounded-ui-xl border border-ui-border p-4 shadow-ui-sm flex flex-col justify-between min-w-0">
         <div class="flex items-center justify-between border-b border-ui-border pb-2.5 mb-3 select-none">
             <div>
                 <h3 class="text-xs sm:text-sm font-bold text-ui-text-primary">Pengajuan Baru</h3>
