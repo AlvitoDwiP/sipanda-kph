@@ -1,100 +1,88 @@
-# Docker Setup for Laravel Kepegawaian Project
-
-This project includes Docker configuration to run the Laravel application in containers.
+# Docker Setup — SIPANDA KPH
 
 ## Prerequisites
-
 - Docker Engine
 - Docker Compose
 
-## Quick Start
+---
 
-1. **Clone the repository** (if you haven't already):
-   ```bash
-   git clone <your-repo-url>
-   cd web-kepegawaian
-   ```
+## Quick Start (Deploy Pertama Kali)
 
-2. **Build and start the containers**:
-   ```bash
-   docker compose up -d --build
-   ```
+```bash
+# 1. Pastikan file .env.docker sudah ada dan terkonfigurasi
+cp .env.example .env.docker
+# Edit .env.docker: isi DB_HOST=mysql, DB_DATABASE=kepegawaian_db, dll
 
-3. **Run database migrations**:
-   ```bash
-   docker compose exec app php artisan migrate
-   ```
+# 2. Build dan jalankan semua container
+docker compose up -d --build
 
-4. **Seed initial data** (optional):
-   ```bash
-   docker compose exec app php artisan db:seed
-   ```
+# 3. Selesai!
+# Startup script otomatis menjalankan: migrate + seed (jika DB kosong)
+```
 
-5. **Access the application**:
-   - Application: [http://localhost:8000](http://localhost:8000)
-   - phpMyAdmin: [http://localhost:8080](http://localhost:8080)
-   - MySQL: localhost:3306 (credentials in docker-compose.yml)
-   - Redis: localhost:6379
+**Akses:**
+| Service | URL |
+|---|---|
+| Aplikasi | http://localhost:8000 |
+| phpMyAdmin | http://localhost:8085 |
 
-## Additional Commands
+**Akun default setelah seeding:**
+| Role | Email | Password |
+|---|---|---|
+| Admin | `admin@sipanda.id` | `password123` |
+| KPH | `kph@sipanda.id` | `password123` |
+| Pegawai | `pegawai@sipanda.id` | `password123` |
 
-- **Run artisan commands**:
-  ```bash
-  docker compose exec app php artisan <command>
-  ```
+> ⚠️ Ganti password setelah login pertama!
 
-- **Run npm commands**:
-  ```bash
-  docker compose exec app npm run dev
-  docker compose exec app npm run build
-  ```
+---
 
-- **Access the container**:
-  ```bash
-  docker compose exec app bash
-  ```
+## Reset Database (Hapus semua data & seed ulang)
 
-- **View logs**:
-  ```bash
-  docker compose logs -f app
-  ```
+```bash
+docker compose exec app php artisan migrate:fresh --seed --force
+```
 
-- **Stop the containers**:
-  ```bash
-  docker compose down
-  ```
+---
 
-- **Stop and remove volumes** (removes database):
-  ```bash
-  docker compose down -v
-  ```
+## Perintah Umum
 
-## Services
+```bash
+# Masuk ke dalam container
+docker compose exec app bash
 
-- **app**: PHP 8.2 FPM container running the Laravel application
-- **nginx**: Nginx web server serving the application
-- **mysql**: MySQL 8.0 database server
-- **redis**: Redis server for caching and queues
+# Jalankan artisan command apapun
+docker compose exec app php artisan <command>
 
-## Environment Configuration
+# Build frontend assets
+docker compose exec app npm run build
 
-The app container mounts `.env.docker` as `/var/www/.env`, so Docker always uses the container-specific database and Redis hosts without changing your local `.env`.
+# Lihat log aplikasi
+docker compose logs -f app
+
+# Stop semua container
+docker compose down
+
+# Stop dan hapus semua data (termasuk database)
+docker compose down -v
+```
+
+---
 
 ## Troubleshooting
 
-1. **Permission issues**: If you encounter permission issues with storage or bootstrap/cache directories:
-   ```bash
-   docker compose exec app chown -R www-data:www-data storage bootstrap/cache
-   ```
+**Permission error pada storage:**
+```bash
+docker compose exec app chown -R www-data:www-data storage bootstrap/cache
+```
 
-2. **Database connection errors**: Make sure the MySQL container is running and the credentials in your .env file match those in docker-compose.yml.
+**Asset frontend tidak muncul:**
+```bash
+docker compose exec app npm run build
+```
 
-3. **Frontend assets not loading**: Run the build command:
-   ```bash
-   docker compose exec app npm run build
-   ```
-
-4. **If you get build errors**: Try building with the --no-cache flag:
-   ```bash
-   docker compose build --no-cache
-   ```
+**Build ulang dari awal:**
+```bash
+docker compose down -v
+docker compose up -d --build
+```

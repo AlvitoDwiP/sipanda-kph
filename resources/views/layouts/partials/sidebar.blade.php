@@ -326,15 +326,6 @@
                         </div>
                     </a>
 
-                    <!-- Display Job Desk -->
-                    <a href="{{ route('kph.display-jobdesk.manage') }}"
-                       class="flex items-center justify-between px-3 py-2.5 rounded-ui-md text-xs font-semibold tracking-wide transition-all group duration-150
-                              {{ request()->routeIs('kph.display-jobdesk.*') ? 'bg-white/15 text-white shadow-sm' : 'text-white/70 hover:bg-white/5 hover:text-white' }}">
-                        <div class="flex items-center gap-3 min-w-0">
-                            <i data-lucide="monitor" class="w-4 h-4 shrink-0 transition-transform group-hover:scale-105"></i>
-                            <span x-show="!sidebarCollapsed" class="truncate">Display Job Desk</span>
-                        </div>
-                    </a>
 
                     <!-- Rekap Pekerjaan -->
                     <a href="{{ route('kph.rekap-pekerjaan.index') }}"

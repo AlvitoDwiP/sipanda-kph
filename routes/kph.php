@@ -2,7 +2,7 @@
 
 use App\Http\Controllers\KPH\CatatanKegiatanController;
 use App\Http\Controllers\KPH\DashboardController as KphDashboard;
-use App\Http\Controllers\KPH\DisplayJobdeskController as KphDisplayJobdeskController;
+
 use App\Http\Controllers\KPH\LaporanPdfController as KphLaporanPdfController;
 use App\Http\Controllers\KPH\PegawaiController as KphPegawaiController;
 use App\Http\Controllers\KPH\PenugasanController as KphPenugasanController;
@@ -11,15 +11,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'role:super_admin,admin,kph', 'active'])->prefix('kph')->name('kph.')->group(function () {
     Route::get('/dashboard', [KphDashboard::class, 'index'])->name('dashboard');
-    Route::get('/display-jobdesk', [KphDisplayJobdeskController::class, 'index'])->name('display-jobdesk.index');
-    Route::get('/display-jobdesk/manage', [KphDisplayJobdeskController::class, 'manage'])->name('display-jobdesk.manage');
-    Route::get('/display-jobdesk/tv', [KphDisplayJobdeskController::class, 'tv'])->name('display-jobdesk.tv');
-    Route::post('/display-jobdesk/settings', [KphDisplayJobdeskController::class, 'updateSettings'])->name('display-jobdesk.settings.update');
-    Route::post('/display-jobdesk/reset', [KphDisplayJobdeskController::class, 'reset'])->name('display-jobdesk.reset');
-    Route::get('/display-jobdesk/state', [KphDisplayJobdeskController::class, 'state'])->name('display-jobdesk.state');
-    Route::post('/display-jobdesk/scan', [KphDisplayJobdeskController::class, 'scan'])
-        ->middleware('throttle:120,1')
-        ->name('display-jobdesk.scan');
+
 
     Route::get('/pegawai', [KphPegawaiController::class, 'index'])->name('pegawai.index');
     Route::get('/pegawai/{id}', [KphPegawaiController::class, 'show'])->name('pegawai.show');
