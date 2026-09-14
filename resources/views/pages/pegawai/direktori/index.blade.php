@@ -211,7 +211,7 @@
                     if (fotoEl) {
                         fotoEl.src = diri.foto ?
                             `${storageUrl}/${diri.foto}` :
-                            "{{ asset('images/avatar.png') }}";
+                            "{{ asset('assets/images/avatar.png') }}";
                     }
                 })
                 .catch(err => {

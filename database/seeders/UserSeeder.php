@@ -14,128 +14,69 @@ use Illuminate\Support\Facades\Hash;
 class UserSeeder extends Seeder
 {
     /**
-     * Demo password used for all seeded accounts.
-     * Using updateOrCreate ensures re-seeding always enforces this password.
+     * Password default untuk semua akun awal.
+     * Wajib diganti setelah login pertama kali di production.
      */
-    private const DEMO_PASSWORD = 'password123';
+    private const DEFAULT_PASSWORD = 'password123';
 
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        $hashedPassword = Hash::make(self::DEMO_PASSWORD);
+        $password = Hash::make(self::DEFAULT_PASSWORD);
 
-        // ── 1. Administrators ───────────────────────────────────────────────
-        for ($i = 1; $i <= 5; $i++) {
-            User::updateOrCreate(
-                ['email' => sprintf('admin%d@sipanda.test', $i)],
-                [
-                    'name' => sprintf('Administrator %d', $i),
-                    'nip' => sprintf('19850101201001100%d', $i),
-                    'role' => 'admin',
-                    'status_akun' => 'aktif',
-                    'password' => $hashedPassword,
-                ]
-            );
-        }
-
-        // Legacy admin (kept for backward compatibility)
+        // ── 1. Admin ─────────────────────────────────────────────────────────
         User::updateOrCreate(
-            ['email' => 'admin@gmail.com'],
+            ['email' => 'admin@sipanda.id'],
             [
-                'name' => 'Admin Legacy',
-                'nip' => '0000000000',
-                'role' => 'admin',
+                'name'        => 'Administrator',
+                'nip'         => '198501012010011001',
+                'role'        => 'admin',
                 'status_akun' => 'aktif',
-                'password' => $hashedPassword,
+                'password'    => $password,
             ]
         );
 
-        // ── 2. KPH Koordinator ──────────────────────────────────────────────
-        for ($i = 1; $i <= 5; $i++) {
-            User::updateOrCreate(
-                ['email' => sprintf('kph%d@sipanda.test', $i)],
-                [
-                    'name' => sprintf('KPH Koordinator %d', $i),
-                    'nip' => sprintf('19800202200802100%d', $i),
-                    'role' => 'kph',
-                    'status_akun' => 'aktif',
-                    'password' => $hashedPassword,
-                ]
-            );
-        }
-
-        // Legacy kph (kept for backward compatibility)
+        // ── 2. KPH Koordinator ───────────────────────────────────────────────
         User::updateOrCreate(
-            ['email' => 'kph@gmail.com'],
+            ['email' => 'kph@sipanda.id'],
             [
-                'name' => 'KPH Legacy',
-                'nip' => '1111111111',
-                'role' => 'kph',
+                'name'        => 'KPH Koordinator',
+                'nip'         => '198002022008021001',
+                'role'        => 'kph',
                 'status_akun' => 'aktif',
-                'password' => $hashedPassword,
+                'password'    => $password,
             ]
         );
 
-        // ── 3. Pegawai (50 users) ───────────────────────────────────────────
-        for ($i = 1; $i <= 50; $i++) {
-            $email = sprintf('pegawai%02d@sipanda.test', $i);
-            // 90% aktif, 10% nonaktif
-            $statusPegawai = ($i <= 45) ? 'aktif' : 'nonaktif';
-
-            $user = User::updateOrCreate(
-                ['email' => $email],
-                [
-                    'name' => sprintf('Pegawai Kedinasan %02d', $i),
-                    'nip' => sprintf('199003032015031%03d', $i),
-                    'role' => 'pegawai',
-                    'status_akun' => $statusPegawai,
-                    'password' => $hashedPassword,
-                ]
-            );
-
-            // Create Pegawai profile relations only if they don't exist yet
-            if (! $user->pegawai) {
-                $dataDiri = DataDiri::factory()->create([
-                    'kartu_identitas' => sprintf('357800000000%04d', $i),
-                ]);
-
-                Pegawai::factory()->create([
-                    'user_id' => $user->id,
-                    'data_diri_id' => $dataDiri->id,
-                    'status_pegawai' => $statusPegawai,
-                    'unitkerja_id' => UnitKerja::inRandomOrder()->first()->id,
-                    'golongan_id' => Golongan::inRandomOrder()->first()->id,
-                    'jabatan_id' => Jabatan::inRandomOrder()->first()->id,
-                ]);
-            }
-        }
-
-        // Legacy pegawai (kept for backward compatibility)
-        $legacyPegawaiUser = User::updateOrCreate(
-            ['email' => 'pegawai@gmail.com'],
+        // ── 3. Pegawai ───────────────────────────────────────────────────────
+        $pegawaiUser = User::updateOrCreate(
+            ['email' => 'pegawai@sipanda.id'],
             [
-                'name' => 'Pegawai Legacy',
-                'nip' => '2222222222',
-                'role' => 'pegawai',
+                'name'        => 'Pegawai Contoh',
+                'nip'         => '199003032015031001',
+                'role'        => 'pegawai',
                 'status_akun' => 'aktif',
-                'password' => $hashedPassword,
+                'password'    => $password,
             ]
         );
 
-        if (! $legacyPegawaiUser->pegawai) {
-            $dataDiri = DataDiri::factory()->create([
-                'kartu_identitas' => '3578000000009999',
+        // Buat profil pegawai jika belum ada
+        if (! $pegawaiUser->pegawai) {
+            $dataDiri = DataDiri::create([
+                'jenis_kelamin'  => 'L',
+                'tempat_lahir'   => 'Banyuwangi',
+                'tgl_lahir'      => '1990-03-03',
+                'kartu_identitas' => '3578000000000001',
+                'alamat'         => 'Jl. Contoh No. 1, Banyuwangi',
+                'no_hp'          => '081234567890',
             ]);
 
-            Pegawai::factory()->create([
-                'user_id' => $legacyPegawaiUser->id,
-                'data_diri_id' => $dataDiri->id,
+            Pegawai::create([
+                'user_id'        => $pegawaiUser->id,
+                'data_diri_id'   => $dataDiri->id,
                 'status_pegawai' => 'aktif',
-                'unitkerja_id' => UnitKerja::inRandomOrder()->first()->id,
-                'golongan_id' => Golongan::inRandomOrder()->first()->id,
-                'jabatan_id' => Jabatan::inRandomOrder()->first()->id,
+                'unitkerja_id'   => UnitKerja::first()->id,
+                'golongan_id'    => Golongan::first()->id,
+                'jabatan_id'     => Jabatan::first()->id,
             ]);
         }
     }

@@ -47,7 +47,7 @@ $isEmpty = !$dataDiri;
                     <span class="text-xs font-semibold text-ui-text-secondary self-start">Foto Profil</span>
                     <div class="relative group">
                         <img id="fotoPreview"
-                            src="{{ $dataDiri?->foto ? asset('storage/'.$dataDiri->foto) : asset('images/avatar.png') }}"
+                            src="{{ $dataDiri?->foto ? asset('storage/'.$dataDiri->foto) : asset('assets/images/avatar.png') }}"
                             class="w-32 h-32 rounded-full object-cover border border-ui-border shadow-ui-sm bg-ui-primary-soft/30" />
                         <label for="fotoInput" id="fotoLabel" class="absolute bottom-0 right-0 p-2 rounded-full bg-ui-primary hover:bg-ui-primary-hover text-white shadow-ui-sm cursor-pointer transition-all duration-150 scale-0 shrink-0 hidden">
                             <i data-lucide="camera" class="w-4.5 h-4.5"></i>
