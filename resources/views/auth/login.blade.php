@@ -16,8 +16,9 @@
 
             <!-- Email / NIP -->
             <div>
-                <label class="text-sm font-semibold text-slate-700">Email atau NIP</label>
-                <input type="text" name="email" value="{{ old('email') }}" required autofocus
+                <label for="email" class="text-sm font-semibold text-slate-700">Email atau NIP</label>
+                <input type="text" id="email" name="email" value="{{ old('email') }}" required autofocus
+                    autocomplete="username"
                     placeholder="contoh: admin@gmail.com atau 0000000000"
                     class="w-full mt-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl
                            focus:ring-2 focus:ring-green-800 outline-none text-sm">
@@ -26,8 +27,9 @@
 
             <!-- Password -->
             <div>
-                <label class="text-sm font-semibold text-slate-700">Password</label>
-                <input type="password" name="password" required
+                <label for="password" class="text-sm font-semibold text-slate-700">Password</label>
+                <input type="password" id="password" name="password" required
+                    autocomplete="current-password"
                     class="w-full mt-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl
                            focus:ring-2 focus:ring-green-800 outline-none text-sm">
                 <x-input-error :messages="$errors->get('password')" class="mt-1" />
@@ -35,10 +37,9 @@
 
             <!-- Remember Me -->
             <div class="flex items-center justify-between text-sm">
-                <label class="flex items-center gap-2 text-slate-600">
+                <label class="flex items-center gap-2 text-slate-600 cursor-pointer select-none">
                     <input type="checkbox" name="remember"
-                        style="width: 16px !important; height: 16px !important; padding: 0 !important; margin: 0 !important; flex-shrink: 0;"
-                        class="rounded border-slate-300 text-green-800 focus:ring-green-800">
+                        class="w-4 h-4 rounded border-slate-300 text-green-800 accent-green-800 cursor-pointer">
                     Remember me
                 </label>
 

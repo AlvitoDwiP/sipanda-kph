@@ -104,7 +104,7 @@
             font-size: 12px !important;
         }
 
-        input {
+        input:not([type="checkbox"]):not([type="radio"]) {
             min-height: 36px;
             border: 1px solid var(--sipanda-input) !important;
             border-radius: 6px !important;
@@ -112,6 +112,16 @@
             color: var(--sipanda-text);
             font-size: 12px !important;
             box-shadow: none !important;
+        }
+
+        input[type="checkbox"],
+        input[type="radio"] {
+            appearance: auto;
+            -webkit-appearance: auto;
+            min-height: unset;
+            width: 1rem;
+            height: 1rem;
+            cursor: pointer;
         }
 
         input:focus,
